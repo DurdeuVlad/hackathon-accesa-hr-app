@@ -1,0 +1,37 @@
+﻿# Root
+*.log
+.DS_Store
+.env
+.env.local
+
+# Ignore node_modules and build artifacts in frontend
+/frontend/node_modules
+/frontend/dist
+/frontend/.vite
+/frontend/.env
+/frontend/.env.*.local
+
+# Ignore IDE/editor configs (optional, but common)
+.vscode/
+.idea/
+*.iml
+
+# Ignore OS-specific junk
+Thumbs.db
+
+# Backend (Spring Boot - Java)
+/backend/target/
+/backend/.classpath
+/backend/.project
+/backend/.settings/
+/backend/.env
+/backend/.env.*.local
+/backend/*.log
+
+# Optional: ignore test coverage reports
+/frontend/coverage
+/backend/coverage
+
+# Optional: ignore local database/data files
+/backend/data/
+/backend/src/main/resources/firebase/serviceAccountKey.json
