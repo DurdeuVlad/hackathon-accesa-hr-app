@@ -1,4 +1,4 @@
-# 📘 GitHub Rules for Team Project
+# 📘 GitHub Rules for CVMatch Webapp Repository
 
 ## 🧩 Project Structure
 - Use a **monorepo**:
