@@ -29,8 +29,8 @@ public class FirebaseConfig {
             System.out.println("✅ Firebase has been initialized.");
         } catch (Exception e) {
             throw new RuntimeException("❌ Failed to initialize. " +
-                    "You may forgot to add the service account json to /backend/src/main/resources/firebase/serviceAccountKey.json. " +
-                    "Get one from firebase project link at Project Settings -> Service Accounts", e);
+                    "You may have forgotten to add the service account json to /backend/src/main/resources/firebase/serviceAccountKey.json. " +
+                    "Get one from your Firebase project (Project Settings -> Service Accounts)", e);
         }
     }
 }
