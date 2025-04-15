@@ -43,6 +43,10 @@ public class ScoringService {
     }
 
     private double scoreJDMatch(String cv, String jd) {
+        if (jd == null || jd.trim().isEmpty()) {
+            // Return 0 if the job description is null or empty
+            return 0;
+        }
         long matches = Arrays.stream(jd.split("\\W+"))
                 .filter(word -> cv.toLowerCase().contains(word.toLowerCase()))
                 .count();
