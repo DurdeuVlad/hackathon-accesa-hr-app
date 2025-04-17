@@ -4,6 +4,8 @@ import Login from './components/Login'
 import MatchCV from './components/MatchCV'
 import Home from './components/Home'
 import JobMatching from './components/JobMatching';
+import JobDetailPage from './components/JobDetailPage';
+import JobListPage from './components/JobListPage';
 
 function App() {
     const [currentPage, setCurrentPage] = useState('home')
@@ -44,9 +46,24 @@ function App() {
                 />
             )}
 
+            {currentPage === 'jobdetail' && (
+                <JobDetailPage
+                    onBack={() => setCurrentPage(previousPage)}
+                    onNavigate={handleNavigate}
+                    jobId="123"
+                />
+            )}
+
+            {currentPage === 'joblist' && (
+                <JobListPage
+                    onBack={() => setCurrentPage(previousPage)}
+                    onNavigate={handleNavigate}
+                />
+            )}
+
             {currentPage === 'home' && (
                 <>
-                    <div style={{ marginTop: '30px', display: 'flex', gap: '15px', justifyContent: 'center' }}>
+                    <div style={{ marginTop: '30px', display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
                         <button
                             onClick={() => handleNavigate('login')}
                             style={{
@@ -87,6 +104,34 @@ function App() {
                             }}
                         >
                             Go to Job Matching Page
+                        </button>
+
+                        <button
+                            onClick={() => handleNavigate('jobdetail')}
+                            style={{
+                                padding: '10px 20px',
+                                backgroundColor: '#2196f3',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Go to Job Detail Page
+                        </button>
+
+                        <button
+                            onClick={() => handleNavigate('joblist')}
+                            style={{
+                                padding: '10px 20px',
+                                backgroundColor: '#2196f3',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Go to Job List Page
                         </button>
                     </div>
                 </>
