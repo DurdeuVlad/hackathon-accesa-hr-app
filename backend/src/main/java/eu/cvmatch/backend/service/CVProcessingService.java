@@ -22,12 +22,16 @@ public class CVProcessingService {
     public CVMatchResult process(String jobId, MultipartFile file) throws Exception {
         String cvText = TextExtractor.extract(file);
         JobPosting job = firebaseService.getJobById(jobId);
+        if (job == null) {
+            throw new Exception("Job not found");
+        }
+        String cvId = file.getOriginalFilename();
 
         CVMatchResult result = scoringService.scoreCVAgainstJob(cvText, job);
         result.setFileName(file.getOriginalFilename());
         result.setUploadedAt(Instant.now().toString());
 
-        firebaseService.saveCVMatch(jobId, result);
+        firebaseService.saveCVMatch(jobId, cvId, result);
         return result;
     }
 }
