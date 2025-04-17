@@ -20,6 +20,7 @@ public class JobDescriptionController {
         this.jobService = jobService;
     }
 
+    @PostMapping("/find")
     public List<JobMatchResult> findMatchingJobs(@RequestParam("file") MultipartFile cvFile) throws Exception {
         String cvText = TextExtractor.extract(cvFile);
         return jobService.matchCVToJobs(cvText);
