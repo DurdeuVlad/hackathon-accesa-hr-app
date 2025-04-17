@@ -11,26 +11,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ScoringServiceTest {
 
-    private ScoringService scoringService = new ScoringService();
+    private final ScoringService scoringService = new ScoringService(new CVScoring());
 
     @Test
-    public void testScoreCVAgainstJob() {
+    public void testScoreCVAgainstJob() throws Exception {
         String cvText = "I have experience in Finance and Java and Spring.";
 
-        JobPosting job = new JobPosting();
-        job.setIndustry("Finance");
-        job.setDescription("Looking for experienced Java developer");
-
-        List<JobPosting.TechnicalSkill> skills = new ArrayList<>();
-        JobPosting.TechnicalSkill skill1 = new JobPosting.TechnicalSkill();
-        skill1.setSkill("Java");
-        skill1.setWeight(3);
-        skills.add(skill1);
-        JobPosting.TechnicalSkill skill2 = new JobPosting.TechnicalSkill();
-        skill2.setSkill("Spring");
-        skill2.setWeight(2);
-        skills.add(skill2);
-        job.setTechnicalSkills(skills);
+        JobPosting job = getJobPosting();
 
         CVMatchResult result = scoringService.scoreCVAgainstJob(cvText, job);
 
@@ -45,5 +32,23 @@ public class ScoringServiceTest {
         assertEquals(100, result.getIndustryScore(), 0.01);
         assertEquals(5, result.getTechScore(), 0.01);
         assertEquals(20, result.getJdScore(), 0.01);
+    }
+
+    private static JobPosting getJobPosting() {
+        JobPosting job = new JobPosting();
+        job.setIndustry("Finance");
+        job.setDescription("Looking for experienced Java developer");
+
+        List<JobPosting.TechnicalSkill> skills = new ArrayList<>();
+        JobPosting.TechnicalSkill skill1 = new JobPosting.TechnicalSkill();
+        skill1.setSkill("Java");
+        skill1.setWeight(3);
+        skills.add(skill1);
+        JobPosting.TechnicalSkill skill2 = new JobPosting.TechnicalSkill();
+        skill2.setSkill("Spring");
+        skill2.setWeight(2);
+        skills.add(skill2);
+        job.setTechnicalSkills(skills);
+        return job;
     }
 }
