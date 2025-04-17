@@ -52,6 +52,6 @@ public class CVProcessingServiceTest {
         assertEquals("dummy.docx", result.getFileName());
         assertNotNull(result.getUploadedAt());
         assertEquals(90, result.getScore());
-        verify(firebaseService).saveCVMatch(eq("job123"), eq(result));
+        verify(firebaseService).saveCVMatch(eq("job123"), eq("dummy.docx"), eq(result));
     }
 }
