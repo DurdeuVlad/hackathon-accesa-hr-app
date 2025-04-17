@@ -8,6 +8,6 @@ import java.util.List;
 @Service
 public class JobService {
     public List<JobMatchResult> matchCVToJobs(String cvText) {
-        return null;
+        return Collections.emptyList();
     }
 }
