@@ -19,13 +19,12 @@ import {
     Container,
     Paper,
     IconButton,
+    Divider,
     Tooltip,
     CircularProgress,
     Fade,
-    Avatar,
-    CssBaseline
+    Avatar
 } from '@mui/material';
-import { ThemeProvider } from '@mui/material/styles';
 import {
     Search,
     Add,
@@ -36,13 +35,14 @@ import {
     Business,
     CalendarToday,
     FilterList,
+    ArrowUpward,
+    ArrowDownward,
     Sort,
     BookmarkBorder,
     Bookmark,
     Person
 } from '@mui/icons-material';
-import NavBar from './TopNavBar';
-import theme from './CommonTheme';
+
 const JobListPage = ({ onBack, onNavigate }) => {
     const [jobs, setJobs] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -148,6 +148,7 @@ const JobListPage = ({ onBack, onNavigate }) => {
         }
     };
 
+    // Filter and sort jobs
     const processedJobs = jobs
         .filter(job => {
             const matchesTerm = job.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -187,361 +188,346 @@ const JobListPage = ({ onBack, onNavigate }) => {
     };
 
     return (
-        <ThemeProvider theme={theme}>
-            <CssBaseline />
+        <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh' }}>
+            {/* Header Section */}
             <Box sx={{
-                minHeight: '100vh',
-                width: '100vw',
-                display: 'flex',
-                flexDirection: 'column',
-                bgcolor: 'background.default',
-                margin: 0,
-                padding: 0,
-                overflow: 'hidden',
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
+                background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
+                color: 'white',
+                py: 5,
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                position: 'relative',
+                overflow: 'hidden'
             }}>
-                <NavBar
-                    showBackButton={true}
-                    onBack={onBack}
-                    onNavigate={onNavigate}
-                    title="Job Listings"
-                    currentPage="joblist"
-                    fullWidth={true}
-                />
-                <Box sx={{
-                    width: '100%',
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    overflow: 'auto'
-                }}>
-                    <Box sx={{
-                        background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
-                        color: 'white',
-                        py: 5,
-                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-                        width: '100%'
-                    }}>
-                        <Container maxWidth={false} sx={{ textAlign: 'center', px: 4 }}>
-                            <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
-                                DevMatch Job Listings
-                            </Typography>
-                            <Typography variant="h6" sx={{ opacity: 0.9, mx: 'auto', maxWidth: 700 }}>
-                                Find the perfect match for your technical positions
-                            </Typography>
-                            <Box sx={{
-                                display: 'flex',
-                                gap: 2,
-                                flexWrap: 'wrap',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                mt: 4
-                            }}>
-                                <TextField
-                                    placeholder="Search for jobs, skills, or companies..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    sx={{
-                                        bgcolor: 'white',
-                                        borderRadius: 2,
-                                        width: { xs: '100%', sm: 320 },
-                                        '& .MuiOutlinedInput-root': {
-                                            '&:hover fieldset': {
-                                                borderColor: 'white',
-                                            },
+                <Container maxWidth="lg">
+                    <Box sx={{ position: 'relative', zIndex: 2 }}>
+                        <Button
+                            onClick={onBack}
+                            variant="contained"
+                            sx={{
+                                mb: 2,
+                                bgcolor: 'rgba(255,255,255,0.2)',
+                                '&:hover': {
+                                    bgcolor: 'rgba(255,255,255,0.3)'
+                                }
+                            }}
+                        >
+                            Back
+                        </Button>
+                        <Typography variant="h3" fontWeight="800" gutterBottom>DevMatch Job Listings</Typography>
+                        <Typography variant="h6" fontWeight="400" sx={{ opacity: 0.9, maxWidth: 600, mb: 3 }}>
+                            Find the perfect match for your technical positions
+                        </Typography>
+
+                        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+                            <TextField
+                                placeholder="Search for jobs, skills, or companies..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                sx={{
+                                    bgcolor: 'white',
+                                    borderRadius: 2,
+                                    width: { xs: '100%', sm: 320 },
+                                    '& .MuiOutlinedInput-root': {
+                                        '&:hover fieldset': {
+                                            borderColor: 'white',
                                         },
-                                    }}
-                                    InputProps={{
-                                        startAdornment: (
-                                            <InputAdornment position="start">
-                                                <Search color="primary" />
-                                            </InputAdornment>
-                                        )
-                                    }}
-                                />
+                                    },
+                                }}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <Search color="primary" />
+                                        </InputAdornment>
+                                    )
+                                }}
+                            />
 
-                                <Tooltip title="Toggle filters">
-                                    <Button
-                                        variant="contained"
-                                        onClick={() => setShowFilters(!showFilters)}
-                                        sx={{
-                                            bgcolor: showFilters ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.2)',
-                                            color: 'white',
-                                            '&:hover': { bgcolor: 'rgba(255,255,255,0.4)' },
-                                        }}
-                                        startIcon={<FilterList />}
-                                    >
-                                        Filters
-                                    </Button>
-                                </Tooltip>
-
+                            <Tooltip title="Toggle filters">
                                 <Button
                                     variant="contained"
-                                    startIcon={<Add />}
+                                    onClick={() => setShowFilters(!showFilters)}
                                     sx={{
-                                        bgcolor: '#10b981',
-                                        '&:hover': { bgcolor: '#059669' },
+                                        bgcolor: showFilters ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.2)',
+                                        color: 'white',
+                                        '&:hover': { bgcolor: 'rgba(255,255,255,0.4)' },
                                     }}
-                                    onClick={() => console.log("Adding new job")}
+                                    startIcon={<FilterList />}
                                 >
-                                    Add New Job
+                                    Filters
                                 </Button>
-                            </Box>
-                        </Container>
+                            </Tooltip>
 
-                        <Box sx={{
-                            position: 'absolute',
-                            top: -100,
-                            right: -100,
-                            width: 300,
-                            height: 300,
-                            borderRadius: '50%',
-                            background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)'
-                        }} />
-                        <Box sx={{
-                            position: 'absolute',
-                            bottom: -50,
-                            left: '30%',
-                            width: 200,
-                            height: 200,
-                            borderRadius: '50%',
-                            background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)'
-                        }} />
-                    </Box>
-                    <Container maxWidth={false} sx={{ py: 4, px: { xs: 2, sm: 4 } }}>
-                        {/* Filter Section */}
-                        <Fade in={showFilters}>
-                            <Paper sx={{ mb: 4, p: 3, borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-                                <Typography variant="h6" fontWeight={600} mb={2}>Filter Options</Typography>
-                                <Grid container spacing={3}>
-                                    <Grid item xs={12} sm={6} md={4}>
-                                        <Typography variant="subtitle2" mb={1}>Industry</Typography>
-                                        <Select
-                                            value={filterIndustry}
-                                            onChange={(e) => setFilterIndustry(e.target.value)}
-                                            displayEmpty
-                                            fullWidth
-                                            size="small"
-                                        >
-                                            <MenuItem value="">All Industries</MenuItem>
-                                            {uniqueIndustries.map((industry, index) => (
-                                                <MenuItem key={index} value={industry}>{industry}</MenuItem>
-                                            ))}
-                                        </Select>
-                                    </Grid>
-                                    <Grid item xs={12} sm={6} md={4}>
-                                        <Typography variant="subtitle2" mb={1}>Sort By</Typography>
-                                        <Select
-                                            value={sortOrder}
-                                            onChange={(e) => setSortOrder(e.target.value)}
-                                            fullWidth
-                                            size="small"
-                                        >
-                                            <MenuItem value="newest">Newest First</MenuItem>
-                                            <MenuItem value="oldest">Oldest First</MenuItem>
-                                            <MenuItem value="alphabetical">Alphabetical</MenuItem>
-                                        </Select>
-                                    </Grid>
-                                    <Grid item xs={12} md={4} sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                                        <Button
-                                            variant="outlined"
-                                            onClick={() => {
-                                                setFilterIndustry('');
-                                                setSortOrder('newest');
-                                                setSearchTerm('');
-                                            }}
-                                            fullWidth
-                                        >
-                                            Clear All Filters
-                                        </Button>
-                                    </Grid>
-                                </Grid>
-                            </Paper>
-                        </Fade>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                            <Typography variant="subtitle1" fontWeight={500}>
-                                {isLoading ? 'Loading jobs...' : `${processedJobs.length} job${processedJobs.length !== 1 ? 's' : ''} found`}
-                            </Typography>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Sort fontSize="small" color="action" />
-                                <Typography variant="body2" color="text.secondary">
-                                    Sorted by: {sortOrder === 'newest' ? 'Newest' : sortOrder === 'oldest' ? 'Oldest' : 'A-Z'}
-                                </Typography>
-                            </Box>
-                        </Box>
-                        {isLoading ? (
-                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
-                                <CircularProgress />
-                            </Box>
-                        ) : (
-                            processedJobs.length > 0 ? (
-                                <Grid container spacing={3}>
-                                    {processedJobs.map(job => (
-                                        <Grid item xs={12} key={job.id}>
-                                            <Card
-                                                sx={{
-                                                    borderRadius: 2,
-                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                                                    transition: 'all 0.2s ease-in-out',
-                                                    cursor: 'pointer',
-                                                    '&:hover': {
-                                                        transform: 'translateY(-4px)',
-                                                        boxShadow: '0 12px 20px rgba(0,0,0,0.1)',
-                                                    }
-                                                }}
-                                                onClick={() => onNavigate('jobdetail')}
-                                            >
-                                                <CardContent sx={{ p: 3 }}>
-                                                    <Grid container spacing={2}>
-                                                        <Grid item xs={12} md={8}>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                                <Avatar
-                                                                    sx={{ bgcolor: getRandomColor(job.industry) }}
-                                                                >
-                                                                    {job.company.charAt(0)}
-                                                                </Avatar>
-                                                                <Box>
-                                                                    <Typography variant="h5" fontWeight={600} color="#1e3a8a">{job.jobTitle}</Typography>
-                                                                    <Typography variant="subtitle1">{job.company}</Typography>
-                                                                </Box>
-                                                            </Box>
-
-                                                            <Box sx={{ display: 'flex', gap: 3, mt: 2, flexWrap: 'wrap' }}>
-                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                                    <Business fontSize="small" color="action" />
-                                                                    <Typography variant="body2" color="text.secondary">{job.industry}</Typography>
-                                                                </Box>
-                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                                    <CalendarToday fontSize="small" color="action" />
-                                                                    <Typography variant="body2" color="text.secondary">Posted: {formatDate(job.createdAt)}</Typography>
-                                                                </Box>
-                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                                    <Person fontSize="small" color="action" />
-                                                                    <Typography variant="body2" color="text.secondary">{job.applicants} applicants</Typography>
-                                                                </Box>
-                                                            </Box>
-
-                                                            <Typography variant="body1" sx={{ mt: 2, color: '#374151' }}>
-                                                                {job.description.length > 200 ?
-                                                                    `${job.description.substring(0, 200)}...` :
-                                                                    job.description
-                                                                }
-                                                            </Typography>
-
-                                                            <Stack direction="row" spacing={1} flexWrap="wrap" mt={2}>
-                                                                {job.technicalSkills.map((skill, idx) => (
-                                                                    <Chip
-                                                                        key={idx}
-                                                                        label={`${skill.skill} (${skill.weight}%)`}
-                                                                        sx={{
-                                                                            bgcolor: '#dbeafe',
-                                                                            color: '#1e40af',
-                                                                            fontWeight: 500,
-                                                                            borderRadius: '4px',
-                                                                            mb: 1
-                                                                        }}
-                                                                        size="small"
-                                                                    />
-                                                                ))}
-                                                            </Stack>
-                                                        </Grid>
-
-                                                        <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                                                            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                                                <Tooltip title={savedJobs.includes(job.id) ? "Remove from saved" : "Save job"}>
-                                                                    <IconButton onClick={(e) => toggleSaveJob(job.id, e)}>
-                                                                        {savedJobs.includes(job.id) ?
-                                                                            <Bookmark color="primary" /> :
-                                                                            <BookmarkBorder />
-                                                                        }
-                                                                    </IconButton>
-                                                                </Tooltip>
-                                                            </Box>
-
-                                                            <Box sx={{ display: 'flex', gap: 1, mt: { xs: 2, md: 0 }, justifyContent: { xs: 'flex-start', md: 'flex-end' }, flexWrap: 'wrap' }}>
-                                                                <Button
-                                                                    variant="outlined"
-                                                                    startIcon={<Visibility />}
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        onNavigate('jobdetail');
-                                                                    }}
-                                                                >
-                                                                    View
-                                                                </Button>
-                                                                <Button
-                                                                    variant="outlined"
-                                                                    startIcon={<Edit />}
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        console.log("Edit", job.id);
-                                                                    }}
-                                                                >
-                                                                    Edit
-                                                                </Button>
-                                                                <Button
-                                                                    variant="outlined"
-                                                                    color="error"
-                                                                    startIcon={<Delete />}
-                                                                    onClick={(e) => confirmDelete(job.id, e)}
-                                                                >
-                                                                    Delete
-                                                                </Button>
-                                                            </Box>
-                                                        </Grid>
-                                                    </Grid>
-                                                </CardContent>
-                                            </Card>
-                                        </Grid>
-                                    ))}
-                                </Grid>
-                            ) : (
-                                <Paper sx={{ p: 5, borderRadius: 2, textAlign: 'center', bgcolor: 'white' }}>
-                                    <WarningAmber sx={{ fontSize: 64, color: '#9ca3af' }} />
-                                    <Typography variant="h5" fontWeight={600} color="#4b5563" mt={2}>No jobs found</Typography>
-                                    <Typography variant="body1" color="#6b7280" mt={1} mb={3}>
-                                        {searchTerm || filterIndustry ? 'Try a different search or filter' : 'Create your first job posting'}
-                                    </Typography>
-                                    <Button
-                                        variant="contained"
-                                        startIcon={<Add />}
-                                        onClick={() => console.log("Adding new job")}
-                                    >
-                                        Add New Job
-                                    </Button>
-                                </Paper>
-                            )
-                        )}
-                    </Container>
-                    <Dialog
-                        open={showDeleteConfirm}
-                        onClose={() => setShowDeleteConfirm(false)}
-                        PaperProps={{
-                            sx: { borderRadius: 2, p: 1 }
-                        }}
-                    >
-                        <DialogTitle sx={{ fontWeight: 600 }}>Confirm Deletion</DialogTitle>
-                        <DialogContent>
-                            <Typography>Are you sure you want to delete this job? This action cannot be undone.</Typography>
-                        </DialogContent>
-                        <DialogActions>
-                            <Button onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
                             <Button
                                 variant="contained"
-                                color="error"
-                                onClick={deleteJob}
+                                startIcon={<Add />}
+                                sx={{
+                                    bgcolor: '#10b981',
+                                    '&:hover': { bgcolor: '#059669' },
+                                    ml: { xs: 0, md: 'auto' }
+                                }}
+                                onClick={() => console.log("Adding new job")}
                             >
-                                Delete Job
+                                Add New Job
                             </Button>
-                        </DialogActions>
-                    </Dialog>
-                </Box>
+                        </Box>
+                    </Box>
+
+                    {/* Decorative Elements */}
+                    <Box sx={{
+                        position: 'absolute',
+                        top: -100,
+                        right: -100,
+                        width: 300,
+                        height: 300,
+                        borderRadius: '50%',
+                        background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)'
+                    }} />
+                    <Box sx={{
+                        position: 'absolute',
+                        bottom: -50,
+                        left: '30%',
+                        width: 200,
+                        height: 200,
+                        borderRadius: '50%',
+                        background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)'
+                    }} />
+                </Container>
             </Box>
-        </ThemeProvider>
+
+            <Container maxWidth="lg" sx={{ py: 4 }}>
+                {/* Filter Section */}
+                <Fade in={showFilters}>
+                    <Paper sx={{ mb: 4, p: 3, borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                        <Typography variant="h6" fontWeight={600} mb={2}>Filter Options</Typography>
+                        <Grid container spacing={3}>
+                            <Grid item xs={12} sm={6} md={4}>
+                                <Typography variant="subtitle2" mb={1}>Industry</Typography>
+                                <Select
+                                    value={filterIndustry}
+                                    onChange={(e) => setFilterIndustry(e.target.value)}
+                                    displayEmpty
+                                    fullWidth
+                                    size="small"
+                                >
+                                    <MenuItem value="">All Industries</MenuItem>
+                                    {uniqueIndustries.map((industry, index) => (
+                                        <MenuItem key={index} value={industry}>{industry}</MenuItem>
+                                    ))}
+                                </Select>
+                            </Grid>
+                            <Grid item xs={12} sm={6} md={4}>
+                                <Typography variant="subtitle2" mb={1}>Sort By</Typography>
+                                <Select
+                                    value={sortOrder}
+                                    onChange={(e) => setSortOrder(e.target.value)}
+                                    fullWidth
+                                    size="small"
+                                >
+                                    <MenuItem value="newest">Newest First</MenuItem>
+                                    <MenuItem value="oldest">Oldest First</MenuItem>
+                                    <MenuItem value="alphabetical">Alphabetical</MenuItem>
+                                </Select>
+                            </Grid>
+                            <Grid item xs={12} md={4} sx={{ display: 'flex', alignItems: 'flex-end' }}>
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => {
+                                        setFilterIndustry('');
+                                        setSortOrder('newest');
+                                        setSearchTerm('');
+                                    }}
+                                    fullWidth
+                                >
+                                    Clear All Filters
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Paper>
+                </Fade>
+
+                {/* Results Count */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                    <Typography variant="subtitle1" fontWeight={500}>
+                        {isLoading ? 'Loading jobs...' : `${processedJobs.length} job${processedJobs.length !== 1 ? 's' : ''} found`}
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Sort fontSize="small" color="action" />
+                        <Typography variant="body2" color="text.secondary">
+                            Sorted by: {sortOrder === 'newest' ? 'Newest' : sortOrder === 'oldest' ? 'Oldest' : 'A-Z'}
+                        </Typography>
+                    </Box>
+                </Box>
+
+                {/* Job Listings */}
+                {isLoading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
+                        <CircularProgress />
+                    </Box>
+                ) : (
+                    processedJobs.length > 0 ? (
+                        <Grid container spacing={3}>
+                            {processedJobs.map(job => (
+                                <Grid item xs={12} key={job.id}>
+                                    <Card
+                                        sx={{
+                                            borderRadius: 2,
+                                            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                                            transition: 'all 0.2s ease-in-out',
+                                            cursor: 'pointer',
+                                            '&:hover': {
+                                                transform: 'translateY(-4px)',
+                                                boxShadow: '0 12px 20px rgba(0,0,0,0.1)',
+                                            }
+                                        }}
+                                        onClick={() => onNavigate('jobdetail')}
+                                    >
+                                        <CardContent sx={{ p: 3 }}>
+                                            <Grid container spacing={2}>
+                                                <Grid item xs={12} md={8}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                        <Avatar
+                                                            sx={{ bgcolor: getRandomColor(job.industry) }}
+                                                        >
+                                                            {job.company.charAt(0)}
+                                                        </Avatar>
+                                                        <Box>
+                                                            <Typography variant="h5" fontWeight={600} color="#1e3a8a">{job.jobTitle}</Typography>
+                                                            <Typography variant="subtitle1">{job.company}</Typography>
+                                                        </Box>
+                                                    </Box>
+
+                                                    <Box sx={{ display: 'flex', gap: 3, mt: 2, flexWrap: 'wrap' }}>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                            <Business fontSize="small" color="action" />
+                                                            <Typography variant="body2" color="text.secondary">{job.industry}</Typography>
+                                                        </Box>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                            <CalendarToday fontSize="small" color="action" />
+                                                            <Typography variant="body2" color="text.secondary">Posted: {formatDate(job.createdAt)}</Typography>
+                                                        </Box>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                            <Person fontSize="small" color="action" />
+                                                            <Typography variant="body2" color="text.secondary">{job.applicants} applicants</Typography>
+                                                        </Box>
+                                                    </Box>
+
+                                                    <Typography variant="body1" sx={{ mt: 2, color: '#374151' }}>
+                                                        {job.description.length > 200 ?
+                                                            `${job.description.substring(0, 200)}...` :
+                                                            job.description
+                                                        }
+                                                    </Typography>
+
+                                                    <Stack direction="row" spacing={1} flexWrap="wrap" mt={2}>
+                                                        {job.technicalSkills.map((skill, idx) => (
+                                                            <Chip
+                                                                key={idx}
+                                                                label={`${skill.skill} (${skill.weight}%)`}
+                                                                sx={{
+                                                                    bgcolor: '#dbeafe',
+                                                                    color: '#1e40af',
+                                                                    fontWeight: 500,
+                                                                    borderRadius: '4px',
+                                                                    mb: 1
+                                                                }}
+                                                                size="small"
+                                                            />
+                                                        ))}
+                                                    </Stack>
+                                                </Grid>
+
+                                                <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                                        <Tooltip title={savedJobs.includes(job.id) ? "Remove from saved" : "Save job"}>
+                                                            <IconButton onClick={(e) => toggleSaveJob(job.id, e)}>
+                                                                {savedJobs.includes(job.id) ?
+                                                                    <Bookmark color="primary" /> :
+                                                                    <BookmarkBorder />
+                                                                }
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    </Box>
+
+                                                    <Box sx={{ display: 'flex', gap: 1, mt: { xs: 2, md: 0 }, justifyContent: { xs: 'flex-start', md: 'flex-end' }, flexWrap: 'wrap' }}>
+                                                        <Button
+                                                            variant="outlined"
+                                                            startIcon={<Visibility />}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                onNavigate('jobdetail');
+                                                            }}
+                                                        >
+                                                            View
+                                                        </Button>
+                                                        <Button
+                                                            variant="outlined"
+                                                            startIcon={<Edit />}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                console.log("Edit", job.id);
+                                                            }}
+                                                        >
+                                                            Edit
+                                                        </Button>
+                                                        <Button
+                                                            variant="outlined"
+                                                            color="error"
+                                                            startIcon={<Delete />}
+                                                            onClick={(e) => confirmDelete(job.id, e)}
+                                                        >
+                                                            Delete
+                                                        </Button>
+                                                    </Box>
+                                                </Grid>
+                                            </Grid>
+                                        </CardContent>
+                                    </Card>
+                                </Grid>
+                            ))}
+                        </Grid>
+                    ) : (
+                        <Paper sx={{ p: 5, borderRadius: 2, textAlign: 'center', bgcolor: 'white' }}>
+                            <WarningAmber sx={{ fontSize: 64, color: '#9ca3af' }} />
+                            <Typography variant="h5" fontWeight={600} color="#4b5563" mt={2}>No jobs found</Typography>
+                            <Typography variant="body1" color="#6b7280" mt={1} mb={3}>
+                                {searchTerm || filterIndustry ? 'Try a different search or filter' : 'Create your first job posting'}
+                            </Typography>
+                            <Button
+                                variant="contained"
+                                startIcon={<Add />}
+                                onClick={() => console.log("Adding new job")}
+                            >
+                                Add New Job
+                            </Button>
+                        </Paper>
+                    )
+                )}
+            </Container>
+
+            {/* Delete confirmation dialog */}
+            <Dialog
+                open={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                PaperProps={{
+                    sx: { borderRadius: 2, p: 1 }
+                }}
+            >
+                <DialogTitle sx={{ fontWeight: 600 }}>Confirm Deletion</DialogTitle>
+                <DialogContent>
+                    <Typography>Are you sure you want to delete this job? This action cannot be undone.</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
+                    <Button
+                        variant="contained"
+                        color="error"
+                        onClick={deleteJob}
+                    >
+                        Delete Job
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </Box>
     );
 };
 
