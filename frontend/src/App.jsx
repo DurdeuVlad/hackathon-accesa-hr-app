@@ -1,208 +1,143 @@
-import React, { useState, useEffect } from 'react';
-import { ThemeProvider } from '@mui/material/styles';
-import { CssBaseline, Button } from '@mui/material';
-import './App.css';
-
-import Login from './components/Login';
-import MatchCV from './components/MatchCV';
-import Home from './components/Home';
+import { useState } from 'react'
+import './App.css'
+import Login from './components/Login'
+import MatchCV from './components/MatchCV'
+import Home from './components/Home'
 import JobMatching from './components/JobMatching';
-import JobMatchesResults from './components/JobMatchesResults';
 import JobDetailPage from './components/JobDetailPage';
 import JobListPage from './components/JobListPage';
-import TopNavBar from './components/TopNavBar';
-import theme from './components/CommonTheme';
 
 function App() {
-    const [currentPage, setCurrentPage] = useState('home');
-    const [previousPage, setPreviousPage] = useState('home');
-    const [searchType, setSearchType] = useState('jobs-to-cv');
-    const [currentCvId, setCurrentCvId] = useState('');
-    const [currentCvName, setCurrentCvName] = useState('');
-
-    const handleNavigate = (page, data = {}) => {
+    const [currentPage, setCurrentPage] = useState('home')
+    const [previousPage, setPreviousPage] = useState('home')
+    const handleNavigate = (page) => {
         setPreviousPage(currentPage);
         setCurrentPage(page);
-
-        if (data.searchType) {
-            setSearchType(data.searchType);
-        }
-        if (data.cvId) {
-            setCurrentCvId(data.cvId);
-        }
-        if (data.cvName) {
-            setCurrentCvName(data.cvName);
-        }
-    };
-
-    window.navigateToPage = handleNavigate;
-
-    const handleBack = (fromPage) => {
-        switch (fromPage) {
-            case 'matchcv':
-                return setCurrentPage('home');
-            case 'jobmatching':
-            case 'jobmatches':
-                return setCurrentPage('matchcv');
-            default:
-                return setCurrentPage(previousPage);
-        }
     };
 
     return (
-        <ThemeProvider theme={theme}>
-            <CssBaseline />
-
+        <>
             {currentPage === 'home' && (
-                <>
-                    <Home
-                        onNavigateToLogin={() => handleNavigate('login')}
-                        onNavigateToMatchCV={() => handleNavigate('matchcv')}
-                    />
-                    <div
-                        style={{
-                            marginTop: 30,
-                            display: 'flex',
-                            gap: 15,
-                            justifyContent: 'center',
-                            flexWrap: 'wrap',
-                        }}
-                    >
-                        {[
-                            { label: 'Go to Login Page', page: 'login' },
-                            { label: 'Go to Match CV Page', page: 'matchcv' },
-                            { label: 'Go to Job Matching Page', page: 'jobmatching' },
-                            { label: 'Go to Job Matches Results Page', page: 'jobmatches' },
-                            { label: 'Go to Job Detail Page', page: 'jobdetail' },
-                            { label: 'Go to Job List Page', page: 'joblist' },
-                            { label: 'Go to Statistics Page', page: 'statisticspage' },
-                        ].map(({ label, page }) => (
-                            <Button
-                                key={page}
-                                variant="contained"
-                                onClick={() => handleNavigate(page)}
-                                sx={{ m: 0.5 }}
-                            >
-                                {label}
-                            </Button>
-                        ))}
-                    </div>
-                </>
+                <Home
+                    onNavigateToLogin={() => handleNavigate('login')}
+                    onNavigateToMatchCV={() => handleNavigate('matchcv')}
+                />
             )}
 
             {currentPage === 'login' && (
-                <>
-                    <TopNavBar
-                        showBackButton
-                        onBack={() => handleBack('login')}
-                        onNavigate={handleNavigate}
-                        title="Login"
-                        currentPage="login"
-                    />
-                    <Login
-                        onBack={() => handleBack('login')}
-                        onNext={() => handleNavigate('home')}
-                    />
-                </>
+                <Login
+                    onBack={() => setCurrentPage(previousPage)}
+                    onNext={() => handleNavigate('home')}
+                />
             )}
 
             {currentPage === 'matchcv' && (
-                <>
-                    <TopNavBar
-                        showBackButton
-                        onBack={() => handleBack('matchcv')}
-                        onNavigate={handleNavigate}
-                        title="Match CV"
-                        currentPage="matchcv"
-                    />
-                    <MatchCV
-                        onBack={() => handleBack('matchcv')}
-                        onNavigate={(page, data) => {
-                            if (data.searchType === 'cv-to-jobs') {
-                                handleNavigate('jobmatches', {
-                                    searchType: data.searchType,
-                                    cvId: data.cvId || 'default-cv-001',
-                                    cvName: data.cvName || 'Your CV',
-                                });
-                            } else if (data.searchType === 'jobs-to-cv') {
-                                handleNavigate('jobmatching', { searchType: data.searchType });
-                            } else {
-                                handleNavigate(page, data);
-                            }
-                        }}
-                    />
-                </>
+                <MatchCV
+                    onBack={() => setCurrentPage(previousPage)}
+                    onNavigate={handleNavigate}
+                />
             )}
 
             {currentPage === 'jobmatching' && (
-                <>
-                    <TopNavBar
-                        showBackButton
-                        onBack={() => handleBack('jobmatching')}
-                        onNavigate={handleNavigate}
-                        title="Job Matching"
-                        currentPage="jobmatching"
-                    />
-                    <JobMatching
-                        onBack={() => handleBack('jobmatching')}
-                        onNavigate={handleNavigate}
-                        jobId="123"
-                    />
-                </>
-            )}
-
-            {currentPage === 'jobmatches' && (
-                <>
-                    <TopNavBar
-                        showBackButton
-                        onBack={() => handleBack('jobmatches')}
-                        onNavigate={handleNavigate}
-                        title="Job Matches"
-                        currentPage="jobmatches"
-                    />
-                    <JobMatchesResults
-                        onBack={() => handleBack('jobmatches')}
-                        onNavigate={handleNavigate}
-                        cvId={currentCvId}
-                        cvName={currentCvName}
-                    />
-                </>
+                <JobMatching
+                    onBack={() => setCurrentPage('matchcv')}
+                    onNavigate={handleNavigate}
+                    jobId="123"
+                />
             )}
 
             {currentPage === 'jobdetail' && (
-                <>
-                    <TopNavBar
-                        showBackButton
-                        onBack={() => handleBack('jobdetail')}
-                        onNavigate={handleNavigate}
-                        title="Job Detail"
-                        currentPage="jobdetail"
-                    />
-                    <JobDetailPage
-                        onBack={() => handleBack('jobdetail')}
-                        onNavigate={handleNavigate}
-                        jobId="123"
-                    />
-                </>
+                <JobDetailPage
+                    onBack={() => setCurrentPage(previousPage)}
+                    onNavigate={handleNavigate}
+                    jobId="123"
+                />
             )}
 
             {currentPage === 'joblist' && (
+                <JobListPage
+                    onBack={() => setCurrentPage(previousPage)}
+                    onNavigate={handleNavigate}
+                />
+            )}
+
+            {currentPage === 'home' && (
                 <>
-                    <TopNavBar
-                        showBackButton
-                        onBack={() => handleBack('joblist')}
-                        onNavigate={handleNavigate}
-                        title="Job List"
-                        currentPage="joblist"
-                    />
-                    <JobListPage
-                        onBack={() => handleBack('joblist')}
-                        onNavigate={handleNavigate}
-                    />
+                    <div style={{ marginTop: '30px', display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <button
+                            onClick={() => handleNavigate('login')}
+                            style={{
+                                padding: '10px 20px',
+                                backgroundColor: '#2196f3',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Go to Login Page
+                        </button>
+
+                        <button
+                            onClick={() => handleNavigate('matchcv')}
+                            style={{
+                                padding: '10px 20px',
+                                backgroundColor: '#2196f3',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Go to Match CV Page
+                        </button>
+
+                        <button
+                            onClick={() => handleNavigate('jobmatching')}
+                            style={{
+                                padding: '10px 20px',
+                                backgroundColor: '#2196f3',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Go to Job Matching Page
+                        </button>
+
+                        <button
+                            onClick={() => handleNavigate('jobdetail')}
+                            style={{
+                                padding: '10px 20px',
+                                backgroundColor: '#2196f3',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Go to Job Detail Page
+                        </button>
+
+                        <button
+                            onClick={() => handleNavigate('joblist')}
+                            style={{
+                                padding: '10px 20px',
+                                backgroundColor: '#2196f3',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Go to Job List Page
+                        </button>
+                    </div>
                 </>
             )}
-        </ThemeProvider>
-    );
+        </>
+    )
 }
 
-export default App;
+export default App
