@@ -1,0 +1,10 @@
+{
+  "industry": "Technology Consulting",
+  "technicalSkills": [
+    { "skill": "Project Management Software", "weight": 25 },
+    { "skill": "Organizational Skills", "weight": 25 },
+    { "skill": "Communication Skills", "weight": 20 },
+    { "skill": "Agile/Scrum Methodologies", "weight": 15 },
+    { "skill": "Project Documentation", "weight": 15 }
+  ]
+}

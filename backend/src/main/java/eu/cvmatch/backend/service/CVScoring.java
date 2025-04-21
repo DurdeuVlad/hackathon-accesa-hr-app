@@ -25,90 +25,153 @@ public class CVScoring {
     private final Gson gson = new Gson();
 
     public CVMatchResult calculateScore(String cvText, JobPosting job) throws Exception {
-        // 1) Call Gemini
-        GenerativeLanguageClient glClient = new GenerativeLanguageClient();
-        String instruction = buildPrompt(cvText, job);
-        JsonArray candidates = glClient.generateMessage(
-                List.of(instruction), /* modelId */ null, /* candidateCount */ 1
-        );
+        // Initialize client once with injected config
+        GenerativeLanguageClient glClient = new GenerativeLanguageClient(apiKey, modelId, embedModelId);
+        String prompt = buildPrompt(cvText, job);
+
+        // 1) Call Gemini for the initial JSON
+        JsonArray candidates = glClient.generateMessage(List.of(prompt), null, 1);
         if (candidates == null || candidates.isEmpty()) {
             throw new IllegalStateException("Gemini returned no candidates");
         }
+        String raw = candidates.get(0)
+                .getAsJsonObject()
+                .get("content")
+                .getAsString()
+                .trim();
 
-        // 2) Extract raw content
-        JsonObject first = candidates.get(0).getAsJsonObject();
-        String content = first.get("content").getAsString().trim();
+        // 2) Try parsing it, or ask Gemini to fix it once
+        JsonObject data = tryParseOrFix(raw, glClient);
 
-        // 3) Parse leniently
+        // 3) Pull out the scores
+        double industryScore = data.get("industryScore").getAsDouble();
+        double techScore     = data.get("techScore").getAsDouble();
+        double jdScore       = data.get("jdScore").getAsDouble();
+        String explanation   = data.get("explanation").getAsString();
+
+        // 4) Compute finalScore via the agreed formula
+        double finalScore = industryScore * 0.10
+                + techScore     * 0.30
+                + jdScore       * 0.60;
+
+        return new CVMatchResult(finalScore, industryScore, techScore, jdScore, explanation);
+
+    }
+
+    /**
+     * Attempts to parse the raw JSON string leniently.
+     * If that doesn't yield an object, calls glClient.fixJson(...) once, then parses its output.
+     */
+    private JsonObject tryParseOrFix(String raw, GenerativeLanguageClient glClient) throws Exception {
+        try {
+            JsonElement firstTry = parseLenient(raw);
+            if (firstTry.isJsonObject()) {
+                return firstTry.getAsJsonObject();
+            }
+        } catch (JsonSyntaxException ignored) {
+            // fall through to fix
+        }
+
+        // Ask Gemini to correct the JSON
+        JsonObject fixedJson = glClient.fixJson(raw);
+        String fixedString = fixedJson.toString();
+
+        JsonElement secondTry = parseLenient(fixedString);
+        if (!secondTry.isJsonObject()) {
+            throw new IllegalStateException("Fixed JSON is still not an object:\n" + fixedString);
+        }
+        return secondTry.getAsJsonObject();
+    }
+
+    /**
+     * Performs lenient parsing:
+     *  - allows comments/unterminated strings
+     *  - unwraps quoted JSON strings
+     */
+    private JsonElement parseLenient(String content) throws JsonSyntaxException {
         JsonReader reader = new JsonReader(new StringReader(content));
         reader.setLenient(true);
         JsonElement elem = JsonParser.parseReader(reader);
 
-        // 4) If the model wrapped your JSON in quotes, unwrap and re‑parse
+        // If it's a primitive (i.e. model wrapped JSON in quotes), unwrap it
         if (elem.isJsonPrimitive()) {
             String inner = elem.getAsString()
-                    .replaceAll("^\"|\"$", "")   // strip outer quotes
-                    .replace("\\\"", "\"")       // unescape quotes
-                    .replace("\\\\n", "\n");     // unescape newlines
-            JsonReader innerReader = new JsonReader(new StringReader(inner));
-            innerReader.setLenient(true);
-            elem = JsonParser.parseReader(innerReader);
+                    .replaceAll("^\"|\"$", "")
+                    .replace("\\\"", "\"")
+                    .replace("\\\\n", "\n")
+                    .replaceAll("```json|```", "");
+            JsonReader reader2 = new JsonReader(new StringReader(inner));
+            reader2.setLenient(true);
+            elem = JsonParser.parseReader(reader2);
         }
-
-        JsonObject data = elem.getAsJsonObject();
-
-        // 5) Pull out scores
-        double industryScore = data.get("industryScore").getAsDouble();
-        double techScore     = data.get("techScore").getAsDouble();
-        double jdScore       = data.get("jdScore").getAsDouble();
-        double finalScore    = data.get("score").getAsDouble();
-        String explanation   = data.get("explanation").getAsString();
-
-        return new CVMatchResult(finalScore, industryScore, techScore, jdScore, explanation);
+        return elem;
     }
 
     private String buildPrompt(String cv, JobPosting job) {
         return String.format(
-                "You are an expert recruiter and resume evaluator. Your task is to score the candidate’s CV against the given job posting.\n\n" +
+                "You are an expert recruiter and resume evaluator. Your task is to score the candidate’s CV against the given job posting.%n%n" +
 
-                        "Evaluation Criteria (with weights):\n" +
-                        "- Industry Knowledge (10%%)\n" +
-                        "- Technical Skills (30%%)\n" +
-                        "- Job Description Match (60%%)\n\n" +
+                        "Evaluation Criteria (with weights):%n" +
+                        "- Industry Knowledge (10%%)%n" +
+                        "- Technical Skills (30%%)%n" +
+                        "- Job Description Match (60%%)%n%n" +
 
-                        "Instructions:\n" +
-                        "1. Use ONLY the information in the job posting and CV provided below. Do NOT assume facts not given.\n" +
-                        "2. Industry Knowledge (10%%):\n" +
-                        "   • Scan the CV for references to the required industry (e.g., past banking projects).\n" +
-                        "   • Assign a score between 0–100%%: 0%% = no relevant experience; partial mentions = partial score; extensive direct experience = 100%%.\n" +
-                        "3. Technical Skills (30%%):\n" +
-                        "   • For each predefined job skill and its weight, check the CV for that skill.\n" +
-                        "   • Calculate a weighted average: sum(match_presence(skill) × skillWeight) across all skills, where match_presence is 1 if found, else 0 (or partial if context suggests).\n" +
-                        "4. Job Description Match (60%%):\n" +
-                        "   • Compare the CV to the full job description using keyword matching or semantic similarity.\n" +
-                        "   • Generate a match score 0–100%% based on overall relevance of experience and skills.\n" +
-                        "5. Compute the final score as:\n" +
-                        "   finalScore = (industryScore × 0.10) + (techScore × 0.30) + (jdScore × 0.60).\n" +
-                        "6. EXPLANATION: Provide a brief rationale for each score and the final match.\n" +
-                        "7. OUTPUT ONLY a single RAW JSON object with EXACTLY these keys: industryScore, techScore, jdScore, score, explanation. " +
-                        "No extra text, no markdown, no code fences, no comments.\n\n" +
+                        "Scoring Guidelines:%n" +
+                        "1) Industry Knowledge (10%% of final):%n" +
+                        "   0%%   – No relevant industry experience%n" +
+                        "   25%%  – Peripheral experience%n" +
+                        "   50%%  – Some direct experience%n" +
+                        "   75%%  – Strong experience%n" +
+                        "   100%% – Extensive senior-level experience%n%n" +
 
-                        "Job Posting:\n" +
-                        "Industry: %s\n" +
-                        "Required Skills and Weights: %s\n" +
-                        "Description: %s\n\n" +
+                        "2) Technical Skills (30%% of final):%n" +
+                        "   For each required skill:%n" +
+                        "     0%%   – Not found%n" +
+                        "     50%%  – Partial or implied%n" +
+                        "     100%% – Explicit mention%n" +
+                        "   Then compute weighted average.%n%n" +
 
-                        "Candidate CV:\n" +
-                        "%s\n\n" +
+                        "3) Job Description Match (60%% of final):%n" +
+                        "   a) Responsibilities Coverage (30%%):%n" +
+                        "      0%%   – None%n" +
+                        "      25%%  – Few shallow mentions%n" +
+                        "      50%%  – Several with detail%n" +
+                        "      75%%  – Most well covered%n" +
+                        "      100%% – All thoroughly covered%n%n" +
+                        "   b) Qualifications Coverage (30%%):%n" +
+                        "      0%%   – None%n" +
+                        "      25%%  – Some mentioned%n" +
+                        "      50%%  – Several with detail%n" +
+                        "      75%%  – Most with examples%n" +
+                        "      100%% – All with strong examples%n%n" +
+                        "   jdScore = (responsibilitiesCoverage * 0.5 + qualificationsCoverage * 0.5)%n%n" +
 
-                        "TASK: Evaluate the CV against the criteria above and PRODUCE THE JSON RESULT.",
+                        "COMPUTATION:%n" +
+                        " finalScore = (industryScore * 0.10) + (techScore * 0.30) + (jdScore * 0.60)%n%n" +
+
+                        "EXPLANATION:%n" +
+                        " Provide a brief rationale for Industry, Tech, JD Match, and final score, each on its own line.%n%n" +
+
+                        "OUTPUT REQUIREMENTS:%n" +
+                        " Return ONLY a single RAW JSON object: " +
+                        "{\"industryScore\":… , \"techScore\":… , \"jdScore\":… , \"score\":… , \"explanation\":\"…\"}%n%n" +
+
+                        "HINT: Use 0/25/50/75/100 as base checkpoints, but you may interpolate above the nearest lower bound if clearly warranted.%n%n" +
+
+                        "Job Posting:%n" +
+                        " Industry: %s%n" +
+                        " Required Skills and Weights: %s%n" +
+                        " Description: %s%n%n" +
+
+                        "Candidate CV:%n" +
+                        "%s%n%n" +
+
+                        "TASK: Evaluate and PRODUCE THE JSON RESULT.",
                 job.getIndustry(),
                 gson.toJson(job.getTechnicalSkills()),
                 job.getDescription(),
                 cv
         );
     }
-
-
 
 }
