@@ -1,6 +1,5 @@
 package eu.cvmatch.backend.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.cvmatch.backend.model.CVMatchResult;
 import eu.cvmatch.backend.model.JobPosting;
 import eu.cvmatch.backend.service.CVScoring;
@@ -17,7 +16,6 @@ import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 

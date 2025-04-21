@@ -21,7 +21,7 @@ public class CVScoring {
     private String apiKey;
 
     // Optional override in .env; defaults to
-    @Value("${GEMINI_MODEL_ID:}")
+    @Value("${GEMINI_MODEL_ID:gemini-2.0-flash}")
     private String modelId;
 
     private final Gson gson = new Gson();
@@ -50,7 +50,14 @@ public class CVScoring {
 
     private String buildPrompt(String cv, JobPosting job) {
         JsonObject body = new JsonObject();
-        body.addProperty("prompt", String.format(
+        body.addProperty("model", modelId);
+
+        // Build the prompt.messages array
+        JsonObject prompt = new JsonObject();
+        JsonArray messages = new JsonArray();
+        JsonObject userMsg = new JsonObject();
+        // Serialize the entire instruction as a single string
+        String fullInstruction = String.format(
                 "You are an expert recruiter. Score this CV using exactly:\n" +
                         "• Industry Knowledge (10%%)\n" +
                         "• Technical Skills (30%%)\n" +
@@ -64,9 +71,21 @@ public class CVScoring {
                 gson.toJson(job.getTechnicalSkills()),
                 job.getDescription(),
                 cv
-        ));
+        );
+        // Directly assign content as a string
+        userMsg.addProperty("content", fullInstruction);
+        messages.add(userMsg);
+
+        prompt.add("messages", messages);
+        body.add("prompt", prompt);
+
+        // Optional: control randomness and number of candidates
+        body.addProperty("temperature", 0.0);
+        body.addProperty("candidateCount", 1);
+
         return gson.toJson(body);
     }
+
 
     private JsonObject callGemini(String payload) throws Exception {
         String url = String.format(
@@ -77,9 +96,10 @@ public class CVScoring {
 
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .header("Content-Type", "application/json")
+                .header("Content-Type", "application/json; charset=utf-8")
                 .POST(HttpRequest.BodyPublishers.ofString(payload))
                 .build();
+
 
         HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
         return gson.fromJson(resp.body(), JsonObject.class);
