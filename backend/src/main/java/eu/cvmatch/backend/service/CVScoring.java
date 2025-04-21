@@ -14,13 +14,9 @@ import java.util.List;
 public class CVScoring {
     private final Gson gson = new Gson();
 
-    private final EmbeddingSimilarityService embeddingService;
-    private final GenerativeLanguageClient glClient;
+    private final GenerativeLanguageClient glClient = new GenerativeLanguageClient();;
 
-    public CVScoring() {
-        glClient = new GenerativeLanguageClient();
-        this.embeddingService = new EmbeddingSimilarityService(glClient);
-    }
+    private final EmbeddingSimilarityService embeddingService = new EmbeddingSimilarityService(glClient);;
 
     public CVMatchResult calculateScore(String cvText, JobPosting job) throws Exception {
         // 1) get the LLM breakdown
