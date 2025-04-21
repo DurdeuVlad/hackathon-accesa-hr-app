@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import io.github.cdimascio.dotenv.Dotenv;
 
 import java.io.StringReader;
 import java.net.URI;
@@ -15,6 +16,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class GenerativeLanguageClient {
@@ -24,6 +27,21 @@ public class GenerativeLanguageClient {
     private final String defaultModel;
     private final String defaultEmbedModel;
     private final String v1Base = "https://generativelanguage.googleapis.com/v1";
+
+    /**
+     * No-args constructor: reads configuration from .env
+     */
+    public GenerativeLanguageClient() {
+        Dotenv dotenv = Dotenv.configure()
+                .ignoreIfMissing()
+                .ignoreIfMalformed()
+                .load();
+        this.apiKey = dotenv.get("GEMINI_API_KEY");
+        this.defaultModel = dotenv.get("GEMINI_MODEL_ID", "gemini-2.0-flash");
+        this.defaultEmbedModel = dotenv.get("GEMINI_EMBED_MODEL_ID", "embedding-001");
+        this.httpClient = HttpClient.newHttpClient();
+        this.gson = new Gson();
+    }
 
     public GenerativeLanguageClient(
             @Value("${GEMINI_API_KEY}") String apiKey,
@@ -105,6 +123,10 @@ public class GenerativeLanguageClient {
     ) throws Exception {
         JsonArray raw = generateContentRaw(messages, modelId, candidateCount);
         JsonArray out = new JsonArray();
+
+        // Pattern to capture text between ```json``` or ``` fences
+        Pattern fence = Pattern.compile("```(?:json)?\\s*(.*?)\\s*```", Pattern.DOTALL);
+
         for (var el : raw) {
             JsonObject cand = el.getAsJsonObject();
             String txt = cand
@@ -114,6 +136,16 @@ public class GenerativeLanguageClient {
                     .getAsJsonObject()
                     .get("text")
                     .getAsString();
+
+            // 1) If txt contains a fenced block, extract the inner part
+            Matcher m = fence.matcher(txt);
+            if (m.find()) {
+                txt = m.group(1);
+            }
+
+            // 2) Trim any other leading/trailing whitespace or stray backticks
+            txt = txt.replaceAll("^`+|`+$", "").trim();
+
             JsonObject wrap = new JsonObject();
             wrap.addProperty("content", txt);
             out.add(wrap);
