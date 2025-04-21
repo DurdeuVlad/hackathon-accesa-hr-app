@@ -3,6 +3,7 @@ package eu.cvmatch.backend.controller;
 import eu.cvmatch.backend.model.JobMatchResult;
 import eu.cvmatch.backend.service.JobService;
 import eu.cvmatch.backend.utils.TextExtractor;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;

@@ -69,21 +69,46 @@ public class CVScoring {
 
     private String buildPrompt(String cv, JobPosting job) {
         return String.format(
-                "You are an expert recruiter. Score this CV using exactly:\n" +
-                        "• Industry Knowledge (10%%)\n" +
-                        "• Technical Skills (30%%)\n" +
-                        "• Job Description match (60%%)\n\n" +
-                        "Job Industry: %s\n" +
-                        "Job Skills+Weights: %s\n" +
-                        "Job Description: %s\n\n" +
-                        "CV: %s\n\n" +
-                        "Return valid JSON with fields: industryScore, techScore, jdScore, score, explanation." +
-                        "Do not write anything else, no code blocks, no comments, nothing beside the valid json field.",
+                "You are an expert recruiter and resume evaluator. Your task is to score the candidate’s CV against the given job posting.\n\n" +
+
+                        "Evaluation Criteria (with weights):\n" +
+                        "- Industry Knowledge (10%%)\n" +
+                        "- Technical Skills (30%%)\n" +
+                        "- Job Description Match (60%%)\n\n" +
+
+                        "Instructions:\n" +
+                        "1. Use ONLY the information in the job posting and CV provided below. Do NOT assume facts not given.\n" +
+                        "2. Industry Knowledge (10%%):\n" +
+                        "   • Scan the CV for references to the required industry (e.g., past banking projects).\n" +
+                        "   • Assign a score between 0–100%%: 0%% = no relevant experience; partial mentions = partial score; extensive direct experience = 100%%.\n" +
+                        "3. Technical Skills (30%%):\n" +
+                        "   • For each predefined job skill and its weight, check the CV for that skill.\n" +
+                        "   • Calculate a weighted average: sum(match_presence(skill) × skillWeight) across all skills, where match_presence is 1 if found, else 0 (or partial if context suggests).\n" +
+                        "4. Job Description Match (60%%):\n" +
+                        "   • Compare the CV to the full job description using keyword matching or semantic similarity.\n" +
+                        "   • Generate a match score 0–100%% based on overall relevance of experience and skills.\n" +
+                        "5. Compute the final score as:\n" +
+                        "   finalScore = (industryScore × 0.10) + (techScore × 0.30) + (jdScore × 0.60).\n" +
+                        "6. EXPLANATION: Provide a brief rationale for each score and the final match.\n" +
+                        "7. OUTPUT ONLY a single RAW JSON object with EXACTLY these keys: industryScore, techScore, jdScore, score, explanation. " +
+                        "No extra text, no markdown, no code fences, no comments.\n\n" +
+
+                        "Job Posting:\n" +
+                        "Industry: %s\n" +
+                        "Required Skills and Weights: %s\n" +
+                        "Description: %s\n\n" +
+
+                        "Candidate CV:\n" +
+                        "%s\n\n" +
+
+                        "TASK: Evaluate the CV against the criteria above and PRODUCE THE JSON RESULT.",
                 job.getIndustry(),
                 gson.toJson(job.getTechnicalSkills()),
                 job.getDescription(),
                 cv
         );
     }
+
+
 
 }
