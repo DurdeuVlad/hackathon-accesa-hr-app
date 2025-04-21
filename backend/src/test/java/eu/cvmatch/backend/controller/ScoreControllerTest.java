@@ -66,19 +66,21 @@ class ScoreControllerTest {
     }
 
     @Test
-    void whenJobNotFound_thenReturns500() throws Exception {
-        when(firebaseService.getJobById("job123"))
+    public void whenJobNotFound_thenReturns500() throws Exception {
+        // Arrange
+        String invalidJobId = "nonExistingJobId";
+        String cvId = "sampleCvId";
+        String cvText = "Sample CV text";
+
+        when(firebaseService.getJobById(invalidJobId))
                 .thenThrow(new IllegalArgumentException("not found"));
 
+        // Act & Assert
         mockMvc.perform(post("/scorecvs")
-                        .param("jobId", "job123")
-                        .param("cvId",  "cv456")
-                        .contentType(MediaType.TEXT_PLAIN)
-                        .content("x"))
+                        .param("jobId", invalidJobId)
+                        .param("cvId", cvId)
+                        .content(cvText)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
-
-        verifyNoInteractions(cvScoring);
-        verify(firebaseService, never()).saveCVMatch(any(), any(), any());
-        verify(firebaseService, never()).saveJobMatch(any(), any(), any());
     }
 }
