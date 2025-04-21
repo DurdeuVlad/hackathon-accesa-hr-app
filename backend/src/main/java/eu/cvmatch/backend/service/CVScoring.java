@@ -1,44 +1,63 @@
 package eu.cvmatch.backend.service;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
+import com.google.gson.stream.JsonReader;
 import eu.cvmatch.backend.model.CVMatchResult;
 import eu.cvmatch.backend.model.JobPosting;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.io.StringReader;
+import java.util.List;
 
 @Service
 public class CVScoring {
 
-    // Now picks up GEMINI_API_KEY from your .env
     @Value("${GEMINI_API_KEY}")
     private String apiKey;
 
-    // Optional override in .env; defaults to
     @Value("${GEMINI_MODEL_ID:gemini-2.0-flash}")
     private String modelId;
 
+    @Value("${GEMINI_EMBED_MODEL_ID:embedding-001}")
+    private String embedModelId;
+
     private final Gson gson = new Gson();
-    private final HttpClient httpClient = HttpClient.newHttpClient();
 
     public CVMatchResult calculateScore(String cvText, JobPosting job) throws Exception {
-        JsonObject full = callGemini(buildPrompt(cvText, job));
-
-        JsonArray candidates = full.getAsJsonArray("candidates");
-        if (candidates == null || candidates.size() == 0) {
-            throw new IllegalStateException("Gemini response missing candidates: " + full);
+        // 1) Call Gemini
+        GenerativeLanguageClient glClient = new GenerativeLanguageClient();
+        String instruction = buildPrompt(cvText, job);
+        JsonArray candidates = glClient.generateMessage(
+                List.of(instruction), /* modelId */ null, /* candidateCount */ 1
+        );
+        if (candidates == null || candidates.isEmpty()) {
+            throw new IllegalStateException("Gemini returned no candidates");
         }
 
+        // 2) Extract raw content
         JsonObject first = candidates.get(0).getAsJsonObject();
-        String content = first.get("content").getAsString();
-        JsonObject data = gson.fromJson(content, JsonObject.class);
+        String content = first.get("content").getAsString().trim();
 
+        // 3) Parse leniently
+        JsonReader reader = new JsonReader(new StringReader(content));
+        reader.setLenient(true);
+        JsonElement elem = JsonParser.parseReader(reader);
+
+        // 4) If the model wrapped your JSON in quotes, unwrap and re‑parse
+        if (elem.isJsonPrimitive()) {
+            String inner = elem.getAsString()
+                    .replaceAll("^\"|\"$", "")   // strip outer quotes
+                    .replace("\\\"", "\"")       // unescape quotes
+                    .replace("\\\\n", "\n");     // unescape newlines
+            JsonReader innerReader = new JsonReader(new StringReader(inner));
+            innerReader.setLenient(true);
+            elem = JsonParser.parseReader(innerReader);
+        }
+
+        JsonObject data = elem.getAsJsonObject();
+
+        // 5) Pull out scores
         double industryScore = data.get("industryScore").getAsDouble();
         double techScore     = data.get("techScore").getAsDouble();
         double jdScore       = data.get("jdScore").getAsDouble();
@@ -49,15 +68,7 @@ public class CVScoring {
     }
 
     private String buildPrompt(String cv, JobPosting job) {
-        JsonObject body = new JsonObject();
-        body.addProperty("model", modelId);
-
-        // Build the prompt.messages array
-        JsonObject prompt = new JsonObject();
-        JsonArray messages = new JsonArray();
-        JsonObject userMsg = new JsonObject();
-        // Serialize the entire instruction as a single string
-        String fullInstruction = String.format(
+        return String.format(
                 "You are an expert recruiter. Score this CV using exactly:\n" +
                         "• Industry Knowledge (10%%)\n" +
                         "• Technical Skills (30%%)\n" +
@@ -66,42 +77,13 @@ public class CVScoring {
                         "Job Skills+Weights: %s\n" +
                         "Job Description: %s\n\n" +
                         "CV: %s\n\n" +
-                        "Return valid JSON with fields: industryScore, techScore, jdScore, score, explanation.",
+                        "Return valid JSON with fields: industryScore, techScore, jdScore, score, explanation." +
+                        "Do not write anything else, no code blocks, no comments, nothing beside the valid json field.",
                 job.getIndustry(),
                 gson.toJson(job.getTechnicalSkills()),
                 job.getDescription(),
                 cv
         );
-        // Directly assign content as a string
-        userMsg.addProperty("content", fullInstruction);
-        messages.add(userMsg);
-
-        prompt.add("messages", messages);
-        body.add("prompt", prompt);
-
-        // Optional: control randomness and number of candidates
-        body.addProperty("temperature", 0.0);
-        body.addProperty("candidateCount", 1);
-
-        return gson.toJson(body);
     }
 
-
-    private JsonObject callGemini(String payload) throws Exception {
-        String url = String.format(
-                "https://generativelanguage.googleapis.com/v1beta2/models/%s:generateMessage?key=%s",
-                modelId, apiKey
-        );
-
-
-        HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .header("Content-Type", "application/json; charset=utf-8")
-                .POST(HttpRequest.BodyPublishers.ofString(payload))
-                .build();
-
-
-        HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
-        return gson.fromJson(resp.body(), JsonObject.class);
-    }
 }
