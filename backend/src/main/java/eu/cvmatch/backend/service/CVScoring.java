@@ -12,50 +12,50 @@ import java.util.List;
 
 @Service
 public class CVScoring {
-
-    @Value("${GEMINI_API_KEY}")
-    private String apiKey;
-
-    @Value("${GEMINI_MODEL_ID:gemini-2.0-flash}")
-    private String modelId;
-
-    @Value("${GEMINI_EMBED_MODEL_ID:embedding-001}")
-    private String embedModelId;
-
     private final Gson gson = new Gson();
 
-    public CVMatchResult calculateScore(String cvText, JobPosting job) throws Exception {
-        // Initialize client once with injected config
-        GenerativeLanguageClient glClient = new GenerativeLanguageClient(apiKey, modelId, embedModelId);
-        String prompt = buildPrompt(cvText, job);
+    private final EmbeddingSimilarityService embeddingService;
+    private final GenerativeLanguageClient glClient;
 
-        // 1) Call Gemini for the initial JSON
+    public CVScoring() {
+        glClient = new GenerativeLanguageClient();
+        this.embeddingService = new EmbeddingSimilarityService(glClient);
+    }
+
+    public CVMatchResult calculateScore(String cvText, JobPosting job) throws Exception {
+        // 1) get the LLM breakdown
+        String prompt = buildPrompt(cvText, job);
         JsonArray candidates = glClient.generateMessage(List.of(prompt), null, 1);
         if (candidates == null || candidates.isEmpty()) {
             throw new IllegalStateException("Gemini returned no candidates");
         }
-        String raw = candidates.get(0)
-                .getAsJsonObject()
-                .get("content")
-                .getAsString()
-                .trim();
-
-        // 2) Try parsing it, or ask Gemini to fix it once
+        String raw = candidates.get(0).getAsJsonObject().get("content").getAsString().trim();
         JsonObject data = tryParseOrFix(raw, glClient);
 
-        // 3) Pull out the scores
+        // 2) pull out their scores
         double industryScore = data.get("industryScore").getAsDouble();
         double techScore     = data.get("techScore").getAsDouble();
-        double jdScore       = data.get("jdScore").getAsDouble();
+        double llmJdScore    = data.get("jdScore").getAsDouble();
         String explanation   = data.get("explanation").getAsString();
 
-        // 4) Compute finalScore via the agreed formula
+        // 3) compute an embedding‑based JD match (0.0–1.0 → 0–100)
+        double embedSim   = embeddingService.cosineSimilarity(job.getDescription(), cvText);
+        double embedScore = embedSim * 100.0;
+
+        // 4) blend the two JD scores
+        double blendedJdScore = (llmJdScore + embedScore) / 2.0;
+
+        // 5) compute final
         double finalScore = industryScore * 0.10
                 + techScore     * 0.30
-                + jdScore       * 0.60;
+                + blendedJdScore* 0.60;
 
-        return new CVMatchResult(finalScore, industryScore, techScore, jdScore, explanation);
+        // 6) append a note about the embedding match
+        String fullExplanation = explanation
+                + "\nEmbedding JD‑CV similarity: " + String.format("%.2f%%", embedScore)
+                + "\nBlended JD Match: "       + String.format("%.2f%%", blendedJdScore);
 
+        return new CVMatchResult(finalScore, industryScore, techScore, blendedJdScore, fullExplanation);
     }
 
     /**
