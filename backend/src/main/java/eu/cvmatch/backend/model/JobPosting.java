@@ -37,6 +37,12 @@ public class JobPosting {
         if (technicalSkills == null || technicalSkills.isEmpty()) {
             return;
         }
+        technicalSkills.stream().sorted()
+                .forEach(skill -> {
+                    if (skill.getWeight() < 0) {
+                        skill.setWeight(0);
+                    }
+                });
         int totalWeight = technicalSkills.stream().mapToInt(TechnicalSkill::getWeight).sum();
         for (TechnicalSkill skill : technicalSkills) {
             skill.setWeight((int) Math.round((double) skill.getWeight() / totalWeight * 100));
