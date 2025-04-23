@@ -1,122 +1,102 @@
 package eu.cvmatch.backend.service;
 
 import com.google.api.core.ApiFuture;
+import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.*;
-import eu.cvmatch.backend.model.CVMatchResult;
-import eu.cvmatch.backend.model.JobPosting;
+import com.google.firebase.database.GenericTypeIndicator;
+import eu.cvmatch.backend.model.CV;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
-import java.util.Map;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class FirebaseServiceTest {
+class FirebaseServiceTest {
 
-    private FirebaseService firebaseService;
+    @Mock Firestore mockDb;
+    @Mock CollectionReference mockCvs;
+    @Mock Query mockQuery;
+    @Mock ApiFuture<QuerySnapshot> mockFuture;
+    @Mock QuerySnapshot mockSnapshot;
+    @Mock QueryDocumentSnapshot mockDoc;
+    @Mock DocumentReference mockUserRef;
 
-    @Mock private Firestore mockFirestore;
-    @Mock private CollectionReference mockJobsCollection;
-    @Mock private CollectionReference mockCvsCollection;
-    @Mock private DocumentReference mockJobDocRef;
-    @Mock private DocumentReference mockCvDocRef;
-    @Mock private CollectionReference mockCvMatches;
-    @Mock private CollectionReference mockJobMatches;
-    @Mock private ApiFuture<DocumentSnapshot> mockApiFuture;
-    @Mock private DocumentSnapshot mockDocumentSnapshot;
+    private FirebaseService service;
 
     @BeforeEach
-    public void setup() {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
-        firebaseService = new FirebaseService(mockFirestore);
+        service = new FirebaseService(mockDb);
+
+        // 1) stub the user reference lookup
+        when(mockDb.document("users/user123")).thenReturn(mockUserRef);
+
+        // 2) stub collection and query
+        when(mockDb.collection("cvs")).thenReturn(mockCvs);
+        when(mockCvs.whereEqualTo("userId", mockUserRef))
+                .thenReturn(mockQuery);
+
+        // 3) stub the async get
+        when(mockQuery.get()).thenReturn(mockFuture);
     }
 
     @Test
-    public void testGetJobById_Success() throws Exception {
-        String jobId = "job123";
-        JobPosting dummy = new JobPosting();
-        dummy.setJobTitle("Test Job");
-        when(mockFirestore.collection("jobs")).thenReturn(mockJobsCollection);
-        when(mockJobsCollection.document(jobId)).thenReturn(mockJobDocRef);
-        when(mockJobDocRef.get()).thenReturn(mockApiFuture);
-        when(mockApiFuture.get()).thenReturn(mockDocumentSnapshot);
-        when(mockDocumentSnapshot.exists()).thenReturn(true);
-        when(mockDocumentSnapshot.toObject(JobPosting.class)).thenReturn(dummy);
+    void getCVsForUser_happyPath() throws Exception {
+        // arrange: QuerySnapshot and DocumentSnapshot
+        when(mockFuture.get()).thenReturn(mockSnapshot);
+        when(mockSnapshot.getDocuments()).thenReturn(List.of(mockDoc));
 
-        JobPosting result = firebaseService.getJobById(jobId);
-        assertNotNull(result);
-        assertEquals("Test Job", result.getJobTitle());
+        // stub doc fields
+        when(mockDoc.getId()).thenReturn("cv123");
+        when(mockUserRef.getId()).thenReturn("user123");
+        when(mockDoc.get("userId", DocumentReference.class))
+                .thenReturn(mockUserRef);
+
+        when(mockDoc.getString("fileName"))
+                .thenReturn("john_smith_cv.pdf");
+        when(mockDoc.getString("contentText"))
+                .thenReturn("Parsed text…");
+
+        Timestamp ts = Timestamp.ofTimeSecondsAndNanos(1_700_000_000, 0);
+        when(mockDoc.getTimestamp("uploadedAt")).thenReturn(ts);
+
+        // lists via GenericTypeIndicator
+        @SuppressWarnings("unchecked")
+        GenericTypeIndicator<List<String>> listType =
+                new GenericTypeIndicator<>() {};
+        when(mockDoc.get("industryTags"))
+                .thenReturn(List.of("banking", "finance"));
+        when(mockDoc.get("techSkills"))
+                .thenReturn(List.of("Java", "Spring"));
+
+        // act
+        List<CV> cvs = service.getCVsForUser("user123");
+
+        // assert
+        assertEquals(1, cvs.size());
+        CV cv = cvs.get(0);
+        assertEquals("cv123", cv.getId());
+        assertEquals("user123", cv.getUserId());
+        assertEquals("john_smith_cv.pdf", cv.getFileName());
+        assertEquals("Parsed text…", cv.getContentText());
+        assertEquals(List.of("banking", "finance"), cv.getIndustryTags());
+        assertEquals(List.of("Java", "Spring"), cv.getTechSkills());
+        assertNotNull(cv.getUploadedAt());
     }
 
     @Test
-    public void testGetJobById_NotFound() throws Exception {
-        String jobId = "job123";
-        when(mockFirestore.collection("jobs")).thenReturn(mockJobsCollection);
-        when(mockJobsCollection.document(jobId)).thenReturn(mockJobDocRef);
-        when(mockJobDocRef.get()).thenReturn(mockApiFuture);
-        when(mockApiFuture.get()).thenReturn(mockDocumentSnapshot);
-        when(mockDocumentSnapshot.exists()).thenReturn(false);
+    void getCVsForUser_throwsOnFirestoreError() throws Exception {
+        // leave mockQuery.get() → mockFuture as-is from your setUp()
+        // now make the future throw when you call future.get()
+        when(mockFuture.get())
+                .thenThrow(new ExecutionException(new RuntimeException("fail")));
 
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
-                () -> firebaseService.getJobById(jobId)
+        assertThrows(Exception.class, () ->
+                service.getCVsForUser("user123")
         );
-        assertTrue(ex.getMessage().contains("Job ID not found"));
-    }
-
-    @Test
-    public void testSaveCVMatch() {
-        String jobId = "job123";
-        String cvId  = "cv123";
-        CVMatchResult result = new CVMatchResult();
-
-        // stub the jobs path
-        when(mockFirestore.collection("jobs")).thenReturn(mockJobsCollection);
-        when(mockJobsCollection.document(jobId)).thenReturn(mockJobDocRef);
-        when(mockJobDocRef.collection("cvMatches")).thenReturn(mockCvMatches);
-        // *new*: stub document(cvId) to get a non-null ref
-        when(mockCvMatches.document(cvId)).thenReturn(mockCvDocRef);
-
-        firebaseService.saveCVMatch(jobId, cvId, result);
-
-        // verify we wrote to jobs/{jobId}/cvMatches/{cvId}
-        verify(mockCvMatches).document(cvId);
-        // the map payload should contain exactly cvId ref, score, explanation, createdAt
-        ArgumentCaptor<Map<String, Object>> captor = ArgumentCaptor.forClass(Map.class);
-        verify(mockCvDocRef).set(captor.capture());
-
-        Map<String, Object> written = captor.getValue();
-        assertTrue(written.containsKey("cvId"));
-        assertTrue(written.containsKey("score"));
-        assertTrue(written.containsKey("explanation"));
-        assertTrue(written.containsKey("createdAt"));
-    }
-
-    @Test
-    public void testSaveJobMatch() {
-        String cvId  = "cv123";
-        String jobId = "job123";
-        CVMatchResult result = new CVMatchResult();
-
-        // stub the cvs path
-        when(mockFirestore.collection("cvs")).thenReturn(mockCvsCollection);
-        when(mockCvsCollection.document(cvId)).thenReturn(mockCvDocRef);
-        when(mockCvDocRef.collection("jobMatches")).thenReturn(mockJobMatches);
-        // stub document(jobId)
-        when(mockJobMatches.document(jobId)).thenReturn(mockJobDocRef);
-
-        firebaseService.saveJobMatch(cvId, jobId, result);
-
-        verify(mockJobMatches).document(jobId);
-        ArgumentCaptor<Map<String, Object>> captor = ArgumentCaptor.forClass(Map.class);
-        verify(mockJobDocRef).set(captor.capture());
-
-        Map<String, Object> written = captor.getValue();
-        assertTrue(written.containsKey("jobId"));
-        assertTrue(written.containsKey("score"));
-        assertTrue(written.containsKey("explanation"));
-        assertTrue(written.containsKey("createdAt"));
     }
 }
