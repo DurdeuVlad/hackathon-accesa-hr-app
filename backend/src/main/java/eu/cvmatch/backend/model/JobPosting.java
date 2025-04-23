@@ -1,24 +1,26 @@
 package eu.cvmatch.backend.model;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 import java.util.StringJoiner;
 
+@Setter
+@Getter
 public class JobPosting {
+    // Getters and setters
     private String jobTitle;
     private String industry;
     private String description;
     private List<TechnicalSkill> technicalSkills;
 
+    @Setter
+    @Getter
     public static class TechnicalSkill {
+        // Getters and setters
         private String skill;
         private int weight;
-
-        // Getters and setters
-        public String getSkill() { return skill; }
-        public void setSkill(String skill) { this.skill = skill; }
-
-        public int getWeight() { return weight; }
-        public void setWeight(int weight) { this.weight = weight; }
 
         @Override
         public String toString() {
@@ -26,18 +28,31 @@ public class JobPosting {
         }
     }
 
-    // Getters and setters
-    public String getJobTitle() { return jobTitle; }
-    public void setJobTitle(String jobTitle) { this.jobTitle = jobTitle; }
 
-    public String getIndustry() { return industry; }
-    public void setIndustry(String industry) { this.industry = industry; }
+    /**
+     * Normalizes the technical skills scores to sum up to 100%.
+     * This method modifies the weights of the technical skills in place.
+     */
+    public void normalizeTechnicalSkillsScore() {
+        if (technicalSkills == null || technicalSkills.isEmpty()) {
+            return;
+        }
+        int totalWeight = technicalSkills.stream().mapToInt(TechnicalSkill::getWeight).sum();
+        for (TechnicalSkill skill : technicalSkills) {
+            skill.setWeight((int) Math.round((double) skill.getWeight() / totalWeight * 100));
+        }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+        // check if the sum is 100, if not, normalize again
+        totalWeight = technicalSkills.stream().mapToInt(TechnicalSkill::getWeight).sum();
+        if (totalWeight == 100) {
+            return;
+        }
+        for (TechnicalSkill skill : technicalSkills) {
+            skill.setWeight((int) Math.round((double) skill.getWeight() / totalWeight * 100));
+        }
 
-    public List<TechnicalSkill> getTechnicalSkills() { return technicalSkills; }
-    public void setTechnicalSkills(List<TechnicalSkill> technicalSkills) { this.technicalSkills = technicalSkills; }
+
+    }
 
     @Override
     public String toString() {
