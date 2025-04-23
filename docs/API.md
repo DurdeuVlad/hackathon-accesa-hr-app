@@ -39,7 +39,11 @@ All endpoints live under your backend’s base URL.
   ```
 - **500 Internal Server Error**
   ```json
-  "❌ Failed to process CV: <error message>"
+  {
+    "success": false,
+    "error": "Failed to process CV",
+    "details": "<error message>"
+  }
   ```
 
 ### `GET /cvs/user/{userId}`
