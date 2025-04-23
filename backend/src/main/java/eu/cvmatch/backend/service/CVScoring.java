@@ -19,6 +19,7 @@ public class CVScoring {
     private final EmbeddingSimilarityService embeddingService = new EmbeddingSimilarityService(glClient);;
 
     public CVMatchResult calculateScore(String cvText, JobPosting job) throws Exception {
+        job.normalizeTechnicalSkillsScore();
         // 1) get the LLM breakdown
         String prompt = buildPrompt(cvText, job);
         JsonArray candidates = glClient.generateMessage(List.of(prompt), null, 1);
