@@ -1,83 +1,133 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, Button, IconButton, Box } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import LogoutIcon from '@mui/icons-material/Logout';
+import {
+    AppBar,
+    Toolbar,
+    Typography,
+    Button,
+    IconButton,
+    Box,
+    useTheme,
+    useMediaQuery
+} from '@mui/material';
+import {
+    ArrowBack,
+    Dashboard,
+    Business,
+    Person,
+    Settings
+} from '@mui/icons-material';
 
-const TopNavBar = ({
-                       showBackButton = false,
-                       onBack,
-                       onNavigate,
-                       onLogout,
-                       title = "Accesa HR CV Parser",
-                       currentPage
-                   }) => {
-    const handleNavigation = (page) => {
-        if (onNavigate) {
-            onNavigate(page);
-        }
-    };
+const TopNavBar = ({ showBackButton, onBack, onNavigate, title, currentPage, fullWidth = false }) => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     return (
-        <AppBar position="static">
-            <Toolbar>
-                {/*buton de a merge inapoi*/}
-                {showBackButton && (
-                    <IconButton
-                        color="inherit"
-                        edge="start"
-                        aria-label="back"
-                        onClick={onBack}
-                        sx={{ mr: 2 }}
-                    >
-                        <ArrowBackIcon />
-                    </IconButton>
-                )}
-                <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                    {title}
-                </Typography>
+        <AppBar
+            position="static"
+            sx={{
+                width: '100%',
+                // Eliminarea umbrei pentru a preveni liniile albe
+                boxShadow: 'none',
+                // Gradient de la stânga (închis) la dreapta (deschis), la fel ca header-ul
+                background: 'linear-gradient(90deg, #1e40af 0%, #3b82f6 100%)',
+                color: '#ffffff',
+                // Eliminarea rotunjirii colțurilor
+                borderRadius: 0
+            }}
+        >
+            <Box
+                sx={{
+                    width: '100%',
+                    margin: 0,
+                    padding: 0
+                }}
+            >
+                <Toolbar sx={{
+                    justifyContent: 'space-between',
+                    width: '100%',
+                    // Ștergerea paddingului implicit dacă creează spațiu nedorit
+                    pl: { xs: 1, sm: 2 },
+                    pr: { xs: 1, sm: 2 }
+                }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        {showBackButton && (
+                            <IconButton
+                                color="inherit"
+                                edge="start"
+                                onClick={onBack}
+                                sx={{ mr: 2 }}
+                            >
+                                <ArrowBack />
+                            </IconButton>
+                        )}
+                        <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+                            {title}
+                        </Typography>
+                    </Box>
 
-                {/* link ca s apot naviga */}
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    {currentPage !== 'matchcv' && (
+                    <Box sx={{ display: 'flex', gap: 1 }}>
                         <Button
                             color="inherit"
-                            onClick={() => handleNavigation('matchcv')}
+                            startIcon={<Dashboard />}
+                            onClick={() => onNavigate('dashboard')}
+                            sx={{
+                                fontWeight: currentPage === 'dashboard' ? 700 : 400,
+                                display: isMobile ? 'none' : 'flex',
+                                borderBottom: currentPage === 'dashboard'
+                                    ? '3px solid white'
+                                    : 'none',
+                                borderRadius: 0,
+                                paddingBottom: '2px'
+                            }}
                         >
-                            Match CV
+                            Dashboard
                         </Button>
-                    )}
-
-                    {currentPage !== 'jobmatching' && (
                         <Button
                             color="inherit"
-                            onClick={() => handleNavigation('jobmatching')}
+                            startIcon={<Business />}
+                            onClick={() => onNavigate('joblist')}
+                            sx={{
+                                fontWeight: currentPage === 'joblist' ? 700 : 400,
+                                display: isMobile ? 'none' : 'flex',
+                                borderBottom: currentPage === 'joblist'
+                                    ? '3px solid white'
+                                    : 'none',
+                                borderRadius: 0,
+                                paddingBottom: '2px'
+                            }}
                         >
-                            Job Management
+                            Jobs
                         </Button>
-                    )}
-
-                    {currentPage !== 'stats' && (
                         <Button
                             color="inherit"
-                            onClick={() => handleNavigation('stats')}
+                            startIcon={<Person />}
+                            onClick={() => onNavigate('profile')}
+                            sx={{
+                                fontWeight: currentPage === 'profile' ? 700 : 400,
+                                display: isMobile ? 'none' : 'flex',
+                                borderBottom: currentPage === 'profile'
+                                    ? '3px solid white'
+                                    : 'none',
+                                borderRadius: 0,
+                                paddingBottom: '2px'
+                            }}
                         >
-                            Stats
+                            Profile
                         </Button>
-                    )}
-
-                    {/* buton de logout care inca nu exitsa urmeaza prieteni*/}
-                    {onLogout && (
                         <IconButton
                             color="inherit"
-                            onClick={onLogout}
-                            sx={{ ml: 2 }}
-                            aria-label="logout"
+                            onClick={() => onNavigate('settings')}
+                            sx={{
+                                // Eliminarea efectelor de hover care pot arăta neuniform
+                                borderRadius: 0,
+                                padding: '8px'
+                            }}
                         >
-                            <LogoutIcon />
+                            <Settings />
                         </IconButton>
-                    )}
-                </Box>
-            </Toolbar>
+                    </Box>
+                </Toolbar>
+            </Box>
         </AppBar>
     );
 };

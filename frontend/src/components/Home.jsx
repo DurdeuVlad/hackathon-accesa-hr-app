@@ -4,100 +4,107 @@ import {
     Typography,
     Button,
     Container,
-    AppBar,
-    Toolbar,
     Card,
     CardContent,
     Grid,
     CssBaseline,
-    Stack
+    Stack,
+    Avatar,
+    Paper
 } from '@mui/material';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import WorkIcon from '@mui/icons-material/Work';
-import SearchIcon from '@mui/icons-material/Search';
-import AssessmentIcon from '@mui/icons-material/Assessment';
-import DescriptionIcon from '@mui/icons-material/Description';
-import SpeedIcon from '@mui/icons-material/Speed';
-import PersonSearchIcon from '@mui/icons-material/PersonSearch';
-
-const theme = createTheme({
-    palette: {
-        primary: {
-            main: '#2196f3',
-            light: '#64b5f6',
-            dark: '#1976d2',
-        },
-        background: {
-            default: '#e3f2fd',
-        },
-    },
-});
+import { ThemeProvider } from '@mui/material/styles';
+import {
+    Work as WorkIcon,
+    Search as SearchIcon,
+    AssessmentOutlined as AssessmentIcon,
+    DescriptionOutlined as DescriptionIcon,
+    SpeedOutlined as SpeedIcon,
+    PersonSearchOutlined as PersonSearchIcon,
+    ArrowForward as ArrowForwardIcon
+} from '@mui/icons-material';
+import theme from './CommonTheme'; // Updated import path
 
 function Home({ onNavigateToLogin, onNavigateToMatchCV }) {
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <Box sx={{ flexGrow: 1, minHeight: '100vh', bgcolor: 'background.default' }}>
-
-                {/* App Bar / Header */}
-                <AppBar position="static">
-                    <Toolbar>
-                        <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
-                            Accesa HR CV Parser
-                        </Typography>
-                    </Toolbar>
-                </AppBar>
-
-                {/*sectiunea de inceput*/}
+                {/* Hero Section */}
                 <Box
                     sx={{
-                        bgcolor: 'primary.main',
+                        background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
                         color: 'white',
-                        py: 8,
-                        textAlign: 'center',
+                        py: 10,
+                        position: 'relative',
+                        overflow: 'hidden',
                     }}
                 >
-                    <Container maxWidth="md">
-                        <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
-                            AI-Powered Recruitment Assistant
-                        </Typography>
-                        <Typography variant="h5" paragraph sx={{ mb: 4 }}>
-                            Streamline recruitment by automatically matching CVs to job requirements
-                        </Typography>
-                        <Stack direction="row" spacing={2} justifyContent="center">
-                            <Button
-                                variant="outlined"
-                                size="large"
-                                onClick={onNavigateToLogin}
-                                sx={{
-                                    color: 'white',
-                                    borderColor: 'white',
-                                    fontWeight: 'bold',
-                                    px: 4,
-                                    py: 1.5,
-                                    '&:hover': {
-                                        bgcolor: 'rgba(255,255,255,0.1)',
-                                        borderColor: 'white',
-                                    },
-                                }}
-                            >
-                                Login
-                            </Button>
-                        </Stack>
+                    <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+                        <Grid container justifyContent="center">
+                            <Grid item xs={12} md={8}>
+                                <Box sx={{ textAlign: 'center' }}>
+                                    <Typography variant="h2" component="h1" gutterBottom fontWeight="bold">
+                                        AI-Powered Recruitment Assistant
+                                    </Typography>
+                                    <Typography variant="h5" paragraph sx={{ mb: 4, opacity: 0.9 }}>
+                                        Streamline recruitment by automatically matching CVs to job requirements
+                                    </Typography>
+                                    <Button
+                                        variant="outlined"
+                                        size="large"
+                                        onClick={onNavigateToLogin}
+                                        sx={{
+                                            color: 'white',
+                                            borderColor: 'white',
+                                            fontWeight: 'bold',
+                                            px: 4,
+                                            py: 1.5,
+                                            '&:hover': {
+                                                bgcolor: 'rgba(255,255,255,0.1)',
+                                                borderColor: 'white',
+                                            },
+                                        }}
+                                    >
+                                        Login
+                                    </Button>
+                                </Box>
+                            </Grid>
+                        </Grid>
+
                     </Container>
                 </Box>
-                {/*sectiunea de beneficii*/}
+
+                {/* Benefits Section */}
                 <Container maxWidth="lg" sx={{ my: 8 }}>
                     <Typography variant="h4" component="h2" textAlign="center" gutterBottom sx={{ mb: 6, color: 'primary.dark' }}>
                         Optimize your recruitment process
                     </Typography>
 
                     <Grid container spacing={4} justifyContent="center">
-                        <Grid item xs={12} md={3}>
-                            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', borderRadius: 2 }}>
+                        <Grid item xs={12} sm={6} md={3}>
+                            <Card sx={{
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                borderRadius: 2,
+                                transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                                '&:hover': {
+                                    transform: 'translateY(-4px)',
+                                    boxShadow: '0 12px 20px rgba(0,0,0,0.1)',
+                                }
+                            }}>
                                 <CardContent sx={{ flexGrow: 1, textAlign: 'center', p: 3 }}>
-                                    <SpeedIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
-                                    <Typography gutterBottom variant="h5" component="h3">
+                                    <Avatar sx={{
+                                        width: 64,
+                                        height: 64,
+                                        bgcolor: '#dbeafe',
+                                        color: 'primary.main',
+                                        mx: 'auto',
+                                        mb: 2
+                                    }}>
+                                        <SpeedIcon sx={{ fontSize: 36 }} />
+                                    </Avatar>
+                                    <Typography gutterBottom variant="h5" component="h3" sx={{ fontWeight: 600 }}>
                                         Reduce screening time
                                     </Typography>
                                     <Typography>
@@ -107,11 +114,30 @@ function Home({ onNavigateToLogin, onNavigateToMatchCV }) {
                             </Card>
                         </Grid>
 
-                        <Grid item xs={12} md={3}>
-                            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', borderRadius: 2 }}>
+                        <Grid item xs={12} sm={6} md={3}>
+                            <Card sx={{
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                borderRadius: 2,
+                                transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                                '&:hover': {
+                                    transform: 'translateY(-4px)',
+                                    boxShadow: '0 12px 20px rgba(0,0,0,0.1)',
+                                }
+                            }}>
                                 <CardContent sx={{ flexGrow: 1, textAlign: 'center', p: 3 }}>
-                                    <AssessmentIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
-                                    <Typography gutterBottom variant="h5" component="h3">
+                                    <Avatar sx={{
+                                        width: 64,
+                                        height: 64,
+                                        bgcolor: '#dbeafe',
+                                        color: 'primary.main',
+                                        mx: 'auto',
+                                        mb: 2
+                                    }}>
+                                        <AssessmentIcon sx={{ fontSize: 36 }} />
+                                    </Avatar>
+                                    <Typography gutterBottom variant="h5" component="h3" sx={{ fontWeight: 600 }}>
                                         Precise Matching
                                     </Typography>
                                     <Typography>
@@ -121,11 +147,30 @@ function Home({ onNavigateToLogin, onNavigateToMatchCV }) {
                             </Card>
                         </Grid>
 
-                        <Grid item xs={12} md={3}>
-                            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', borderRadius: 2 }}>
+                        <Grid item xs={12} sm={6} md={3}>
+                            <Card sx={{
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                borderRadius: 2,
+                                transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                                '&:hover': {
+                                    transform: 'translateY(-4px)',
+                                    boxShadow: '0 12px 20px rgba(0,0,0,0.1)',
+                                }
+                            }}>
                                 <CardContent sx={{ flexGrow: 1, textAlign: 'center', p: 3 }}>
-                                    <PersonSearchIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
-                                    <Typography gutterBottom variant="h5" component="h3">
+                                    <Avatar sx={{
+                                        width: 64,
+                                        height: 64,
+                                        bgcolor: '#dbeafe',
+                                        color: 'primary.main',
+                                        mx: 'auto',
+                                        mb: 2
+                                    }}>
+                                        <PersonSearchIcon sx={{ fontSize: 36 }} />
+                                    </Avatar>
+                                    <Typography gutterBottom variant="h5" component="h3" sx={{ fontWeight: 600 }}>
                                         Discover hidden talent
                                     </Typography>
                                     <Typography>
@@ -135,11 +180,30 @@ function Home({ onNavigateToLogin, onNavigateToMatchCV }) {
                             </Card>
                         </Grid>
 
-                        <Grid item xs={12} md={4}>
-                            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', borderRadius: 2 }}>
+                        <Grid item xs={12} sm={6} md={3}>
+                            <Card sx={{
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                borderRadius: 2,
+                                transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                                '&:hover': {
+                                    transform: 'translateY(-4px)',
+                                    boxShadow: '0 12px 20px rgba(0,0,0,0.1)',
+                                }
+                            }}>
                                 <CardContent sx={{ flexGrow: 1, textAlign: 'center', p: 3 }}>
-                                    <WorkIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
-                                    <Typography gutterBottom variant="h5" component="h3">
+                                    <Avatar sx={{
+                                        width: 64,
+                                        height: 64,
+                                        bgcolor: '#dbeafe',
+                                        color: 'primary.main',
+                                        mx: 'auto',
+                                        mb: 2
+                                    }}>
+                                        <WorkIcon sx={{ fontSize: 36 }} />
+                                    </Avatar>
+                                    <Typography gutterBottom variant="h5" component="h3" sx={{ fontWeight: 600 }}>
                                         Data-driven Decisions
                                     </Typography>
                                     <Typography>
@@ -150,37 +214,49 @@ function Home({ onNavigateToLogin, onNavigateToMatchCV }) {
                         </Grid>
                     </Grid>
                 </Container>
-                {/*sectiunea despre cum functioneaza*/}
-                <Box sx={{ bgcolor: '#bbdefb', py: 8 }}>
+
+                {/* How It Works Section */}
+                <Box sx={{ bgcolor: '#f0f9ff', py: 8 }}>
                     <Container maxWidth="lg">
                         <Typography variant="h4" component="h2" textAlign="center" gutterBottom sx={{ mb: 6, color: 'primary.dark' }}>
-                            How it works?
+                            How it works
                         </Typography>
 
-                        <Grid container spacing={5} justifyContent="center">
+                        <Grid container spacing={5} alignItems="center">
                             <Grid item xs={12} md={6}>
                                 <Box sx={{ p: 2 }}>
-                                    <Typography variant="h5" gutterBottom sx={{ color: 'primary.dark', fontWeight: 'bold' }}>
-                                        1. Upload documents
-                                    </Typography>
-                                    <Typography paragraph>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                                        <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>1</Avatar>
+                                        <Typography variant="h5" gutterBottom sx={{ color: 'primary.dark', fontWeight: 'bold', m: 0 }}>
+                                            Upload documents
+                                        </Typography>
+                                    </Box>
+                                    <Typography paragraph sx={{ ml: 7, color: 'text.secondary' }}>
                                         Upload candidate CVs (PDF, DOC, DOCX) and the job description or project you're looking to fill.
                                     </Typography>
 
-                                    <Typography variant="h5" gutterBottom sx={{ color: 'primary.dark', fontWeight: 'bold', mt: 4 }}>
-                                        2. Automated analysis
-                                    </Typography>
-                                    <Typography paragraph>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                                        <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>2</Avatar>
+                                        <Typography variant="h5" gutterBottom sx={{ color: 'primary.dark', fontWeight: 'bold', m: 0 }}>
+                                            Automated analysis
+                                        </Typography>
+                                    </Box>
+                                    <Typography paragraph sx={{ ml: 7, color: 'text.secondary' }}>
                                         Our AI algorithm extracts relevant information and analyzes compatibility based on multiple criteria.
                                     </Typography>
 
-                                    <Typography variant="h5" gutterBottom sx={{ color: 'primary.dark', fontWeight: 'bold', mt: 4 }}>
-                                        3. Actionable results
-                                    </Typography>
-                                    <Typography paragraph>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                                        <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>3</Avatar>
+                                        <Typography variant="h5" gutterBottom sx={{ color: 'primary.dark', fontWeight: 'bold', m: 0 }}>
+                                            Actionable results
+                                        </Typography>
+                                    </Box>
+                                    <Typography paragraph sx={{ ml: 7, color: 'text.secondary' }}>
                                         Get a ranking of candidates, with compatibility scores and detailed explanations, allowing you to focus on the most promising candidates.
                                     </Typography>
                                 </Box>
+                            </Grid>
+                            <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'center' }}>
                             </Grid>
                         </Grid>
                     </Container>
@@ -189,4 +265,5 @@ function Home({ onNavigateToLogin, onNavigateToMatchCV }) {
         </ThemeProvider>
     );
 }
+
 export default Home;
