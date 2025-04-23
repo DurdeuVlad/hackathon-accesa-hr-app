@@ -47,4 +47,14 @@ public class JobMatchResult {
     public void setExplanation(String explanation) {
         this.explanation = explanation;
     }
+
+    @Override
+    public String toString() {
+        return "JobMatchResult{" +
+                "jobTitle='" + jobTitle + '\'' +
+                ", industry='" + industry + '\'' +
+                ", matchScore=" + matchScore +
+                ", explanation='" + explanation + '\'' +
+                '}';
+    }
 }
