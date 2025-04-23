@@ -40,4 +40,17 @@ public class CVMatchResult {
 
     public String getUploadedAt() { return uploadedAt; }
     public void setUploadedAt(String uploadedAt) { this.uploadedAt = uploadedAt; }
+
+    @Override
+    public String toString() {
+        return "CVMatchResult{" +
+                "fileName='" + fileName + '\'' +
+                ", score=" + score +
+                ", industryScore=" + industryScore +
+                ", techScore=" + techScore +
+                ", jdScore=" + jdScore +
+                ", explanation='" + explanation + '\'' +
+                ", uploadedAt='" + uploadedAt + '\'' +
+                '}';
+    }
 }

@@ -51,6 +51,9 @@ public class FirebaseService {
         Map<String, Object> data = new HashMap<>();
         data.put("cvId", db.document("cvs/" + cvId));
         data.put("score", result.getScore());
+        data.put("industryScore", result.getIndustryScore()); // ← new
+        data.put("techScore",     result.getTechScore());     // ← new
+        data.put("jdScore",       result.getJdScore());       // ← new
         data.put("explanation", result.getExplanation());
         data.put("createdAt", FieldValue.serverTimestamp());
 

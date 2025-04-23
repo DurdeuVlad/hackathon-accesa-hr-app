@@ -33,4 +33,18 @@ public class CV {
 
     public List<String> getTechSkills() { return techSkills; }
     public void setTechSkills(List<String> techSkills) { this.techSkills = techSkills; }
+
+
+    @Override
+    public String toString() {
+        return "CV{" +
+                "id='" + id + '\'' +
+                ", userId='" + userId + '\'' +
+                ", fileName='" + fileName + '\'' +
+                ", contentText='" + contentText + '\'' +
+                ", uploadedAt='" + uploadedAt + '\'' +
+                ", industryTags=" + industryTags +
+                ", techSkills=" + techSkills +
+                '}';
+    }
 }
