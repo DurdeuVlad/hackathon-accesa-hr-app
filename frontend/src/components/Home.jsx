@@ -15,14 +15,11 @@ import {
 import { ThemeProvider } from '@mui/material/styles';
 import {
     Work as WorkIcon,
-    Search as SearchIcon,
     AssessmentOutlined as AssessmentIcon,
-    DescriptionOutlined as DescriptionIcon,
     SpeedOutlined as SpeedIcon,
     PersonSearchOutlined as PersonSearchIcon,
-    ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
-import theme from './CommonTheme'; // Updated import path
+import theme from './CommonTheme';
 
 function Home({ onNavigateToLogin, onNavigateToMatchCV }) {
     return (
@@ -215,7 +212,7 @@ function Home({ onNavigateToLogin, onNavigateToMatchCV }) {
                     </Grid>
                 </Container>
 
-                {/* How It Works Section */}
+                {/* cum functioneaza */}
                 <Box sx={{ bgcolor: '#f0f9ff', py: 8 }}>
                     <Container maxWidth="lg">
                         <Typography variant="h4" component="h2" textAlign="center" gutterBottom sx={{ mb: 6, color: 'primary.dark' }}>

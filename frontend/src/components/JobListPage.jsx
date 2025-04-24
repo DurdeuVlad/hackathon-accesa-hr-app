@@ -19,7 +19,6 @@ import {
     Container,
     Paper,
     IconButton,
-    Divider,
     Tooltip,
     CircularProgress,
     Fade,
@@ -37,15 +36,13 @@ import {
     Business,
     CalendarToday,
     FilterList,
-    ArrowUpward,
-    ArrowDownward,
     Sort,
     BookmarkBorder,
     Bookmark,
     Person
 } from '@mui/icons-material';
-import NavBar from './TopNavBar'; // Import the TopNavBar component
-import theme from './CommonTheme'; // Import the common theme
+import NavBar from './TopNavBar';
+import theme from './CommonTheme';
 
 const JobListPage = ({ onBack, onNavigate }) => {
     const [jobs, setJobs] = useState([]);
@@ -152,7 +149,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
         }
     };
 
-    // Filter and sort jobs
     const processedJobs = jobs
         .filter(job => {
             const matchesTerm = job.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -224,7 +220,7 @@ const JobListPage = ({ onBack, onNavigate }) => {
                     flexDirection: 'column',
                     overflow: 'auto'
                 }}>
-                    {/* Header - MODIFIED FOR VISIBILITY */}
+                    {/* header modificat ca sa fie pe tot ecarnul */}
                     <Box sx={{
                         background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
                         color: 'white',
@@ -232,7 +228,7 @@ const JobListPage = ({ onBack, onNavigate }) => {
                         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
                         width: '100%'
                     }}>
-                        <Container maxWidth={false} sx={{ textAlign: 'center', px: 4 }}> {/* Changed to false for full width */}
+                        <Container maxWidth={false} sx={{ textAlign: 'center', px: 4 }}>
                             <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
                                 DevMatch Job Listings
                             </Typography>
@@ -321,7 +317,7 @@ const JobListPage = ({ onBack, onNavigate }) => {
                         }} />
                     </Box>
 
-                    <Container maxWidth={false} sx={{ py: 4, px: { xs: 2, sm: 4 } }}> {/* Changed to false for full width */}
+                    <Container maxWidth={false} sx={{ py: 4, px: { xs: 2, sm: 4 } }}>
                         {/* Filter Section */}
                         <Fade in={showFilters}>
                             <Paper sx={{ mb: 4, p: 3, borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
@@ -531,7 +527,7 @@ const JobListPage = ({ onBack, onNavigate }) => {
                         )}
                     </Container>
 
-                    {/* Delete confirmation dialog */}
+                    {/* dialog ca sa imi zica daca s o sters sau nu */}
                     <Dialog
                         open={showDeleteConfirm}
                         onClose={() => setShowDeleteConfirm(false)}

@@ -26,12 +26,9 @@ const TopNavBar = ({ showBackButton, onBack, onNavigate, title, currentPage, ful
             position="static"
             sx={{
                 width: '100%',
-                // Eliminarea umbrei pentru a preveni liniile albe
                 boxShadow: 'none',
-                // Gradient de la stânga (închis) la dreapta (deschis), la fel ca header-ul
                 background: 'linear-gradient(90deg, #1e40af 0%, #3b82f6 100%)',
                 color: '#ffffff',
-                // Eliminarea rotunjirii colțurilor
                 borderRadius: 0
             }}
         >
@@ -45,7 +42,6 @@ const TopNavBar = ({ showBackButton, onBack, onNavigate, title, currentPage, ful
                 <Toolbar sx={{
                     justifyContent: 'space-between',
                     width: '100%',
-                    // Ștergerea paddingului implicit dacă creează spațiu nedorit
                     pl: { xs: 1, sm: 2 },
                     pr: { xs: 1, sm: 2 }
                 }}>
@@ -118,7 +114,6 @@ const TopNavBar = ({ showBackButton, onBack, onNavigate, title, currentPage, ful
                             color="inherit"
                             onClick={() => onNavigate('settings')}
                             sx={{
-                                // Eliminarea efectelor de hover care pot arăta neuniform
                                 borderRadius: 0,
                                 padding: '8px'
                             }}
