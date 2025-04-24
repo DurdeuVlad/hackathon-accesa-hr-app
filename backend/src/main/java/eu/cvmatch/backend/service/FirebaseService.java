@@ -1,6 +1,5 @@
 package eu.cvmatch.backend.service;
 
-import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.FieldValue;
 import com.google.cloud.firestore.Firestore;
@@ -11,6 +10,7 @@ import eu.cvmatch.backend.model.CVMatchResult;
 import eu.cvmatch.backend.model.JobPosting;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +35,16 @@ public class FirebaseService {
         return snapshot.toObject(JobPosting.class);
     }
 
+    public List<JobPosting> getAllJobs() throws Exception {
+        var querySnapshot = db.collection("jobs").get().get();
+        List<JobPosting> jobs = new ArrayList<>();
+
+        for (var doc : querySnapshot.getDocuments()) {
+            jobs.add(doc.toObject(JobPosting.class));
+        }
+
+        return jobs;
+    }
 
     /**
      * Save a CV match under jobs/{jobId}/cvMatches/{cvId}
