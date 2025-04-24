@@ -6,9 +6,6 @@ public class JobMatchResult {
     private double matchScore;
     private String explanation;
 
-    public JobMatchResult() {
-    }
-
     public JobMatchResult(String jobTitle, String industry, double matchScore, String explanation) {
         this.jobTitle = jobTitle;
         this.industry = industry;
