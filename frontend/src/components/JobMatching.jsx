@@ -11,7 +11,7 @@ import {
     Chip,
     Avatar,
     Button,
-    Divider,
+    Divider
     Rating
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
@@ -25,7 +25,6 @@ import {
 import { getJobScores } from './jobService';
 import NavBar from './TopNavBar';
 import theme from './CommonTheme';
-
 const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
     const [scores, setScores] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -59,7 +58,6 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                     educationMatch: Math.floor(50 + Math.random() * 50)
                 }
             }));
-
             enhancedScores.sort((a, b) => b.score - a.score);
 
             setScores(enhancedScores);
@@ -115,7 +113,6 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                     flexDirection: 'column',
                     overflow: 'auto'
                 }}>
-
                     <Box sx={{
                         background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
                         color: 'white',
@@ -470,6 +467,7 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                         )}
                     </Container>
                 </Box>
+
             </Box>
         </ThemeProvider>
     );

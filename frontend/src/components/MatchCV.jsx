@@ -54,7 +54,6 @@ function MatchCV({ onBack, onNavigate }) {
 
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
             const droppedFiles = Array.from(e.dataTransfer.files);
-
             const validFiles = droppedFiles.filter(file => {
                 const fileType = file.type;
                 return fileType === 'application/pdf' ||
@@ -76,7 +75,6 @@ function MatchCV({ onBack, onNavigate }) {
         setError('');
         if (e.target.files && e.target.files.length > 0) {
             const selectedFiles = Array.from(e.target.files);
-
             const validFiles = selectedFiles.filter(file => {
                 const fileType = file.type;
                 return fileType === 'application/pdf' ||
@@ -110,11 +108,9 @@ function MatchCV({ onBack, onNavigate }) {
 
         setError('');
         setUploading(true);
-
         setTimeout(() => {
             setUploading(false);
             setUploadComplete(true);
-
             setTimeout(() => {
                 console.log('Navigating to job matching with files:', files);
                 onNavigate('jobmatching');
@@ -153,7 +149,6 @@ function MatchCV({ onBack, onNavigate }) {
                     title="Match CV to Jobs"
                     currentPage="matchcv"
                 />
-
                 <Box sx={{
                     width: '100%',
                     flex: 1,
@@ -226,7 +221,6 @@ function MatchCV({ onBack, onNavigate }) {
                                             <LinearProgress color="primary" />
                                         </Box>
                                     )}
-
                                     <Box
                                         onDragOver={handleDragOver}
                                         onDragLeave={handleDragLeave}
@@ -266,7 +260,6 @@ function MatchCV({ onBack, onNavigate }) {
                                             Accepts PDF, DOC, DOCX (max 5MB per file)
                                         </Typography>
                                     </Box>
-
                                     {files.length > 0 && (
                                         <Box mt={4} width="100%">
                                             <Typography variant="subtitle1" fontWeight="bold" mb={2} display="flex" alignItems="center" justifyContent="center">
@@ -327,7 +320,6 @@ function MatchCV({ onBack, onNavigate }) {
                                     )}
                                 </CardContent>
                             </Card>
-
                             <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', maxWidth: '700px', mb: 5 }}>
                                 <Button
                                     variant="contained"
@@ -355,7 +347,6 @@ function MatchCV({ onBack, onNavigate }) {
                                     {uploading ? 'Processing...' : 'Find Job Matches'}
                                 </Button>
                             </Box>
-
                             <Card
                                 sx={{
                                     borderRadius: 4,

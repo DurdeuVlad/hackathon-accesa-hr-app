@@ -18,7 +18,6 @@ import {
     PersonSearchOutlined as PersonSearchIcon,
 } from '@mui/icons-material';
 import theme from './CommonTheme';
-
 function Home({ onNavigateToLogin, onNavigateToMatchCV }) {
     return (
         <ThemeProvider theme={theme}>
@@ -67,7 +66,6 @@ function Home({ onNavigateToLogin, onNavigateToMatchCV }) {
 
                     </Container>
                 </Box>
-
                 <Container maxWidth="lg" sx={{ my: 8 }}>
                     <Typography variant="h4" component="h2" textAlign="center" gutterBottom sx={{ mb: 6, color: 'primary.dark' }}>
                         Optimize your recruitment process
@@ -207,7 +205,6 @@ function Home({ onNavigateToLogin, onNavigateToMatchCV }) {
                         </Grid>
                     </Grid>
                 </Container>
-
                 <Box sx={{ bgcolor: '#f0f9ff', py: 8 }}>
                     <Container maxWidth="lg">
                         <Typography variant="h4" component="h2" textAlign="center" gutterBottom sx={{ mb: 6, color: 'primary.dark' }}>

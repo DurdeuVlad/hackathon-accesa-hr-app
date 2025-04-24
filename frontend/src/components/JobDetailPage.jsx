@@ -284,7 +284,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                 </Alert>
                             )}
                         </Box>
-
                         <Box mb={4}>
                             <Stepper activeStep={activeStep} alternativeLabel>
                                 {steps.map((step, index) => (
@@ -308,7 +307,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                 ))}
                             </Stepper>
                         </Box>
-
                         {activeStep === 0 && (
                             <Card sx={{ borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', mb: 4, borderTop: '4px solid #3b82f6' }}>
                                 <CardContent sx={{ p: 4 }}>
@@ -392,7 +390,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                 </CardContent>
                             </Card>
                         )}
-
                         {activeStep === 1 && (
                             <Card sx={{ borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', mb: 4, borderTop: '4px solid #3b82f6' }}>
                                 <CardContent sx={{ p: 4 }}>
@@ -527,7 +524,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                 </CardContent>
                             </Card>
                         )}
-
                         {activeStep === 2 && (
                             <Card sx={{ borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', mb: 4, borderTop: '4px solid #3b82f6' }}>
                                 <CardContent sx={{ p: 4 }}>
@@ -570,7 +566,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                         <Typography variant="body1" color="#4b5563">or <span style={{ color: '#3b82f6', fontWeight: 600 }}>browse files</span></Typography>
                                         <Typography variant="caption" color="#6b7280" mt={1} display="block">Accepted formats: PDF, DOC, DOCX</Typography>
                                     </Box>
-
                                     {cvFiles.length > 0 && (
                                         <Box mt={4}>
                                             <Typography variant="subtitle1" color="#1e3a8a" display="flex" alignItems="center" gap={1} fontWeight={500} mb={2}>
@@ -622,7 +617,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                 </CardContent>
                             </Card>
                         )}
-
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
                             <Button
                                 variant="outlined"
