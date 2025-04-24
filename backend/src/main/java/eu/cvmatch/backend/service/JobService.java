@@ -3,8 +3,6 @@ package eu.cvmatch.backend.service;
 import eu.cvmatch.backend.model.CVMatchResult;
 import eu.cvmatch.backend.model.JobMatchResult;
 import eu.cvmatch.backend.model.JobPosting;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
