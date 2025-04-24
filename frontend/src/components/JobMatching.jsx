@@ -226,7 +226,6 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                                             </CardContent>
                                         </Card>
 
-                                        {/* Match Stats Card */}
                                         <Card sx={{
                                             borderRadius: 3,
                                             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',

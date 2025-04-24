@@ -220,7 +220,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                     flexDirection: 'column',
                     overflow: 'auto'
                 }}>
-                    {/* header modificat ca sa fie pe tot ecarnul */}
                     <Box sx={{
                         background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
                         color: 'white',
@@ -296,7 +295,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                             </Box>
                         </Container>
 
-                        {/* Decorative Elements */}
                         <Box sx={{
                             position: 'absolute',
                             top: -100,
@@ -368,7 +366,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                             </Paper>
                         </Fade>
 
-                        {/* Results Count */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                             <Typography variant="subtitle1" fontWeight={500}>
                                 {isLoading ? 'Loading jobs...' : `${processedJobs.length} job${processedJobs.length !== 1 ? 's' : ''} found`}
@@ -381,7 +378,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                             </Box>
                         </Box>
 
-                        {/* Job Listings */}
                         {isLoading ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
                                 <CircularProgress />
@@ -527,7 +523,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                         )}
                     </Container>
 
-                    {/* dialog ca sa imi zica daca s o sters sau nu */}
                     <Dialog
                         open={showDeleteConfirm}
                         onClose={() => setShowDeleteConfirm(false)}

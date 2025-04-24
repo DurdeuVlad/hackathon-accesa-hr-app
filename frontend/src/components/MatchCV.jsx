@@ -181,7 +181,6 @@ function MatchCV({ onBack, onNavigate }) {
                     </Box>
 
                     <Container maxWidth={false} sx={{ mb: 6, px: { xs: 2, sm: 4 } }}>
-                        {/* Centered Drag & Drop Section */}
                         <Box sx={{
                             display: 'flex',
                             flexDirection: 'column',

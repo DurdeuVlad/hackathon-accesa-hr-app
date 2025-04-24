@@ -140,7 +140,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
     };
 
     const handleNextStep = () => {
-        // Validate current step
         if (activeStep === 0) {
             if (!jobDescription.jobTitle || !jobDescription.industry || !jobDescription.description || !jobDescription.company) {
                 setErrorMessage("Please fill all required fields");
@@ -286,7 +285,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                             )}
                         </Box>
 
-                        {/* Stepper */}
                         <Box mb={4}>
                             <Stepper activeStep={activeStep} alternativeLabel>
                                 {steps.map((step, index) => (
@@ -395,7 +393,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                             </Card>
                         )}
 
-                        {/* technical skills */}
                         {activeStep === 1 && (
                             <Card sx={{ borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', mb: 4, borderTop: '4px solid #3b82f6' }}>
                                 <CardContent sx={{ p: 4 }}>

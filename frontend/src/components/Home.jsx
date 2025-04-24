@@ -8,9 +8,7 @@ import {
     CardContent,
     Grid,
     CssBaseline,
-    Stack,
-    Avatar,
-    Paper
+    Avatar
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import {
@@ -26,7 +24,6 @@ function Home({ onNavigateToLogin, onNavigateToMatchCV }) {
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <Box sx={{ flexGrow: 1, minHeight: '100vh', bgcolor: 'background.default' }}>
-                {/* Hero Section */}
                 <Box
                     sx={{
                         background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
@@ -71,7 +68,6 @@ function Home({ onNavigateToLogin, onNavigateToMatchCV }) {
                     </Container>
                 </Box>
 
-                {/* Benefits Section */}
                 <Container maxWidth="lg" sx={{ my: 8 }}>
                     <Typography variant="h4" component="h2" textAlign="center" gutterBottom sx={{ mb: 6, color: 'primary.dark' }}>
                         Optimize your recruitment process
@@ -212,7 +208,6 @@ function Home({ onNavigateToLogin, onNavigateToMatchCV }) {
                     </Grid>
                 </Container>
 
-                {/* cum functioneaza */}
                 <Box sx={{ bgcolor: '#f0f9ff', py: 8 }}>
                     <Container maxWidth="lg">
                         <Typography variant="h4" component="h2" textAlign="center" gutterBottom sx={{ mb: 6, color: 'primary.dark' }}>
