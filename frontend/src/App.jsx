@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import { ThemeProvider } from '@mui/material/styles';
-import { CssBaseline } from '@mui/material';
 import './App.css'
 import Login from './components/Login'
 import MatchCV from './components/MatchCV'
@@ -8,7 +6,6 @@ import Home from './components/Home'
 import JobMatching from './components/JobMatching';
 import JobDetailPage from './components/JobDetailPage';
 import JobListPage from './components/JobListPage';
-import theme from './components/CommonTheme'; // Import the correct theme path
 
 function App() {
     const [currentPage, setCurrentPage] = useState('home')
@@ -24,7 +21,13 @@ function App() {
                 <Home
                     onNavigateToLogin={() => handleNavigate('login')}
                     onNavigateToMatchCV={() => handleNavigate('matchcv')}
+                    onNavigateToJobMatching={() => handleNavigate('jobmatching')}
+                    onNavigateToJobDetail={() => handleNavigate('jobdetail')}
+                    onNavigateToJobList={() => handleNavigate('joblist')}
+                    onNavigate={handleNavigate}
                 />
+
+
             )}
 
             {currentPage === 'login' && (
