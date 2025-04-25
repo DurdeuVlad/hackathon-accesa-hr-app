@@ -241,7 +241,7 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                 flexWrap: 'wrap',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                mt: 4  // Added top margin
+                                mt: 4
                             }}>
                                 <TextField
                                     placeholder="Search for jobs, skills, or companies..."

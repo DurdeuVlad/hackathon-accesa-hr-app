@@ -15,16 +15,17 @@ import {
     ListItemIcon,
     ListItemText,
     Divider,
-    Avatar
+    ToggleButtonGroup,
+    ToggleButton,
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import {
     CloudUpload as CloudUploadIcon,
-    Search as SearchIcon,
     FileCopy as FileCopyIcon,
     Delete as DeleteIcon,
     Description as DescriptionIcon,
-    Info as InfoIcon,
+    WorkOutline as WorkIcon,
+    Person as PersonIcon,
     ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
 import NavBar from './TopNavBar';
@@ -37,6 +38,7 @@ function MatchCV({ onBack, onNavigate }) {
     const [uploadComplete, setUploadComplete] = useState(false);
     const [error, setError] = useState('');
     const fileInputRef = useRef(null);
+    const [searchMode, setSearchMode] = useState('cv-to-jobs'); // 'cv-to-jobs' sau 'jobs-to-cv'
 
     const handleDragOver = (e) => {
         e.preventDefault();
@@ -104,7 +106,7 @@ function MatchCV({ onBack, onNavigate }) {
 
     const handleSearch = () => {
         if (files.length === 0) {
-            setError('Please upload at least one CV file first.');
+            setError('Please upload at least one file first.');
             return;
         }
 
@@ -116,10 +118,19 @@ function MatchCV({ onBack, onNavigate }) {
             setUploadComplete(true);
 
             setTimeout(() => {
-                console.log('Navigating to job matching with files:', files);
-                onNavigate('jobmatching');
-            }, 1500);
-        }, 2000);
+                if (searchMode === 'cv-to-jobs') {
+                    onNavigate('jobmatchesresults');
+                } else {
+                    onNavigate('jobmatching');
+                }
+            }, 1000);
+        }, 1500);
+    };
+
+    const handleSearchModeChange = (event, newMode) => {
+        if (newMode !== null) {
+            setSearchMode(newMode);
+        }
     };
 
     const formatFileSize = (bytes) => {
@@ -150,7 +161,7 @@ function MatchCV({ onBack, onNavigate }) {
                     showBackButton={true}
                     onBack={onBack}
                     onNavigate={onNavigate}
-                    title="Match CV to Jobs"
+                    title="Match & Find"
                     currentPage="matchcv"
                 />
 
@@ -172,15 +183,94 @@ function MatchCV({ onBack, onNavigate }) {
                     }}>
                         <Container maxWidth={false}>
                             <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
-                                Find the Perfect Job Match
+                                {searchMode === 'cv-to-jobs' ? 'Find Perfect Job Matches' : 'Find Ideal Candidates'}
                             </Typography>
                             <Typography variant="h6" sx={{ opacity: 0.9, margin: '0 auto', maxWidth: 700 }}>
-                                Upload your CV to discover job opportunities that match your skills and experience
+                                {searchMode === 'cv-to-jobs'
+                                    ? 'Upload your CV to discover job opportunities that match your skills'
+                                    : 'Upload job description to find candidates that match your requirements'}
                             </Typography>
+
+                            <Paper
+                                elevation={0}
+                                sx={{
+                                    display: 'inline-block',
+                                    mt: 4,
+                                    borderRadius: 8,
+                                    overflow: 'hidden',
+                                    bgcolor: 'rgba(255, 255, 255, 0.15)',
+                                    p: 0.5
+                                }}
+                            >
+                                <ToggleButtonGroup
+                                    value={searchMode}
+                                    exclusive
+                                    onChange={handleSearchModeChange}
+                                    aria-label="search mode"
+                                    sx={{ bgcolor: 'transparent' }}
+                                >
+                                    <ToggleButton
+                                        value="cv-to-jobs"
+                                        aria-label="Find Jobs for CV"
+                                        sx={{
+                                            py: 1.2,
+                                            px: 3,
+                                            borderRadius: 6,
+                                            mr: 1,
+                                            border: 'none',
+                                            color: 'white',
+                                            '&.Mui-selected': {
+                                                bgcolor: 'white',
+                                                color: 'primary.dark',
+                                                fontWeight: 'bold',
+                                                '&:hover': {
+                                                    bgcolor: 'white',
+                                                }
+                                            },
+                                            '&:hover': {
+                                                bgcolor: 'rgba(255, 255, 255, 0.1)',
+                                            }
+                                        }}
+                                    >
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <PersonIcon />
+                                            <Typography>CV → Jobs</Typography>
+                                        </Box>
+                                    </ToggleButton>
+
+                                    <ToggleButton
+                                        value="jobs-to-cv"
+                                        aria-label="Find CVs for Jobs"
+                                        sx={{
+                                            py: 1.2,
+                                            px: 3,
+                                            borderRadius: 6,
+                                            border: 'none',
+                                            color: 'white',
+                                            '&.Mui-selected': {
+                                                bgcolor: 'white',
+                                                color: 'primary.dark',
+                                                fontWeight: 'bold',
+                                                '&:hover': {
+                                                    bgcolor: 'white',
+                                                }
+                                            },
+                                            '&:hover': {
+                                                bgcolor: 'rgba(255, 255, 255, 0.1)',
+                                            }
+                                        }}
+                                    >
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <WorkIcon />
+                                            <Typography>Job → CVs</Typography>
+                                        </Box>
+                                    </ToggleButton>
+                                </ToggleButtonGroup>
+                            </Paper>
                         </Container>
                     </Box>
 
-                    <Container maxWidth={false} sx={{ mb: 6, px: { xs: 2, sm: 4 } }}>
+                    <Container maxWidth="md" sx={{ mb: 6, px: { xs: 2, sm: 4 } }}>
                         <Box sx={{
                             display: 'flex',
                             flexDirection: 'column',
@@ -188,22 +278,22 @@ function MatchCV({ onBack, onNavigate }) {
                             justifyContent: 'center',
                             width: '100%'
                         }}>
-                            {/* Upload Area */}
                             <Card
                                 elevation={0}
                                 sx={{
                                     borderRadius: 4,
-                                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+                                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.08)',
                                     mb: 4,
                                     overflow: 'visible',
                                     borderTop: '4px solid #3b82f6',
-                                    width: '100%',
-                                    maxWidth: '700px'
+                                    width: '100%'
                                 }}
                             >
-                                <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                                    <Typography variant="h5" fontWeight="bold" color="primary.dark" mb={3}>
-                                        Upload Your CV
+                                <CardContent sx={{ p: 4 }}>
+                                    <Typography variant="h5" fontWeight="bold" color="primary.dark" textAlign="center" mb={3}>
+                                        {searchMode === 'cv-to-jobs'
+                                            ? 'Upload Your CV'
+                                            : 'Upload Job Description'}
                                     </Typography>
 
                                     {error && (
@@ -214,14 +304,18 @@ function MatchCV({ onBack, onNavigate }) {
 
                                     {uploadComplete && (
                                         <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }}>
-                                            CV uploaded successfully! Redirecting to job matches...
+                                            {searchMode === 'cv-to-jobs'
+                                                ? 'CV uploaded successfully! Finding job matches...'
+                                                : 'Job description uploaded! Finding matching candidates...'}
                                         </Alert>
                                     )}
 
                                     {uploading && (
                                         <Box sx={{ mb: 3 }}>
-                                            <Typography variant="body2" mb={1}>
-                                                Uploading and analyzing your CV...
+                                            <Typography variant="body2" mb={1} textAlign="center">
+                                                {searchMode === 'cv-to-jobs'
+                                                    ? 'Analyzing CV and finding job matches...'
+                                                    : 'Analyzing job requirements and finding candidates...'}
                                             </Typography>
                                             <LinearProgress color="primary" />
                                         </Box>
@@ -253,11 +347,13 @@ function MatchCV({ onBack, onNavigate }) {
                                             onChange={handleFileInputChange}
                                             style={{ display: 'none' }}
                                             accept=".pdf,.doc,.docx"
-                                            multiple
+                                            multiple={searchMode === 'cv-to-jobs'}
                                         />
                                         <CloudUploadIcon sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
                                         <Typography variant="h6" color="primary.dark" fontWeight={500} mb={1}>
-                                            Drag & drop CV files here
+                                            {searchMode === 'cv-to-jobs'
+                                                ? 'Drag & drop your CV here'
+                                                : 'Drag & drop job description here'}
                                         </Typography>
                                         <Typography variant="body1" color="text.secondary" mb={2}>
                                             or <span style={{ color: '#3b82f6', fontWeight: 500 }}>click to browse</span> files
@@ -325,153 +421,36 @@ function MatchCV({ onBack, onNavigate }) {
                                             </Paper>
                                         </Box>
                                     )}
-                                </CardContent>
-                            </Card>
-
-                            <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', maxWidth: '700px', mb: 5 }}>
-                                <Button
-                                    variant="contained"
-                                    size="large"
-                                    startIcon={<SearchIcon />}
-                                    endIcon={<ArrowForwardIcon />}
-                                    onClick={handleSearch}
-                                    disabled={files.length === 0 || uploading || uploadComplete}
-                                    sx={{
-                                        py: 1.5,
-                                        px: 4,
-                                        fontWeight: 'bold',
-                                        bgcolor: 'primary.main',
-                                        boxShadow: '0 4px 14px rgba(59, 130, 246, 0.3)',
-                                        '&:hover': {
-                                            bgcolor: 'primary.dark',
-                                            boxShadow: '0 6px 20px rgba(59, 130, 246, 0.4)',
-                                        },
-                                        '&.Mui-disabled': {
-                                            bgcolor: '#e0e0e0',
-                                            color: '#9e9e9e',
-                                        },
-                                    }}
-                                >
-                                    {uploading ? 'Processing...' : 'Find Job Matches'}
-                                </Button>
-                            </Box>
-
-                            <Card
-                                sx={{
-                                    borderRadius: 4,
-                                    bgcolor: '#f0f9ff',
-                                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
-                                    width: '100%',
-                                    maxWidth: '900px',
-                                    mb: 4
-                                }}
-                            >
-                                <CardContent sx={{ p: 4, flex: 1 }}>
-                                    <Typography variant="h5" fontWeight="bold" color="primary.dark" mb={3}>
-                                        How It Works
-                                    </Typography>
-
-                                    <List>
-                                        <ListItem alignItems="flex-start" sx={{ px: 0, py: 1.5 }}>
-                                            <ListItemIcon>
-                                                <Avatar
-                                                    sx={{
-                                                        bgcolor: 'primary.main',
-                                                        width: 36,
-                                                        height: 36,
-                                                        color: 'white',
-                                                        fontSize: '1rem',
-                                                        fontWeight: 'bold'
-                                                    }}
-                                                >
-                                                    1
-                                                </Avatar>
-                                            </ListItemIcon>
-                                            <ListItemText
-                                                primary="Upload Your CV"
-                                                secondary="Upload your CV in PDF, DOC, or DOCX format. We support multiple files."
-                                                primaryTypographyProps={{
-                                                    fontWeight: 600,
-                                                    color: 'primary.dark',
-                                                    gutterBottom: true
-                                                }}
-                                            />
-                                        </ListItem>
-
-                                        <ListItem alignItems="flex-start" sx={{ px: 0, py: 1.5 }}>
-                                            <ListItemIcon>
-                                                <Avatar
-                                                    sx={{
-                                                        bgcolor: 'primary.main',
-                                                        width: 36,
-                                                        height: 36,
-                                                        color: 'white',
-                                                        fontSize: '1rem',
-                                                        fontWeight: 'bold'
-                                                    }}
-                                                >
-                                                    2
-                                                </Avatar>
-                                            </ListItemIcon>
-                                            <ListItemText
-                                                primary="AI Analysis"
-                                                secondary="Our advanced AI system analyzes your CV, extracting key skills, experience, and qualifications to find the best matches."
-                                                primaryTypographyProps={{
-                                                    fontWeight: 600,
-                                                    color: 'primary.dark',
-                                                    gutterBottom: true
-                                                }}
-                                            />
-                                        </ListItem>
-
-                                        <ListItem alignItems="flex-start" sx={{ px: 0, py: 1.5 }}>
-                                            <ListItemIcon>
-                                                <Avatar
-                                                    sx={{
-                                                        bgcolor: 'primary.main',
-                                                        width: 36,
-                                                        height: 36,
-                                                        color: 'white',
-                                                        fontSize: '1rem',
-                                                        fontWeight: 'bold'
-                                                    }}
-                                                >
-                                                    3
-                                                </Avatar>
-                                            </ListItemIcon>
-                                            <ListItemText
-                                                primary="View Results"
-                                                secondary="Get a ranked list of job matches with detailed compatibility scores and recommendations."
-                                                primaryTypographyProps={{
-                                                    fontWeight: 600,
-                                                    color: 'primary.dark',
-                                                    gutterBottom: true
-                                                }}
-                                            />
-                                        </ListItem>
-                                    </List>
-
-
-                                    <Box
-                                        sx={{
-                                            mt: 4,
-                                            p: 3,
-                                            bgcolor: 'white',
-                                            borderRadius: 3,
-                                            border: '1px solid #e5e7eb'
-                                        }}
-                                    >
-                                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
-                                            <InfoIcon sx={{ color: 'primary.main' }} />
-                                            <Box>
-                                                <Typography variant="subtitle2" fontWeight="bold" color="primary.dark" gutterBottom>
-                                                    Pro Tip
-                                                </Typography>
-                                                <Typography variant="body2" color="text.secondary">
-                                                    For best results, ensure your CV is up-to-date with relevant skills and experiences clearly listed. Our AI can detect patterns and match them to the right opportunities.
-                                                </Typography>
-                                            </Box>
-                                        </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                                        <Button
+                                            variant="contained"
+                                            size="large"
+                                            endIcon={<ArrowForwardIcon />}
+                                            onClick={handleSearch}
+                                            disabled={files.length === 0 || uploading || uploadComplete}
+                                            sx={{
+                                                py: 1.5,
+                                                px: 5,
+                                                fontWeight: 'bold',
+                                                borderRadius: 3,
+                                                bgcolor: 'primary.main',
+                                                boxShadow: '0 4px 14px rgba(59, 130, 246, 0.3)',
+                                                '&:hover': {
+                                                    bgcolor: 'primary.dark',
+                                                    boxShadow: '0 6px 20px rgba(59, 130, 246, 0.4)',
+                                                },
+                                                '&.Mui-disabled': {
+                                                    bgcolor: '#e0e0e0',
+                                                    color: '#9e9e9e',
+                                                },
+                                            }}
+                                        >
+                                            {uploading
+                                                ? 'Processing...'
+                                                : searchMode === 'cv-to-jobs'
+                                                    ? 'Find Jobs'
+                                                    : 'Find Candidates'}
+                                        </Button>
                                     </Box>
                                 </CardContent>
                             </Card>

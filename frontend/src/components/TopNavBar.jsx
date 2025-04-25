@@ -12,14 +12,26 @@ import {
 import {
     ArrowBack,
     Dashboard,
-    Business,
-    Person,
-    Settings
+    Business
 } from '@mui/icons-material';
 
-const TopNavBar = ({ showBackButton, onBack, onNavigate, title, currentPage, fullWidth = false }) => {
+const TopNavBar = ({ showBackButton, onBack, onNavigate, title, currentPage }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+    const handleDashboardClick = () => {
+        if (typeof onNavigate === 'function') {
+            onNavigate('home');
+        }
+    };
+
+    const handleJobsClick = () => {
+        if (typeof onNavigate === 'function') {
+            onNavigate('joblist');
+        }
+    };
+
+    const isLoginPage = currentPage === 'login';
 
     return (
         <AppBar
@@ -29,7 +41,8 @@ const TopNavBar = ({ showBackButton, onBack, onNavigate, title, currentPage, ful
                 boxShadow: 'none',
                 background: 'linear-gradient(90deg, #1e40af 0%, #3b82f6 100%)',
                 color: '#ffffff',
-                borderRadius: 0
+                borderRadius: 0,
+                zIndex: 1100
             }}
         >
             <Box
@@ -61,66 +74,42 @@ const TopNavBar = ({ showBackButton, onBack, onNavigate, title, currentPage, ful
                         </Typography>
                     </Box>
 
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Button
-                            color="inherit"
-                            startIcon={<Dashboard />}
-                            onClick={() => onNavigate('dashboard')}
-                            sx={{
-                                fontWeight: currentPage === 'dashboard' ? 700 : 400,
-                                display: isMobile ? 'none' : 'flex',
-                                borderBottom: currentPage === 'dashboard'
-                                    ? '3px solid white'
-                                    : 'none',
-                                borderRadius: 0,
-                                paddingBottom: '2px'
-                            }}
-                        >
-                            Dashboard
-                        </Button>
-                        <Button
-                            color="inherit"
-                            startIcon={<Business />}
-                            onClick={() => onNavigate('joblist')}
-                            sx={{
-                                fontWeight: currentPage === 'joblist' ? 700 : 400,
-                                display: isMobile ? 'none' : 'flex',
-                                borderBottom: currentPage === 'joblist'
-                                    ? '3px solid white'
-                                    : 'none',
-                                borderRadius: 0,
-                                paddingBottom: '2px'
-                            }}
-                        >
-                            Jobs
-                        </Button>
-                        <Button
-                            color="inherit"
-                            startIcon={<Person />}
-                            onClick={() => onNavigate('profile')}
-                            sx={{
-                                fontWeight: currentPage === 'profile' ? 700 : 400,
-                                display: isMobile ? 'none' : 'flex',
-                                borderBottom: currentPage === 'profile'
-                                    ? '3px solid white'
-                                    : 'none',
-                                borderRadius: 0,
-                                paddingBottom: '2px'
-                            }}
-                        >
-                            Profile
-                        </Button>
-                        <IconButton
-                            color="inherit"
-                            onClick={() => onNavigate('settings')}
-                            sx={{
-                                borderRadius: 0,
-                                padding: '8px'
-                            }}
-                        >
-                            <Settings />
-                        </IconButton>
-                    </Box>
+                    {!isLoginPage && (
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Button
+                                color="inherit"
+                                startIcon={<Dashboard />}
+                                onClick={handleDashboardClick}
+                                sx={{
+                                    fontWeight: currentPage === 'home' ? 700 : 400,
+                                    display: isMobile ? 'none' : 'flex',
+                                    borderBottom: currentPage === 'home'
+                                        ? '3px solid white'
+                                        : 'none',
+                                    borderRadius: 0,
+                                    paddingBottom: '2px'
+                                }}
+                            >
+                                Dashboard
+                            </Button>
+                            <Button
+                                color="inherit"
+                                startIcon={<Business />}
+                                onClick={handleJobsClick}
+                                sx={{
+                                    fontWeight: currentPage === 'joblist' ? 700 : 400,
+                                    display: isMobile ? 'none' : 'flex',
+                                    borderBottom: currentPage === 'joblist'
+                                        ? '3px solid white'
+                                        : 'none',
+                                    borderRadius: 0,
+                                    paddingBottom: '2px'
+                                }}
+                            >
+                                Jobs
+                            </Button>
+                        </Box>
+                    )}
                 </Toolbar>
             </Box>
         </AppBar>
