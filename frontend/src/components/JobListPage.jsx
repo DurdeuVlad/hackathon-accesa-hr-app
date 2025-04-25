@@ -43,7 +43,6 @@ import {
 } from '@mui/icons-material';
 import NavBar from './TopNavBar';
 import theme from './CommonTheme';
-
 const JobListPage = ({ onBack, onNavigate }) => {
     const [jobs, setJobs] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -234,7 +233,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                             <Typography variant="h6" sx={{ opacity: 0.9, mx: 'auto', maxWidth: 700 }}>
                                 Find the perfect match for your technical positions
                             </Typography>
-
                             <Box sx={{
                                 display: 'flex',
                                 gap: 2,
@@ -314,7 +312,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                             background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)'
                         }} />
                     </Box>
-
                     <Container maxWidth={false} sx={{ py: 4, px: { xs: 2, sm: 4 } }}>
                         {/* Filter Section */}
                         <Fade in={showFilters}>
@@ -365,7 +362,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                 </Grid>
                             </Paper>
                         </Fade>
-
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                             <Typography variant="subtitle1" fontWeight={500}>
                                 {isLoading ? 'Loading jobs...' : `${processedJobs.length} job${processedJobs.length !== 1 ? 's' : ''} found`}
@@ -377,7 +373,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                 </Typography>
                             </Box>
                         </Box>
-
                         {isLoading ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
                                 <CircularProgress />
@@ -522,7 +517,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                             )
                         )}
                     </Container>
-
                     <Dialog
                         open={showDeleteConfirm}
                         onClose={() => setShowDeleteConfirm(false)}

@@ -56,7 +56,6 @@ function MatchCV({ onBack, onNavigate }) {
 
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
             const droppedFiles = Array.from(e.dataTransfer.files);
-
             const validFiles = droppedFiles.filter(file => {
                 const fileType = file.type;
                 return fileType === 'application/pdf' ||
@@ -78,7 +77,6 @@ function MatchCV({ onBack, onNavigate }) {
         setError('');
         if (e.target.files && e.target.files.length > 0) {
             const selectedFiles = Array.from(e.target.files);
-
             const validFiles = selectedFiles.filter(file => {
                 const fileType = file.type;
                 return fileType === 'application/pdf' ||
@@ -131,6 +129,23 @@ function MatchCV({ onBack, onNavigate }) {
         if (newMode !== null) {
             setSearchMode(newMode);
         }
+
+        setError('');
+        setUploading(true);
+        setTimeout(() => {
+            setUploading(false);
+            setUploadComplete(true);
+            setTimeout(() => {
+                console.log('Navigating to job matching with files:', files);
+                onNavigate('jobmatching');
+            }, 1500);
+        }, 2000);
+    };
+
+    const formatFileSize = (bytes) => {
+        if (bytes < 1024) return bytes + ' bytes';
+        else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        else return (bytes / 1048576).toFixed(1) + ' MB';
     };
 
     const formatFileSize = (bytes) => {
@@ -164,7 +179,6 @@ function MatchCV({ onBack, onNavigate }) {
                     title="Match & Find"
                     currentPage="matchcv"
                 />
-
                 <Box sx={{
                     width: '100%',
                     flex: 1,
@@ -190,7 +204,100 @@ function MatchCV({ onBack, onNavigate }) {
                                     ? 'Upload your CV to discover job opportunities that match your skills'
                                     : 'Upload job description to find candidates that match your requirements'}
                             </Typography>
+                        </Container>
+                    </Box>
 
+                    <Container maxWidth={false} sx={{ mb: 6, px: { xs: 2, sm: 4 } }}>
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '100%'
+                        }}>
+                            {/* Upload Area */}
+                            <Card
+                                elevation={0}
+                                sx={{
+                                    borderRadius: 4,
+                                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+                                    mb: 4,
+                                    overflow: 'visible',
+                                    borderTop: '4px solid #3b82f6',
+                                    width: '100%',
+                                    maxWidth: '700px'
+                                }}
+                            >
+                                <CardContent sx={{ p: 4, textAlign: 'center' }}>
+                                    <Typography variant="h5" fontWeight="bold" color="primary.dark" mb={3}>
+                                        Upload Your CV
+                                    </Typography>
+
+                                    {error && (
+                                        <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+                                            {error}
+                                        </Alert>
+                                    )}
+
+                                    {uploadComplete && (
+                                        <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }}>
+                                            CV uploaded successfully! Redirecting to job matches...
+                                        </Alert>
+                                    )}
+
+                                    {uploading && (
+                                        <Box sx={{ mb: 3 }}>
+                                            <Typography variant="body2" mb={1}>
+                                                Uploading and analyzing your CV...
+                                            </Typography>
+                                            <LinearProgress color="primary" />
+                                        </Box>
+                                    )}
+                                    <Box
+                                        onDragOver={handleDragOver}
+                                        onDragLeave={handleDragLeave}
+                                        onDrop={handleDrop}
+                                        onClick={handleButtonClick}
+                                        sx={{
+                                            border: isDragActive ? '2px dashed #3b82f6' : '2px dashed #93c5fd',
+                                            borderRadius: 3,
+                                            p: 5,
+                                            textAlign: 'center',
+                                            cursor: 'pointer',
+                                            backgroundColor: isDragActive ? 'rgba(219, 234, 254, 0.4)' : 'white',
+                                            transition: 'all 0.2s ease',
+                                            width: '100%',
+                                            '&:hover': {
+                                                borderColor: '#3b82f6',
+                                                backgroundColor: 'rgba(239, 246, 255, 0.7)',
+                                            }
+                                        }}
+                                    >
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            onChange={handleFileInputChange}
+                                            style={{ display: 'none' }}
+                                            accept=".pdf,.doc,.docx"
+                                            multiple
+                                        />
+                                        <CloudUploadIcon sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
+                                        <Typography variant="h6" color="primary.dark" fontWeight={500} mb={1}>
+                                            Drag & drop CV files here
+                                        </Typography>
+                                        <Typography variant="body1" color="text.secondary" mb={2}>
+                                            or <span style={{ color: '#3b82f6', fontWeight: 500 }}>click to browse</span> files
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                            Accepts PDF, DOC, DOCX (max 5MB per file)
+                                        </Typography>
+                                    </Box>
+                                    {files.length > 0 && (
+                                        <Box mt={4} width="100%">
+                                            <Typography variant="subtitle1" fontWeight="bold" mb={2} display="flex" alignItems="center" justifyContent="center">
+                                                <FileCopyIcon fontSize="small" sx={{ mr: 1, color: 'primary.main' }}/>
+                                                Selected Files ({files.length})
+                                            </Typography>
                             <Paper
                                 elevation={0}
                                 sx={{

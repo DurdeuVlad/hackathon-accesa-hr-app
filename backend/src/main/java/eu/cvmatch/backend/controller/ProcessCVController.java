@@ -9,11 +9,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/processcv")
-public class CVController {
+public class ProcessCVController {
 
     private final CVProcessingService cvProcessingService;
 
-    public CVController(CVProcessingService cvProcessingService) {
+    public ProcessCVController(CVProcessingService cvProcessingService) {
         this.cvProcessingService = cvProcessingService;
     }
 

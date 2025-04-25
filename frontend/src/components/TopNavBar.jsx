@@ -32,7 +32,6 @@ const TopNavBar = ({ showBackButton, onBack, onNavigate, title, currentPage }) =
     };
 
     const isLoginPage = currentPage === 'login';
-
     return (
         <AppBar
             position="static"
@@ -73,7 +72,6 @@ const TopNavBar = ({ showBackButton, onBack, onNavigate, title, currentPage }) =
                             {title}
                         </Typography>
                     </Box>
-
                     {!isLoginPage && (
                         <Box sx={{ display: 'flex', gap: 1 }}>
                             <Button
