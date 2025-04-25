@@ -3,26 +3,23 @@ import {
     Box,
     Button,
     Card,
-    CardContent,
     Typography,
     TextField,
     InputAdornment,
     Select,
     MenuItem,
-    Grid,
     Chip,
     Dialog,
     DialogTitle,
     DialogContent,
     DialogActions,
-    Container,
-    Paper,
     IconButton,
     CircularProgress,
     Avatar,
     CssBaseline,
     FormControl,
     InputLabel,
+    Divider,
     Tooltip,
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
@@ -200,7 +197,7 @@ const JobListPage = ({ onBack, onNavigate }) => {
                 width: '100vw',
                 display: 'flex',
                 flexDirection: 'column',
-                bgcolor: '#f8fafc',
+                bgcolor: 'background.default',
                 margin: 0,
                 padding: 0,
                 overflow: 'hidden',
@@ -216,7 +213,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                     onNavigate={onNavigate}
                     title="Job Listings"
                     currentPage="joblist"
-                    fullWidth={true}
                 />
 
                 <Box sx={{
@@ -225,172 +221,171 @@ const JobListPage = ({ onBack, onNavigate }) => {
                     display: 'flex',
                     flexDirection: 'column',
                     overflow: 'auto',
-                    pt: 0,
-                    mt: 0,
+                    mt: 0, // No margin between navbar and content
                 }}>
-                    {/* Search and filter bar*/}
+                    {/* Header */}
                     <Box sx={{
-                        background: '#4f46e5',
-                        width: '100%',
+                        background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
+                        color: 'white',
                         py: 1.5,
-                        px: 2,
-                        borderBottom: '1px solid rgba(255,255,255,0.1)',
+                        width: '100%',
+                        mb: 2, // Reduced bottom margin
                     }}>
+                        <Box sx={{ width: '100%', maxWidth: '1400px', margin: '0 auto', px: 2 }}>
+                            <Typography variant="h5" component="h1" fontWeight="bold" textAlign="center">
+                                Job Listings
+                            </Typography>
+                            <Typography variant="body1" textAlign="center">
+                                Manage your job postings and find the perfect candidate match
+                            </Typography>
+                        </Box>
+                    </Box>
+
+                    {/* Main content area with filter bar and job listings */}
+                    <Box sx={{
+                        flex: 1,
+                        px: { xs: 2, sm: 3 },
+                        width: '100%',
+                        maxWidth: '1400px',
+                        margin: '0 auto'
+                    }}>
+                        {/* Filter Bar - Simplified and inline */}
                         <Box sx={{
                             display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' },
-                            alignItems: { xs: 'stretch', md: 'center' },
+                            flexDirection: { xs: 'column', sm: 'row' },
+                            alignItems: { xs: 'flex-start', sm: 'center' },
                             justifyContent: 'space-between',
-                            gap: 1,
-                            width: '100%',
-                            maxWidth: '1200px',
-                            mx: 'auto',
+                            gap: 2,
+                            mb: 2
                         }}>
-                            <Typography variant="h6" color="white" fontWeight="bold">
-                                DevMatch Job Listings
-                            </Typography>
+                            {/* Search field */}
+                            <TextField
+                                placeholder="Search jobs..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                size="small"
+                                sx={{
+                                    flex: 1,
+                                    maxWidth: { xs: '100%', sm: '300px' },
+                                    '& .MuiOutlinedInput-root': {
+                                        borderRadius: 1,
+                                    }
+                                }}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <Search fontSize="small" />
+                                        </InputAdornment>
+                                    ),
+                                    endAdornment: searchTerm && (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                onClick={() => setSearchTerm('')}
+                                                edge="end"
+                                                size="small"
+                                                aria-label="clear search"
+                                            >
+                                                <CloseIcon fontSize="small" />
+                                            </IconButton>
+                                        </InputAdornment>
+                                    )
+                                }}
+                            />
 
                             <Box sx={{
                                 display: 'flex',
-                                gap: 1,
+                                gap: 2,
                                 alignItems: 'center',
-                                flexWrap: { xs: 'wrap', md: 'nowrap' },
+                                width: { xs: '100%', sm: 'auto' }
                             }}>
-                                {/* Search Field */}
-                                <TextField
-                                    placeholder="Search jobs..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    size="small"
-                                    sx={{
-                                        bgcolor: 'white',
-                                        borderRadius: 1,
-                                        width: { xs: '100%', md: '200px' },
-                                        '& .MuiOutlinedInput-root': {
-                                            '& fieldset': {
-                                                borderColor: 'transparent',
-                                            },
-                                            '&:hover fieldset': {
-                                                borderColor: 'transparent',
-                                            },
-                                            '&.Mui-focused fieldset': {
-                                                borderColor: 'transparent',
-                                            },
-                                        },
-                                    }}
-                                    InputProps={{
-                                        startAdornment: (
-                                            <InputAdornment position="start">
-                                                <Search fontSize="small" />
-                                            </InputAdornment>
-                                        ),
-                                        endAdornment: searchTerm && (
-                                            <InputAdornment position="end">
-                                                <IconButton
-                                                    onClick={() => setSearchTerm('')}
-                                                    edge="end"
-                                                    size="small"
-                                                >
-                                                    <CloseIcon fontSize="small" />
-                                                </IconButton>
-                                            </InputAdornment>
-                                        )
-                                    }}
-                                />
-
                                 {/* Industry Filter */}
-                                <FormControl
-                                    size="small"
-                                    sx={{
-                                        minWidth: 120,
-                                        bgcolor: 'white',
-                                        borderRadius: 1,
-                                    }}
-                                >
-                                    <InputLabel id="industry-filter-label">Industry</InputLabel>
-                                    <Select
-                                        labelId="industry-filter-label"
-                                        value={filterIndustry}
-                                        onChange={(e) => setFilterIndustry(e.target.value)}
-                                        label="Industry"
-                                    >
-                                        <MenuItem value="">All Industries</MenuItem>
-                                        {uniqueIndustries.map((industry, index) => (
-                                            <MenuItem key={index} value={industry}>{industry}</MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
+                                <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
+                                    <Typography variant="body2" sx={{ mr: 1, color: 'text.secondary', display: { xs: 'none', md: 'block' } }}>
+                                        Sort By
+                                    </Typography>
+                                    <FormControl size="small" sx={{ minWidth: 100, width: { xs: '100%', sm: 'auto' } }}>
+                                        <InputLabel id="industry-filter-label">Industry</InputLabel>
+                                        <Select
+                                            labelId="industry-filter-label"
+                                            value={filterIndustry}
+                                            onChange={(e) => setFilterIndustry(e.target.value)}
+                                            label="Industry"
+                                            MenuProps={{
+                                                PaperProps: {
+                                                    style: {
+                                                        maxHeight: 300
+                                                    }
+                                                }
+                                            }}
+                                        >
+                                            <MenuItem value="">All Industries</MenuItem>
+                                            {uniqueIndustries.map((industry, index) => (
+                                                <MenuItem key={index} value={industry}>{industry}</MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                </Box>
 
-                                {/* Sort By */}
-                                <FormControl
-                                    size="small"
-                                    sx={{
-                                        minWidth: 140,
-                                        bgcolor: 'white',
-                                        borderRadius: 1,
-                                    }}
-                                >
-                                    <InputLabel id="sort-order-label">Sort By</InputLabel>
-                                    <Select
-                                        labelId="sort-order-label"
-                                        value={sortOrder}
-                                        onChange={(e) => setSortOrder(e.target.value)}
-                                        label="Sort By"
-                                    >
-                                        <MenuItem value="newest">Newest First</MenuItem>
-                                        <MenuItem value="oldest">Oldest First</MenuItem>
-                                        <MenuItem value="alphabetical">A-Z</MenuItem>
-                                    </Select>
-                                </FormControl>
+                                {/* Sort By Filter */}
+                                <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
+                                    <Typography variant="body2" sx={{ mr: 1, color: 'text.secondary', display: { xs: 'none', md: 'block' } }}>
+                                        Sort By
+                                    </Typography>
+                                    <FormControl size="small" sx={{ minWidth: 120, width: { xs: '100%', sm: 'auto' } }}>
+                                        <InputLabel id="sort-order-label">Newest First</InputLabel>
+                                        <Select
+                                            labelId="sort-order-label"
+                                            value={sortOrder}
+                                            onChange={(e) => setSortOrder(e.target.value)}
+                                            label="Newest First"
+                                            MenuProps={{
+                                                PaperProps: {
+                                                    style: {
+                                                        maxHeight: 300
+                                                    }
+                                                }
+                                            }}
+                                        >
+                                            <MenuItem value="newest">Newest First</MenuItem>
+                                            <MenuItem value="oldest">Oldest First</MenuItem>
+                                            <MenuItem value="alphabetical">Alphabetical (A-Z)</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                </Box>
 
                                 {/* Add Job Button */}
                                 <Button
                                     variant="contained"
                                     startIcon={<Add />}
+                                    color="success"
                                     size="small"
-                                    sx={{
-                                        bgcolor: '#34d399',
-                                        color: 'white',
-                                        '&:hover': { bgcolor: '#10b981' },
-                                        whiteSpace: 'nowrap',
-                                        textTransform: 'none',
-                                    }}
                                     onClick={() => onNavigate('jobdetail')}
+                                    sx={{
+                                        whiteSpace: 'nowrap',
+                                        ml: { xs: 0, sm: 1 },
+                                        mt: { xs: 0, sm: 0 }
+                                    }}
                                 >
-                                    Add
+                                    Add New Job
                                 </Button>
                             </Box>
                         </Box>
-                    </Box>
 
-                    {/* Main job listings */}
-                    <Box
-                        sx={{
-                            flex: 1,
-                            pt: 0,
-                            px: { xs: 2, md: 3 },
-                            pb: 2,
-                            overflow: 'auto',
-                        }}
-                    >
-                        {/* Results count */}
-                        <Box sx={{
-                            py: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            color: 'text.secondary',
-                            fontSize: '0.875rem',
-                        }}>
-                            {processedJobs.length} jobs found
-                            {(searchTerm || filterIndustry) && (
+                        {/* Jobs Found Count */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
+                            <Typography variant="body2" color="text.secondary">
+                                {processedJobs.length} jobs found
+                            </Typography>
+                            {(searchTerm || filterIndustry !== '') && (
                                 <Button
                                     size="small"
                                     onClick={clearFilters}
                                     sx={{
-                                        ml: 1,
                                         color: 'primary.main',
                                         textTransform: 'none',
-                                        p: 0,
+                                        minWidth: 'auto',
+                                        p: '2px 6px',
+                                        fontSize: '0.75rem'
                                     }}
                                 >
                                     Clear filters
@@ -404,66 +399,45 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                 <CircularProgress />
                             </Box>
                         ) : (
-                            <Box sx={{ mt: 0 }}>
+                            <Box>
                                 {processedJobs.length > 0 ? (
                                     processedJobs.map(job => (
                                         <Card
                                             key={job.id}
                                             sx={{
+                                                cursor: 'pointer',
                                                 mb: 2,
+                                                transition: 'all 0.2s ease',
                                                 borderRadius: 1,
                                                 boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                                                cursor: 'pointer',
-                                                height: 280,
                                                 '&:hover': {
-                                                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                                                },
-                                                position: 'relative',
-                                                overflow: 'hidden'
+                                                    boxShadow: '0 3px 6px rgba(0,0,0,0.15)',
+                                                    transform: 'translateY(-2px)'
+                                                }
                                             }}
                                             onClick={() => onNavigate('jobdetail')}
                                         >
-                                            {/* Bookmark button - absolute positioned */}
-                                            <Tooltip title={savedJobs.includes(job.id) ? "Remove from saved" : "Save job"}>
-                                                <IconButton
-                                                    onClick={(e) => toggleSaveJob(job.id, e)}
-                                                    sx={{
-                                                        position: 'absolute',
-                                                        top: 8,
-                                                        right: 8,
-                                                        zIndex: 1,
-                                                    }}
-                                                    size="small"
-                                                >
-                                                    {savedJobs.includes(job.id) ?
-                                                        <Bookmark color="primary" fontSize="small" /> :
-                                                        <BookmarkBorder fontSize="small" />
-                                                    }
-                                                </IconButton>
-                                            </Tooltip>
-
-                                            <CardContent sx={{
-                                                p: 3,
-                                                height: '100%',
-                                                display: 'flex',
-                                                flexDirection: 'column'
-                                            }}>
+                                            {/* Job Header */}
+                                            <Box sx={{ p: 2 }}>
                                                 {/* Job Title and Company */}
-                                                <Box sx={{ mb: 2 }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'flex-start',
+                                                    justifyContent: 'space-between'
+                                                }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                                         <Avatar
                                                             sx={{
                                                                 bgcolor: getRandomColor(job.industry),
                                                                 width: 40,
                                                                 height: 40,
-                                                                mr: 2,
-                                                                fontSize: '1rem',
+                                                                mr: 1.5
                                                             }}
                                                         >
                                                             {job.company.charAt(0)}
                                                         </Avatar>
                                                         <Box>
-                                                            <Typography variant="h6" color="primary.dark" fontWeight={600} sx={{ fontSize: '1.1rem', lineHeight: 1.3 }}>
+                                                            <Typography variant="h6" color="primary.main" fontWeight={600}>
                                                                 {job.jobTitle}
                                                             </Typography>
                                                             <Typography variant="body2" color="text.secondary">
@@ -471,69 +445,94 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                                             </Typography>
                                                         </Box>
                                                     </Box>
+
+                                                    <IconButton
+                                                        onClick={(e) => toggleSaveJob(job.id, e)}
+                                                        size="small"
+                                                        sx={{ mt: 0.5 }}
+                                                    >
+                                                        {savedJobs.includes(job.id) ?
+                                                            <Bookmark color="primary" /> :
+                                                            <BookmarkBorder />
+                                                        }
+                                                    </IconButton>
                                                 </Box>
 
-                                                {/* Job metadata - industry and date */}
-                                                <Box sx={{ display: 'flex', mb: 2, gap: 2 }}>
+                                                {/* Job Description */}
+                                                <Typography
+                                                    variant="body2"
+                                                    color="text.primary"
+                                                    sx={{
+                                                        mt: 2,
+                                                        lineHeight: 1.5,
+                                                        display: '-webkit-box',
+                                                        WebkitLineClamp: 2,
+                                                        WebkitBoxOrient: 'vertical',
+                                                        overflow: 'hidden'
+                                                    }}
+                                                >
+                                                    {job.description}
+                                                </Typography>
+
+                                                {/* Skills */}
+                                                <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                                    {job.technicalSkills.map((skill, idx) => (
+                                                        <Chip
+                                                            key={idx}
+                                                            label={`${skill.skill} (${skill.weight}%)`}
+                                                            size="small"
+                                                            sx={{
+                                                                fontSize: '0.7rem',
+                                                                height: 24,
+                                                                bgcolor: '#e0f2fe',
+                                                                color: '#0369a1',
+                                                            }}
+                                                        />
+                                                    ))}
+                                                </Box>
+                                            </Box>
+
+                                            <Divider />
+
+                                            {/* Job Footer */}
+                                            <Box sx={{
+                                                p: 1.5,
+                                                bgcolor: '#fafafa',
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                flexWrap: 'wrap'
+                                            }}>
+                                                {/* Job Metadata */}
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    gap: { xs: 1.5, md: 3 },
+                                                    flexWrap: 'wrap'
+                                                }}>
                                                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                        <Business fontSize="small" sx={{ mr: 0.5, color: 'text.secondary', fontSize: 18 }} />
+                                                        <Business fontSize="small" sx={{ mr: 0.5, color: 'text.secondary', fontSize: 16 }} />
                                                         <Typography variant="body2" color="text.secondary">
                                                             {job.industry}
                                                         </Typography>
                                                     </Box>
                                                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                        <CalendarToday fontSize="small" sx={{ mr: 0.5, color: 'text.secondary', fontSize: 18 }} />
+                                                        <CalendarToday fontSize="small" sx={{ mr: 0.5, color: 'text.secondary', fontSize: 16 }} />
                                                         <Typography variant="body2" color="text.secondary">
                                                             Posted: {formatDate(job.createdAt)}
                                                         </Typography>
                                                     </Box>
                                                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                        <Person fontSize="small" sx={{ mr: 0.5, color: 'text.secondary', fontSize: 18 }} />
+                                                        <Person fontSize="small" sx={{ mr: 0.5, color: 'text.secondary', fontSize: 16 }} />
                                                         <Typography variant="body2" color="text.secondary">
                                                             {job.applicants} applicants
                                                         </Typography>
                                                     </Box>
                                                 </Box>
 
-                                                {/* Job Description */}
-                                                <Box sx={{ mb: 2, height: 80, overflow: 'hidden', textAlign: 'left' }}>
-                                                    <Typography variant="h6" color="text.primary" sx={{
-                                                        fontSize: '0.875rem',
-                                                        lineHeight: 1.5,
-                                                        display: '-webkit-box',
-                                                        WebkitLineClamp: 4,
-                                                        WebkitBoxOrient: 'vertical',
-                                                        overflow: 'hidden'
-                                                    }}>
-                                                        {job.description}
-                                                    </Typography>
-                                                </Box>
-
-                                                {/* Skills */}
-                                                <Box sx={{ height: 32, overflow: 'hidden', mb: 2 }}>
-                                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                                        {job.technicalSkills.map((skill, idx) => (
-                                                            <Chip
-                                                                key={idx}
-                                                                label={`${skill.skill} (${skill.weight}%)`}
-                                                                size="small"
-                                                                sx={{
-                                                                    fontSize: '0.7rem',
-                                                                    height: 24,
-                                                                    bgcolor: '#e0f2fe',
-                                                                    color: '#0369a1',
-                                                                }}
-                                                            />
-                                                        ))}
-                                                    </Box>
-                                                </Box>
-
                                                 {/* Action Buttons */}
                                                 <Box sx={{
                                                     display: 'flex',
-                                                    justifyContent: 'flex-end',
-                                                    mt: 'auto', // Push to bottom
-                                                    gap: 1
+                                                    gap: 1,
+                                                    mt: { xs: 1, sm: 0 }
                                                 }}>
                                                     <Button
                                                         variant="outlined"
@@ -543,6 +542,7 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                                             e.stopPropagation();
                                                             onNavigate('jobdetail');
                                                         }}
+                                                        sx={{ fontSize: '0.75rem', py: 0.5 }}
                                                     >
                                                         View
                                                     </Button>
@@ -554,6 +554,7 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                                             e.stopPropagation();
                                                             console.log("Edit", job.id);
                                                         }}
+                                                        sx={{ fontSize: '0.75rem', py: 0.5 }}
                                                     >
                                                         Edit
                                                     </Button>
@@ -566,15 +567,25 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                                             e.stopPropagation();
                                                             confirmDelete(job.id, e);
                                                         }}
+                                                        sx={{ fontSize: '0.75rem', py: 0.5 }}
                                                     >
                                                         Delete
                                                     </Button>
                                                 </Box>
-                                            </CardContent>
+                                            </Box>
                                         </Card>
                                     ))
                                 ) : (
-                                    <Paper sx={{ p: 3, borderRadius: 2, textAlign: 'center', mt: 3 }}>
+                                    <Box
+                                        sx={{
+                                            p: 3,
+                                            borderRadius: 2,
+                                            textAlign: 'center',
+                                            mt: 2,
+                                            bgcolor: 'background.paper',
+                                            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                                        }}
+                                    >
                                         <WarningAmber sx={{ fontSize: 40, color: '#9ca3af' }} />
                                         <Typography variant="h6" fontWeight={600} color="#4b5563" mt={1}>
                                             No jobs found
@@ -590,7 +601,7 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                         >
                                             Add New Job
                                         </Button>
-                                    </Paper>
+                                    </Box>
                                 )}
                             </Box>
                         )}
