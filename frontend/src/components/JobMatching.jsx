@@ -154,7 +154,7 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                     </CardContent>
                 </Card>
 
-
+                
                 <Typography variant="h6" fontWeight="bold" mb={3}>CV Match Results</Typography>
                 {scores.map((score, index) => (
                     <Card key={index} sx={{ mb: 3, borderRadius: 4, px: 2, py: 3, borderLeft: `4px solid ${getScoreColor(score.score)}` }}>
@@ -208,7 +208,8 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                             </AccordionSummary>
 
                             <AccordionDetails sx={{ p: 0 }}>
-                                <Box sx={{ width: '100%', px: 3, py: 2 }}>
+
+                                <Box sx={{ width: '100%' , px: 3, py: 2}}>
                                     <Card sx={{ bgcolor: '#e0f2ff', p: 3, mb: 2, width: '100%', borderRadius: 2, boxShadow: 'none' }}>
                                         <Typography variant="h6" fontWeight="bold" textAlign="center">Job Info</Typography>
                                         <Typography align="center">Title: Frontend Developer</Typography>
