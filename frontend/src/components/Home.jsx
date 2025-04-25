@@ -36,9 +36,15 @@ function Home({ onNavigateToLogin, onNavigateToMatchCV }) {
                         <Grid container justifyContent="center">
                             <Grid item xs={12} md={8}>
                                 <Box sx={{ textAlign: 'center' }}>
-                                    <Typography variant="h2" component="h1" gutterBottom fontWeight="bold">
+                                    <Typography
+                                        component="h1"
+                                        gutterBottom
+                                        fontWeight="bold"
+                                        sx={{ fontSize: '2.5rem' }}
+                                    >
                                         AI-Powered Recruitment Assistant
                                     </Typography>
+
                                     <Typography variant="h5" paragraph sx={{ mb: 4, opacity: 0.9 }}>
                                         Streamline recruitment by automatically matching CVs to job requirements
                                     </Typography>
