@@ -8,28 +8,21 @@ import {
     CardContent,
     Grid,
     CssBaseline,
-    Stack,
-    Avatar,
-    Paper
+    Avatar
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import {
     Work as WorkIcon,
-    Search as SearchIcon,
     AssessmentOutlined as AssessmentIcon,
-    DescriptionOutlined as DescriptionIcon,
     SpeedOutlined as SpeedIcon,
     PersonSearchOutlined as PersonSearchIcon,
-    ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
-import theme from './CommonTheme'; // Updated import path
-
+import theme from './CommonTheme';
 function Home({ onNavigateToLogin, onNavigateToMatchCV }) {
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <Box sx={{ flexGrow: 1, minHeight: '100vh', bgcolor: 'background.default' }}>
-                {/* Hero Section */}
                 <Box
                     sx={{
                         background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
@@ -43,15 +36,9 @@ function Home({ onNavigateToLogin, onNavigateToMatchCV }) {
                         <Grid container justifyContent="center">
                             <Grid item xs={12} md={8}>
                                 <Box sx={{ textAlign: 'center' }}>
-                                    <Typography
-                                        component="h1"
-                                        gutterBottom
-                                        fontWeight="bold"
-                                        sx={{ fontSize: '2.5rem' }}
-                                    >
+                                    <Typography variant="h2" component="h1" gutterBottom fontWeight="bold">
                                         AI-Powered Recruitment Assistant
                                     </Typography>
-
                                     <Typography variant="h5" paragraph sx={{ mb: 4, opacity: 0.9 }}>
                                         Streamline recruitment by automatically matching CVs to job requirements
                                     </Typography>
@@ -79,8 +66,6 @@ function Home({ onNavigateToLogin, onNavigateToMatchCV }) {
 
                     </Container>
                 </Box>
-
-                {/* Benefits Section */}
                 <Container maxWidth="lg" sx={{ my: 8 }}>
                     <Typography variant="h4" component="h2" textAlign="center" gutterBottom sx={{ mb: 6, color: 'primary.dark' }}>
                         Optimize your recruitment process
@@ -220,8 +205,6 @@ function Home({ onNavigateToLogin, onNavigateToMatchCV }) {
                         </Grid>
                     </Grid>
                 </Container>
-
-                {/* How It Works Section */}
                 <Box sx={{ bgcolor: '#f0f9ff', py: 8 }}>
                     <Container maxWidth="lg">
                         <Typography variant="h4" component="h2" textAlign="center" gutterBottom sx={{ mb: 6, color: 'primary.dark' }}>

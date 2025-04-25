@@ -1,16 +1,14 @@
 import { createTheme } from '@mui/material/styles';
-
-// Common theme to be used across all components
 const theme = createTheme({
     palette: {
         primary: {
-            main: '#3b82f6', // Bright blue as main primary color
+            main: '#3b82f6',
             light: '#93c5fd',
             dark: '#1e40af',
             contrastText: '#ffffff',
         },
         secondary: {
-            main: '#10b981', // Green for actions
+            main: '#10b981',
             light: '#d1fae5',
             dark: '#059669',
             contrastText: '#ffffff',

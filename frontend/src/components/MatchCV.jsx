@@ -6,7 +6,6 @@ import {
     Paper,
     Container,
     CssBaseline,
-    Grid,
     Card,
     CardContent,
     Alert,
@@ -22,10 +21,8 @@ import { ThemeProvider } from '@mui/material/styles';
 import {
     CloudUpload as CloudUploadIcon,
     Search as SearchIcon,
-    CheckCircleOutline as CheckCircleIcon,
     FileCopy as FileCopyIcon,
     Delete as DeleteIcon,
-    Upload as UploadIcon,
     Description as DescriptionIcon,
     Info as InfoIcon,
     ArrowForward as ArrowForwardIcon
@@ -57,8 +54,6 @@ function MatchCV({ onBack, onNavigate }) {
 
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
             const droppedFiles = Array.from(e.dataTransfer.files);
-
-            // Check file types
             const validFiles = droppedFiles.filter(file => {
                 const fileType = file.type;
                 return fileType === 'application/pdf' ||
@@ -80,8 +75,6 @@ function MatchCV({ onBack, onNavigate }) {
         setError('');
         if (e.target.files && e.target.files.length > 0) {
             const selectedFiles = Array.from(e.target.files);
-
-            // Check file types
             const validFiles = selectedFiles.filter(file => {
                 const fileType = file.type;
                 return fileType === 'application/pdf' ||
@@ -115,13 +108,9 @@ function MatchCV({ onBack, onNavigate }) {
 
         setError('');
         setUploading(true);
-
-        // Simulate upload process
         setTimeout(() => {
             setUploading(false);
             setUploadComplete(true);
-
-            // Navigate to results page after brief delay
             setTimeout(() => {
                 console.log('Navigating to job matching with files:', files);
                 onNavigate('jobmatching');
@@ -160,8 +149,6 @@ function MatchCV({ onBack, onNavigate }) {
                     title="Match CV to Jobs"
                     currentPage="matchcv"
                 />
-
-                {/* Main content wrapper with scrolling capability */}
                 <Box sx={{
                     width: '100%',
                     flex: 1,
@@ -169,7 +156,6 @@ function MatchCV({ onBack, onNavigate }) {
                     flexDirection: 'column',
                     overflow: 'auto'
                 }}>
-                    {/* Header - Full Width with no side margins */}
                     <Box sx={{
                         background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
                         color: 'white',
@@ -189,9 +175,7 @@ function MatchCV({ onBack, onNavigate }) {
                         </Container>
                     </Box>
 
-                    {/* Main content - Full width container */}
                     <Container maxWidth={false} sx={{ mb: 6, px: { xs: 2, sm: 4 } }}>
-                        {/* Centered Drag & Drop Section */}
                         <Box sx={{
                             display: 'flex',
                             flexDirection: 'column',
@@ -237,8 +221,6 @@ function MatchCV({ onBack, onNavigate }) {
                                             <LinearProgress color="primary" />
                                         </Box>
                                     )}
-
-                                    {/* Drag & Drop Area */}
                                     <Box
                                         onDragOver={handleDragOver}
                                         onDragLeave={handleDragLeave}
@@ -278,8 +260,6 @@ function MatchCV({ onBack, onNavigate }) {
                                             Accepts PDF, DOC, DOCX (max 5MB per file)
                                         </Typography>
                                     </Box>
-
-                                    {/* File List */}
                                     {files.length > 0 && (
                                         <Box mt={4} width="100%">
                                             <Typography variant="subtitle1" fontWeight="bold" mb={2} display="flex" alignItems="center" justifyContent="center">
@@ -340,8 +320,6 @@ function MatchCV({ onBack, onNavigate }) {
                                     )}
                                 </CardContent>
                             </Card>
-
-                            {/* Search Button */}
                             <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', maxWidth: '700px', mb: 5 }}>
                                 <Button
                                     variant="contained"
@@ -369,8 +347,6 @@ function MatchCV({ onBack, onNavigate }) {
                                     {uploading ? 'Processing...' : 'Find Job Matches'}
                                 </Button>
                             </Box>
-
-                            {/* How It Works Section - Below the upload area */}
                             <Card
                                 sx={{
                                     borderRadius: 4,
