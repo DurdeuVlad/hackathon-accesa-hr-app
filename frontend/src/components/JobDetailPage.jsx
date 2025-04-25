@@ -10,7 +10,6 @@ import {
     Slider,
     LinearProgress,
     Alert,
-    Stack,
     Stepper,
     Step,
     StepLabel,
@@ -20,7 +19,6 @@ import {
     Paper,
     Divider,
     Chip,
-    Tooltip,
     MenuItem,
     Select,
     CircularProgress,
@@ -41,17 +39,12 @@ import {
     Business,
     Description,
     Code,
-    KeyboardArrowRight,
-    FileCopy,
     ArrowBack,
     SaveAlt,
     ArrowForward,
-    Build,
-    Tune,
-    BarChart
 } from '@mui/icons-material';
-import theme from './CommonTheme'; // Import the common theme
-import NavBar from './TopNavBar'; // Import the TopNavBar component
+import theme from './CommonTheme';
+import NavBar from './TopNavBar';
 
 const JobDetailPage = ({ onBack, onNavigate }) => {
     const userId = "user123";
@@ -85,7 +78,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
     const handleAddSkill = () => {
         if (!newSkill.trim()) return;
 
-        // Check if we can accommodate the new weight
         const currentTotal = jobDescription.technicalSkills.reduce((sum, skill) => sum + skill.weight, 0);
         if (currentTotal + newWeight > 100) {
             setErrorMessage(`Cannot add skill. Total weight exceeds 100%. Adjust existing skills first.`);
@@ -148,7 +140,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
     };
 
     const handleNextStep = () => {
-        // Validate current step
         if (activeStep === 0) {
             if (!jobDescription.jobTitle || !jobDescription.industry || !jobDescription.description || !jobDescription.company) {
                 setErrorMessage("Please fill all required fields");
@@ -197,10 +188,8 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
             data.append('job', JSON.stringify(jobWithUser));
             cvFiles.forEach((file) => data.append('cvs', file));
 
-            // Simulate upload with delay
             await new Promise(resolve => setTimeout(resolve, 1500));
 
-            // Simulate upload
             console.log("Job data to be sent:", jobWithUser);
             console.log("CV files to be sent:", cvFiles);
 
@@ -295,8 +284,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                 </Alert>
                             )}
                         </Box>
-
-                        {/* Stepper */}
                         <Box mb={4}>
                             <Stepper activeStep={activeStep} alternativeLabel>
                                 {steps.map((step, index) => (
@@ -320,8 +307,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                 ))}
                             </Stepper>
                         </Box>
-
-                        {/* Step 1: Job Information */}
                         {activeStep === 0 && (
                             <Card sx={{ borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', mb: 4, borderTop: '4px solid #3b82f6' }}>
                                 <CardContent sx={{ p: 4 }}>
@@ -405,8 +390,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                 </CardContent>
                             </Card>
                         )}
-
-                        {/* Step 2: Technical Skills */}
                         {activeStep === 1 && (
                             <Card sx={{ borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', mb: 4, borderTop: '4px solid #3b82f6' }}>
                                 <CardContent sx={{ p: 4 }}>
@@ -541,8 +524,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                 </CardContent>
                             </Card>
                         )}
-
-                        {/* Step 3: CV Upload */}
                         {activeStep === 2 && (
                             <Card sx={{ borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', mb: 4, borderTop: '4px solid #3b82f6' }}>
                                 <CardContent sx={{ p: 4 }}>
@@ -585,8 +566,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                         <Typography variant="body1" color="#4b5563">or <span style={{ color: '#3b82f6', fontWeight: 600 }}>browse files</span></Typography>
                                         <Typography variant="caption" color="#6b7280" mt={1} display="block">Accepted formats: PDF, DOC, DOCX</Typography>
                                     </Box>
-
-                                    {/* Files List */}
                                     {cvFiles.length > 0 && (
                                         <Box mt={4}>
                                             <Typography variant="subtitle1" color="#1e3a8a" display="flex" alignItems="center" gap={1} fontWeight={500} mb={2}>
@@ -638,8 +617,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                 </CardContent>
                             </Card>
                         )}
-
-                        {/* Navigation Buttons */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
                             <Button
                                 variant="outlined"

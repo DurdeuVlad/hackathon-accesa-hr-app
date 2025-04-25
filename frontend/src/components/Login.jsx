@@ -64,7 +64,6 @@ function Login({ onNext, onBack }) {
                     bottom: 0,
                 }}
             >
-                {/* Top Navigation Bar */}
                 <NavBar
                     showBackButton={true}
                     onBack={onBack}
@@ -72,7 +71,6 @@ function Login({ onNext, onBack }) {
                     currentPage="login"
                 />
 
-                {/* Full width login form */}
                 <Box
                     sx={{
                         flex: 1,
@@ -107,7 +105,6 @@ function Login({ onNext, onBack }) {
                                 mx: 'auto'
                             }}
                         >
-                            {/* Decorative element */}
                             <Box
                                 sx={{
                                     position: 'absolute',
