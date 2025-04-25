@@ -8,15 +8,22 @@ import Home from './components/Home'
 import JobMatching from './components/JobMatching';
 import JobDetailPage from './components/JobDetailPage';
 import JobListPage from './components/JobListPage';
+import StatisticsPage from "./components/StatisticsPage.jsx";
 import theme from './components/CommonTheme'; // Import the correct theme path
 
 function App() {
     const [currentPage, setCurrentPage] = useState('home')
     const [previousPage, setPreviousPage] = useState('home')
-    const handleNavigate = (page) => {
+    const [selectedJobId, setSelectedJobId] = useState(null);
+    const [selectedCvId, setSelectedCvId] = useState(null);
+
+    const handleNavigate = (page, score = null, jobId = null) => {
         setPreviousPage(currentPage);
+        if (score) setSelectedCvId(score);
+        if (jobId) setSelectedJobId(jobId);
         setCurrentPage(page);
     };
+
 
     return (
         <>
@@ -63,6 +70,14 @@ function App() {
                     onNavigate={handleNavigate}
                 />
             )}
+
+            {currentPage === 'statisticspage' && (
+                <StatisticsPage
+                    onBack={() => setCurrentPage('home')}
+                />
+            )}
+
+
 
             {currentPage === 'home' && (
                 <>
@@ -136,6 +151,21 @@ function App() {
                         >
                             Go to Job List Page
                         </button>
+
+                        <button
+                            onClick={() => handleNavigate('statisticspage')}
+                            style={{
+                                padding: '10px 20px',
+                                backgroundColor: '#2196f3',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                            }}
+                            >
+                            Go to Statistics Page
+                        </button>
+
                     </div>
                 </>
             )}
