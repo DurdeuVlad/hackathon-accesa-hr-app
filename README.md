@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # CVMatch Webapp
+=======
+# 📘 GitHub Rules for CVMatch Webapp Repository
+>>>>>>> e526302e2cf5a3f5b557a7b706c08c3759500e42
 
 This repo uses a **monorepo** layout:
 
