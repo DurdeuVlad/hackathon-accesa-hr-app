@@ -36,6 +36,7 @@ public class CVScoring {
         String explanation   = data.get("explanation").getAsString();
 
         // 3) compute an embedding‑based JD match (0.0–1.0 → 0–100)
+        // sentence embedding job description
         double embedSim   = embeddingService.cosineSimilarity(job.getDescription(), cvText);
         double embedScore = embedSim * 100.0;
 
