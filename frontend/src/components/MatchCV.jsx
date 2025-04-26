@@ -33,11 +33,13 @@ import {
 } from '@mui/icons-material';
 import NavBar from './TopNavBar';
 import theme from './CommonTheme';
+import {useAppContext} from "../context/AppContext.jsx";
 
 function MatchCV({ onBack, onNavigate }) {
-    const [files, setFiles] = useState([]);
     const [isDragActive, setIsDragActive] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const { state, dispatch } = useAppContext();
+    const files = state.matchCVFiles;
     const [uploadComplete, setUploadComplete] = useState(false);
     const [error, setError] = useState('');
     const fileInputRef = useRef(null);
@@ -72,7 +74,7 @@ function MatchCV({ onBack, onNavigate }) {
             }
 
             if (validFiles.length > 0) {
-                setFiles(prev => [...prev, ...validFiles]);
+                dispatch({ type: 'SET_MATCH_CV_FILES', payload: [...files, ...validFiles] });
             }
         }
     };
@@ -94,7 +96,7 @@ function MatchCV({ onBack, onNavigate }) {
             }
 
             if (validFiles.length > 0) {
-                setFiles(prev => [...prev, ...validFiles]);
+                dispatch({ type: 'SET_MATCH_CV_FILES', payload: [...files, ...validFiles] });
             }
         }
     };
@@ -104,7 +106,7 @@ function MatchCV({ onBack, onNavigate }) {
     };
 
     const handleRemoveFile = (index) => {
-        setFiles(files.filter((_, i) => i !== index));
+        dispatch({ type: 'SET_MATCH_CV_FILES', payload: files.filter((_, i) => i !== index) });
     };
 
     const handleSearch = () => {
