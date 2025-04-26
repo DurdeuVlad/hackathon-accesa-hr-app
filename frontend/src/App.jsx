@@ -6,10 +6,10 @@ import Login from './components/Login'
 import MatchCV from './components/MatchCV'
 import Home from './components/Home'
 import JobMatching from './components/JobMatching';
-import JobMatchesResults from './components/JobMatchesResults'; 
+import JobMatchesResults from './components/JobMatchesResults';
 import JobDetailPage from './components/JobDetailPage';
 import JobListPage from './components/JobListPage';
-import TopNavBar from './components/TopNavBar';
+import StatisticsPage from './components/StatisticsPage';
 import theme from './components/CommonTheme';
 
 
@@ -22,8 +22,6 @@ function App() {
 
     const handleNavigate = (page, data) => {
         setPreviousPage(currentPage);
-        if (score) setSelectedCvId(score);
-        if (jobId) setSelectedJobId(jobId);
         setCurrentPage(page);
         if (data) {
             if (data.searchType) {
@@ -47,8 +45,10 @@ function App() {
             setCurrentPage('home');
         } else if (currentPageName === 'jobmatching') {
             setCurrentPage('matchcv');
-        } else if (currentPageName === 'jobmatches') {
+        } else if (currentPageName === 'jobmatches' || currentPageName === 'jobmatchesresults') {
             setCurrentPage('matchcv');
+        } else if (currentPageName === 'statisticspage') {
+            setCurrentPage('home');
         } else {
             setCurrentPage(previousPage);
         }
@@ -96,7 +96,7 @@ function App() {
                                 }}>
                             Go to Job Matching Page
                         </button>
-                        <button onClick={() => handleNavigate('jobmatches')}
+                        <button onClick={() => handleNavigate('jobmatchesresults')}
                                 style={{
                                     padding: '10px 20px',
                                     backgroundColor: '#2196f3',
@@ -140,7 +140,7 @@ function App() {
                                 borderRadius: '4px',
                                 cursor: 'pointer'
                             }}
-                            >
+                        >
                             Go to Statistics Page
                         </button>
 
@@ -149,115 +149,72 @@ function App() {
             )}
 
             {currentPage === 'login' && (
-                <>
-                    <TopNavBar
-                        showBackButton={true}
-                        onBack={() => handleBack('login')}
-                        onNavigate={handleNavigate}
-                        title="Login"
-                        currentPage={currentPage}
-                    />
-                    <Login
-                        onBack={() => handleBack('login')}
-                        onNext={() => handleNavigate('home')}
-                    />
-                </>
+                <Login
+                    onBack={() => handleBack('login')}
+                    onNext={() => handleNavigate('home')}
+                />
             )}
 
             {currentPage === 'matchcv' && (
-                <>
-                    <TopNavBar
-                        showBackButton={true}
-                        onBack={() => handleBack('matchcv')}
-                        onNavigate={handleNavigate}
-                        title="Match CV"
-                        currentPage={currentPage}
-                    />
-                    <MatchCV
-                        onBack={() => handleBack('matchcv')}
-                        onNavigate={(page, data) => {
-                            if (data && data.searchType) {
-                                if (data.searchType === 'cv-to-jobs') {
-                                    handleNavigate('jobmatches', {
-                                        searchType: data.searchType,
-                                        cvId: data.cvId || 'default-cv-001',
-                                        cvName: data.cvName || 'Your CV'
-                                    });
-                                } else {
-                                    handleNavigate('jobmatching', {
-                                        searchType: data.searchType
-                                    });
-                                }
+                <MatchCV
+                    onBack={() => handleBack('matchcv')}
+                    onNavigate={(page, data) => {
+                        if (data && data.searchType) {
+                            if (data.searchType === 'cv-to-jobs') {
+                                handleNavigate('jobmatchesresults', {
+                                    searchType: data.searchType,
+                                    cvId: data.cvId || 'default-cv-001',
+                                    cvName: data.cvName || 'Your CV'
+                                });
                             } else {
-                                handleNavigate(page);
+                                handleNavigate('jobmatching', {
+                                    searchType: data.searchType
+                                });
                             }
-                        }}
-                    />
-                </>
+                        } else {
+                            handleNavigate(page);
+                        }
+                    }}
+                />
             )}
             {currentPage === 'jobmatching' && (
-                <>
-                    <TopNavBar
-                        showBackButton={true}
-                        onBack={() => handleBack('jobmatching')}
-                        onNavigate={handleNavigate}
-                        title="Job Matching"
-                        currentPage={currentPage}
-                    />
-                    <JobMatching
-                        onBack={() => handleBack('jobmatching')}
-                        onNavigate={handleNavigate}
-                        jobId="123"
-                    />
-                </>
+                <JobMatching
+                    onBack={() => handleBack('jobmatching')}
+                    onNavigate={handleNavigate}
+                    jobId="123"
+                />
             )}
-            {currentPage === 'jobmatches' && (
-                <>
-                    <TopNavBar
-                        showBackButton={true}
-                        onBack={() => handleBack('jobmatches')}
-                        onNavigate={handleNavigate}
-                        title="Job Matches"
-                        currentPage={currentPage}
-                    />
-                    <JobMatchesResults
-                        onBack={() => handleBack('jobmatches')}
-                        onNavigate={handleNavigate}
-                        cvId={currentCvId}
-                        cvName={currentCvName}
-                    />
-                </>
+            {currentPage === 'jobmatchesresults' && (
+                <JobMatchesResults
+                    onBack={() => handleBack('jobmatchesresults')}
+                    onNavigate={handleNavigate}
+                    cvId={currentCvId}
+                    cvName={currentCvName}
+                />
             )}
             {currentPage === 'jobdetail' && (
-                <>
-                    <TopNavBar
-                        showBackButton={true}
-                        onBack={() => handleBack('jobdetail')}
-                        onNavigate={handleNavigate}
-                        title="Job Detail"
-                        currentPage={currentPage}
-                    />
-                    <JobDetailPage
-                        onBack={() => handleBack('jobdetail')}
-                        onNavigate={handleNavigate}
-                        jobId="123"
-                    />
-                </>
+                <JobDetailPage
+                    onBack={() => handleBack('jobdetail')}
+                    onNavigate={handleNavigate}
+                    jobId="123"
+                />
             )}
             {currentPage === 'joblist' && (
-                <>
-                    <TopNavBar
-                        showBackButton={true}
-                        onBack={() => handleBack('joblist')}
-                        onNavigate={handleNavigate}
-                        title="Job List"
-                        currentPage={currentPage}
-                    />
-                    <JobListPage
-                        onBack={() => handleBack('joblist')}
-                        onNavigate={handleNavigate}
-                    />
-                </>
+                <JobListPage
+                    onBack={() => handleBack('joblist')}
+                    onNavigate={handleNavigate}
+                />
+            )}
+            {currentPage === 'statisticspage' && (
+                <StatisticsPage
+                    onBack={() => handleBack('statisticspage')}
+                />
+            )}
+            {currentPage === 'statisticspage' && (
+                <StatisticsPage
+                    onBack={() => handleBack('statisticspage')}
+                    onNavigate={handleNavigate}
+                />
             )}
         </ThemeProvider>
     )
