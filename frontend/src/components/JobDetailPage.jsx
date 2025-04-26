@@ -10,6 +10,7 @@ import {
     Slider,
     LinearProgress,
     Alert,
+    Stack,
     Stepper,
     Step,
     StepLabel,
@@ -19,6 +20,7 @@ import {
     Paper,
     Divider,
     Chip,
+    Tooltip,
     MenuItem,
     Select,
     CircularProgress,
@@ -39,12 +41,18 @@ import {
     Business,
     Description,
     Code,
+    KeyboardArrowRight,
+    FileCopy,
     ArrowBack,
     SaveAlt,
     ArrowForward,
+    Build,
+    Tune,
+    BarChart
 } from '@mui/icons-material';
 import theme from './CommonTheme';
 import NavBar from './TopNavBar';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 
 const JobDetailPage = ({ onBack, onNavigate }) => {
     const userId = "user123";
@@ -188,8 +196,10 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
             data.append('job', JSON.stringify(jobWithUser));
             cvFiles.forEach((file) => data.append('cvs', file));
 
+            // Simulare
             await new Promise(resolve => setTimeout(resolve, 1500));
 
+            // Simulari
             console.log("Job data to be sent:", jobWithUser);
             console.log("CV files to be sent:", cvFiles);
 
@@ -263,8 +273,14 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                     </Box>
 
                     <Container maxWidth="lg" sx={{ my: 4, pb: 6 }}>
-                        {/* Alert Messages */}
-                        <Box sx={{ mb: 4 }}>
+                        <Box sx={{
+                            mb: 4,
+                            height: '60px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center',
+                            overflow: 'hidden'
+                        }}>
                             {successMessage && (
                                 <Alert
                                     severity="success"
@@ -284,6 +300,7 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                 </Alert>
                             )}
                         </Box>
+
                         <Box mb={4}>
                             <Stepper activeStep={activeStep} alternativeLabel>
                                 {steps.map((step, index) => (
@@ -307,58 +324,77 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                 ))}
                             </Stepper>
                         </Box>
+
+                        {/* Step 1: Job Information */}
                         {activeStep === 0 && (
-                            <Card sx={{ borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', mb: 4, borderTop: '4px solid #3b82f6' }}>
+                            <Card sx={{
+                                borderRadius: 2,
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                mb: 4,
+                                borderTop: '4px solid #3b82f6',
+                                minHeight: '600px',
+                                transition: 'all 0.3s ease'
+                            }}>
                                 <CardContent sx={{ p: 4 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                                         <Avatar sx={{ bgcolor: '#dbeafe', mr: 2 }}><Description sx={{ color: '#2563eb' }} /></Avatar>
                                         <Typography variant="h5" color="#1e3a8a" fontWeight="bold">Job Details</Typography>
                                     </Box>
 
-                                    <Grid container spacing={3}>
-                                        <Grid item xs={12} md={6}>
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', mb: 4, gap: 3 }}>
+                                        {/*Job Title and Company */}
+                                        <Box sx={{ display: 'flex', gap: 3 }}>
                                             <TextField
                                                 name="jobTitle"
-                                                label="Job Title"
+                                                label="Job Title *"
                                                 value={jobDescription.jobTitle}
                                                 onChange={handleInputChange}
                                                 fullWidth
                                                 required
                                                 variant="outlined"
                                                 placeholder="e.g. Senior Frontend Developer"
-                                                sx={{ mb: 3 }}
+                                                size="medium"
+                                                InputProps={{
+                                                    sx: {
+                                                        height: '56px',
+                                                    }
+                                                }}
                                             />
-
-                                            <FormControl fullWidth sx={{ mb: 3 }}>
-                                                <InputLabel id="industry-label">Industry *</InputLabel>
-                                                <Select
-                                                    labelId="industry-label"
-                                                    name="industry"
-                                                    value={jobDescription.industry}
-                                                    onChange={handleInputChange}
-                                                    required
-                                                    label="Industry"
-                                                >
-                                                    {industries.map(industry => (
-                                                        <MenuItem key={industry} value={industry}>{industry}</MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
-                                        </Grid>
-
-                                        <Grid item xs={12} md={6}>
                                             <TextField
                                                 name="company"
-                                                label="Company"
+                                                label="Company *"
                                                 value={jobDescription.company}
                                                 onChange={handleInputChange}
                                                 fullWidth
                                                 required
                                                 variant="outlined"
                                                 placeholder="e.g. TechCorp Solutions"
-                                                sx={{ mb: 3 }}
+                                                size="medium"
+                                                InputProps={{
+                                                    sx: {
+                                                        height: '56px',
+                                                    }
+                                                }}
                                             />
+                                        </Box>
 
+                                        {/* Industry and Location */}
+                                        <Box sx={{ display: 'flex', gap: 3 }}>
+                                            <FormControl fullWidth required variant="outlined" size="medium">
+                                                <InputLabel id="industry-label">Industry *</InputLabel>
+                                                <Select
+                                                    labelId="industry-label"
+                                                    name="industry"
+                                                    value={jobDescription.industry}
+                                                    onChange={handleInputChange}
+                                                    label="Industry *"
+                                                    sx={{ height: '56px' }}
+                                                >
+                                                    {industries.map(industry => (
+                                                        <MenuItem key={industry} value={industry}>{industry}</MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
                                             <TextField
                                                 name="location"
                                                 label="Location"
@@ -367,31 +403,65 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                                 fullWidth
                                                 variant="outlined"
                                                 placeholder="e.g. Remote, New York, NY"
-                                                sx={{ mb: 3 }}
+                                                size="medium"
+                                                InputProps={{
+                                                    sx: {
+                                                        height: '56px',
+                                                    }
+                                                }}
                                             />
-                                        </Grid>
+                                        </Box>
+                                    </Box>
 
-                                        <Grid item xs={12}>
-                                            <TextField
-                                                name="description"
-                                                label="Job Description"
-                                                value={jobDescription.description}
-                                                onChange={handleInputChange}
-                                                fullWidth
-                                                required
-                                                multiline
-                                                minRows={4}
-                                                maxRows={8}
-                                                variant="outlined"
-                                                placeholder="Describe the job responsibilities, requirements, and any other relevant information..."
-                                            />
-                                        </Grid>
-                                    </Grid>
+                                    <Box>
+                                        {/* Avatar and title row */}
+                                        <Box display="flex" alignItems="center" mb={2}>
+                                            <Avatar sx={{ bgcolor: '#dbeafe', mr: 2 }}>
+                                                <Description sx={{ color: '#2563eb' }} />
+                                            </Avatar>
+                                            <Typography variant="h6" color="#1e3a8a" fontWeight="bold">
+                                                Job Description
+                                            </Typography>
+                                        </Box>
+
+                                        {/* TextField with multi-line content */}
+                                        <TextField
+                                            name="description"
+                                            value={jobDescription.description}
+                                            onChange={handleInputChange}
+                                            fullWidth
+                                            multiline
+                                            rows={10}
+                                            variant="outlined"
+                                            placeholder="Enter detailed job description here including responsibilities, requirements, and any other relevant information..."
+                                            InputProps={{
+                                                sx: {
+                                                    height: '240px', // Fixed height
+                                                    alignItems: 'flex-start',
+                                                    '& .MuiOutlinedInput-notchedOutline': {
+                                                        borderColor: '#e5e7eb',
+                                                    },
+                                                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                                                        borderColor: '#3b82f6',
+                                                    },
+                                                }
+                                            }}
+                                        />
+                                    </Box>
                                 </CardContent>
                             </Card>
                         )}
+
+                        {/* Step 2: Technical Skills */}
                         {activeStep === 1 && (
-                            <Card sx={{ borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', mb: 4, borderTop: '4px solid #3b82f6' }}>
+                            <Card sx={{
+                                borderRadius: 2,
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                mb: 4,
+                                borderTop: '4px solid #3b82f6',
+                                minHeight: '600px',
+                                transition: 'all 0.3s ease'
+                            }}>
                                 <CardContent sx={{ p: 4 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                                         <Avatar sx={{ bgcolor: '#dbeafe', mr: 2 }}><Code sx={{ color: '#2563eb' }} /></Avatar>
@@ -454,7 +524,8 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
 
                                     <Divider sx={{ my: 3 }} />
 
-                                    <Box>
+                                    {/* Skills list */}
+                                    <Box sx={{ minHeight: '200px' }}>
                                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                                             <Typography variant="subtitle1" fontWeight={500}>
                                                 Added Skills
@@ -524,8 +595,17 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                 </CardContent>
                             </Card>
                         )}
+
+                        {/* Step 3: CV Upload */}
                         {activeStep === 2 && (
-                            <Card sx={{ borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', mb: 4, borderTop: '4px solid #3b82f6' }}>
+                            <Card sx={{
+                                borderRadius: 2,
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                mb: 4,
+                                borderTop: '4px solid #3b82f6',
+                                minHeight: '600px',
+                                transition: 'all 0.3s ease'
+                            }}>
                                 <CardContent sx={{ p: 4 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                                         <Avatar sx={{ bgcolor: '#dbeafe', mr: 2 }}><FileUpload sx={{ color: '#2563eb' }} /></Avatar>
@@ -549,8 +629,13 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                             textAlign: 'center',
                                             cursor: 'pointer',
                                             backgroundColor: isDragging ? '#eff6ff' : 'inherit',
-                                            transition: 'all 0.2s ease',
-                                            '&:hover': { borderColor: '#93c5fd', backgroundColor: '#f8fafc' }
+                                            transition: 'all 0.3s ease',
+                                            '&:hover': { borderColor: '#93c5fd', backgroundColor: '#f8fafc' },
+                                            minHeight: '180px',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'center',
+                                            alignItems: 'center'
                                         }}
                                     >
                                         <input
@@ -566,73 +651,98 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                         <Typography variant="body1" color="#4b5563">or <span style={{ color: '#3b82f6', fontWeight: 600 }}>browse files</span></Typography>
                                         <Typography variant="caption" color="#6b7280" mt={1} display="block">Accepted formats: PDF, DOC, DOCX</Typography>
                                     </Box>
-                                    {cvFiles.length > 0 && (
-                                        <Box mt={4}>
-                                            <Typography variant="subtitle1" color="#1e3a8a" display="flex" alignItems="center" gap={1} fontWeight={500} mb={2}>
-                                                <CheckCircle sx={{ color: '#10b981' }} /> Uploaded Files ({cvFiles.length})
-                                            </Typography>
-                                            <Grid container spacing={2}>
-                                                {cvFiles.map((file, index) => (
-                                                    <Grid item xs={12} sm={6} key={index}>
-                                                        <Paper sx={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            p: 2,
-                                                            borderRadius: 2,
-                                                            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                                                            border: '1px solid #e5e7eb',
-                                                            '&:hover': { boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }
-                                                        }}>
-                                                            <Avatar
-                                                                variant="rounded"
-                                                                sx={{
-                                                                    bgcolor: '#eff6ff',
-                                                                    color: '#3b82f6',
-                                                                    mr: 2
-                                                                }}
-                                                            >
-                                                                <InsertDriveFile />
-                                                            </Avatar>
-                                                            <Box flex={1}>
-                                                                <Typography fontWeight={500} color="#111827" noWrap>
-                                                                    {file.name}
-                                                                </Typography>
-                                                                <Typography fontSize={12} color="#6b7280">
-                                                                    {(file.size / 1024).toFixed(2)} KB
-                                                                </Typography>
-                                                            </Box>
-                                                            <IconButton
-                                                                onClick={() => handleRemoveFile(index)}
-                                                                sx={{ '&:hover': { backgroundColor: '#fee2e2' } }}
-                                                                size="small"
-                                                            >
-                                                                <RemoveCircle sx={{ color: '#ef4444' }} />
-                                                            </IconButton>
-                                                        </Paper>
-                                                    </Grid>
-                                                ))}
-                                            </Grid>
-                                        </Box>
-                                    )}
+
+                                    {/* Files List */}
+                                    <Box mt={4} sx={{ minHeight: '100px', transition: 'all 0.3s ease' }}>
+                                        {cvFiles.length > 0 && (
+                                            <>
+                                                <Typography variant="subtitle1" color="#1e3a8a" display="flex" alignItems="center" gap={1} fontWeight={500} mb={2}>
+                                                    <CheckCircle sx={{ color: '#10b981' }} /> Uploaded Files ({cvFiles.length})
+                                                </Typography>
+                                                <Grid container spacing={2}>
+                                                    {cvFiles.map((file, index) => (
+                                                        <Grid item xs={12} sm={6} key={index}>
+                                                            <Paper sx={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                p: 2,
+                                                                borderRadius: 2,
+                                                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                                                                border: '1px solid #e5e7eb',
+                                                                '&:hover': { boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }
+                                                            }}>
+                                                                <Avatar
+                                                                    variant="rounded"
+                                                                    sx={{
+                                                                        bgcolor: '#eff6ff',
+                                                                        color: '#3b82f6',
+                                                                        mr: 2
+                                                                    }}
+                                                                >
+                                                                    <InsertDriveFile />
+                                                                </Avatar>
+                                                                <Box flex={1}>
+                                                                    <Typography fontWeight={500} color="#111827" noWrap>
+                                                                        {file.name}
+                                                                    </Typography>
+                                                                    <Typography fontSize={12} color="#6b7280">
+                                                                        {(file.size / 1024).toFixed(2)} KB
+                                                                    </Typography>
+                                                                </Box>
+                                                                <IconButton
+                                                                    onClick={() => handleRemoveFile(index)}
+                                                                    sx={{ '&:hover': { backgroundColor: '#fee2e2' } }}
+                                                                    size="small"
+                                                                >
+                                                                    <RemoveCircle sx={{ color: '#ef4444' }} />
+                                                                </IconButton>
+                                                            </Paper>
+                                                        </Grid>
+                                                    ))}
+                                                </Grid>
+                                            </>
+                                        )}
+                                    </Box>
                                 </CardContent>
                             </Card>
                         )}
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+
+                        {/* Navigation Buttons */}
+                        <Box sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            mt: 4,
+                            height: '48px',
+                            position: 'relative'
+                        }}>
                             <Button
                                 variant="outlined"
                                 onClick={onBack}
                                 startIcon={<ArrowBack />}
-                                sx={{ visibility: activeStep === 0 ? 'hidden' : 'visible' }}
+                                sx={{
+                                    visibility: activeStep === 0 ? 'hidden' : 'visible',
+                                    width: '100px',
+                                    position: 'absolute',
+                                    left: 0
+                                }}
                             >
                                 Cancel
                             </Button>
 
-                            <Box sx={{ display: 'flex', gap: 2 }}>
+                            <Box sx={{
+                                display: 'flex',
+                                gap: 2,
+                                position: 'absolute',
+                                right: 0
+                            }}>
                                 {activeStep > 0 && (
                                     <Button
                                         variant="outlined"
                                         onClick={handlePreviousStep}
                                         startIcon={<ArrowBack />}
+                                        sx={{
+                                            width: '120px',
+                                        }}
                                     >
                                         Previous
                                     </Button>
@@ -646,6 +756,7 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                         sx={{
                                             bgcolor: '#3b82f6',
                                             '&:hover': { bgcolor: '#2563eb' },
+                                            width: '100px',
                                         }}
                                     >
                                         Next
@@ -659,6 +770,8 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                         sx={{
                                             bgcolor: '#10b981',
                                             '&:hover': { bgcolor: '#059669' },
+                                            width: '180px',
+                                            transition: 'background-color 0.3s ease'
                                         }}
                                     >
                                         {loading ? 'Saving...' : 'Save and Process'}
