@@ -53,19 +53,14 @@ import {
 import theme from './CommonTheme';
 import NavBar from './TopNavBar';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import {useAppContext} from "../context/AppContext.jsx";
 
 const JobDetailPage = ({ onBack, onNavigate }) => {
     const userId = "user123";
     const [activeStep, setActiveStep] = useState(0);
+    const { state, dispatch } = useAppContext();
+    const jobDescription = state.jobDescription;
     const [loading, setLoading] = useState(false);
-    const [jobDescription, setJobDescription] = useState({
-        jobTitle: "",
-        industry: "",
-        company: "",
-        location: "",
-        description: "",
-        technicalSkills: []
-    });
     const [newSkill, setNewSkill] = useState("");
     const [newWeight, setNewWeight] = useState(30);
     const [cvFiles, setCvFiles] = useState([]);
@@ -80,7 +75,7 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setJobDescription(prev => ({ ...prev, [name]: value }));
+        dispatch({ type: 'SET_JOB_DESCRIPTION', payload: { [name]: value } });
     };
 
     const handleAddSkill = () => {
@@ -93,25 +88,28 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
             return;
         }
 
-        setJobDescription(prev => ({
-            ...prev,
-            technicalSkills: [...prev.technicalSkills, { skill: newSkill, weight: newWeight }]
-        }));
+        dispatch({
+            type: 'SET_JOB_DESCRIPTION',
+            payload: { technicalSkills: [...jobDescription.technicalSkills, { skill: newSkill, weight: newWeight }] }
+        });
         setNewSkill("");
         setNewWeight(30);
     };
 
     const handleRemoveSkill = (index) => {
-        setJobDescription(prev => ({
-            ...prev,
-            technicalSkills: prev.technicalSkills.filter((_, i) => i !== index)
-        }));
+        dispatch({
+            type: 'SET_JOB_DESCRIPTION',
+            payload: { technicalSkills: jobDescription.technicalSkills.filter((_, i) => i !== index) }
+        });
     };
 
     const handleWeightChange = (index, value) => {
         const updated = [...jobDescription.technicalSkills];
         updated[index].weight = value;
-        setJobDescription(prev => ({ ...prev, technicalSkills: updated }));
+        dispatch({
+            type: 'SET_JOB_DESCRIPTION',
+            payload: { technicalSkills: updated }
+        });
     };
 
     const handleDragOver = (e) => {

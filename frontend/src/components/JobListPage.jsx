@@ -38,16 +38,19 @@ import {
 } from '@mui/icons-material';
 import NavBar from './TopNavBar';
 import theme from './CommonTheme';
+import { useAppContext} from "../context/AppContext.jsx";
 
 const JobListPage = ({ onBack, onNavigate }) => {
     const [jobs, setJobs] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [jobToDelete, setJobToDelete] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterIndustry, setFilterIndustry] = useState('');
-    const [sortOrder, setSortOrder] = useState('newest');
     const [savedJobs, setSavedJobs] = useState([]);
+    const { state, dispatch} = useAppContext();
+    const searchTerm = state.jobFilters.searchTerm;
+    const filterIndustry = state.jobFilters.filterIndustry;
+    const sortOrder = state.jobFilters.sortOrder;
+
 
     useEffect(() => {
         setTimeout(() => {
@@ -144,9 +147,7 @@ const JobListPage = ({ onBack, onNavigate }) => {
     };
 
     const clearFilters = () => {
-        setFilterIndustry('');
-        setSortOrder('newest');
-        setSearchTerm('');
+        dispatch({ type: 'SET_FILTERS', payload: { searchTerm: '', filterIndustry: '', sortOrder: 'newest' } });
     };
 
     const processedJobs = jobs
@@ -168,6 +169,12 @@ const JobListPage = ({ onBack, onNavigate }) => {
             }
             return 0;
         });
+
+    const jobsPerPage = 3;
+    const startIndex = state.paginationIndex * jobsPerPage;
+    const endIndex = startIndex + jobsPerPage;
+    const paginatedJobs = processedJobs.slice(startIndex, endIndex);
+
 
     const uniqueIndustries = [...new Set(jobs.map(job => job.industry))];
 
@@ -256,7 +263,7 @@ const JobListPage = ({ onBack, onNavigate }) => {
                             <TextField
                                 placeholder="Search jobs..."
                                 value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onChange={(e) => dispatch({ type: 'SET_FILTERS', payload: { searchTerm: e.target.value } })}
                                 size="small"
                                 sx={{
                                     flex: 1,
@@ -301,7 +308,7 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                         <Select
                                             labelId="industry-filter-label"
                                             value={filterIndustry}
-                                            onChange={(e) => setFilterIndustry(e.target.value)}
+                                            onChange={(e) => dispatch({ type: 'SET_FILTERS', payload: { filterIndustry: e.target.value } })}
                                             label="Industry"
                                             MenuProps={{
                                                 PaperProps: {
@@ -328,7 +335,7 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                         <Select
                                             labelId="sort-order-label"
                                             value={sortOrder}
-                                            onChange={(e) => setSortOrder(e.target.value)}
+                                            onChange={(e) => dispatch({ type: 'SET_FILTERS', payload: { sortOrder: e.target.value } })}
                                             label="Newest First"
                                             MenuProps={{
                                                 PaperProps: {
@@ -391,7 +398,7 @@ const JobListPage = ({ onBack, onNavigate }) => {
                         ) : (
                             <Box>
                                 {processedJobs.length > 0 ? (
-                                    processedJobs.map(job => (
+                                    paginatedJobs.map(job => (
                                         <Card
                                             key={job.id}
                                             sx={{
@@ -587,6 +594,23 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                         </Button>
                                     </Box>
                                 )}
+                                <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2 }}>
+                                    <Button
+                                        variant="outlined"
+                                        disabled={state.paginationIndex === 0}
+                                        onClick={() => dispatch({ type: 'SET_PAGINATION', payload: state.paginationIndex - 1 })}
+                                    >
+                                        Previous
+                                    </Button>
+                                    <Button
+                                        variant="outlined"
+                                        disabled={endIndex >= processedJobs.length}
+                                        onClick={() => dispatch({ type: 'SET_PAGINATION', payload: state.paginationIndex + 1 })}
+                                    >
+                                        Next
+                                    </Button>
+                                </Box>
+
                             </Box>
                         )}
                     </Box>
