@@ -39,7 +39,6 @@ function MatchCV({ onBack, onNavigate }) {
     const [error, setError] = useState('');
     const [searchMode, setSearchMode] = useState('cv-to-jobs'); // 'cv-to-jobs' or 'jobs-to-cv'
     const fileInputRef = useRef(null);
-    const [searchMode, setSearchMode] = useState('cv-to-jobs');
 
     const handleDragOver = (e) => {
         e.preventDefault();
