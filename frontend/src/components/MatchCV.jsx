@@ -432,7 +432,7 @@ function MatchCV({ onBack, onNavigate }) {
                                             variant="contained"
                                             size="large"
                                             endIcon={<ArrowForwardIcon />}
-                                            onClick={handleSearch}
+                                            onClick={runSearch}
                                             disabled={files.length === 0 || uploading || uploadComplete}
                                             sx={{
                                                 py: 1.5,
