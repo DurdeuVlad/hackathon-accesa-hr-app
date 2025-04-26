@@ -1,3 +1,29 @@
+import React from 'react';
+import {
+    Box,
+    Typography,
+    Button,
+    Container,
+    Card,
+    Grid,
+    CssBaseline,
+    Avatar,
+    AppBar,
+    Toolbar,
+    IconButton
+} from '@mui/material';
+import { ThemeProvider } from '@mui/material/styles';
+import {
+    Work as WorkIcon,
+    AssessmentOutlined as AssessmentIcon,
+    SpeedOutlined as SpeedIcon,
+    PersonSearchOutlined as PersonSearchIcon,
+    Dashboard as DashboardIcon,
+    Business as BusinessIcon,
+    Person as PersonIcon,
+    Settings as SettingsIcon
+} from '@mui/icons-material';
+import theme from './CommonTheme';
 function Home({
                   onNavigateToLogin,
                   onNavigateToMatchCV,
@@ -152,6 +178,52 @@ function Home({
                             </Grid>
                         ))}
                     </Grid>
+                    {/* How It Works Section */}
+                    <Box sx={{ bgcolor: '#f0f9ff', py: 8 }}>
+                        <Container maxWidth="lg">
+                            <Typography variant="h4" component="h2" textAlign="center" gutterBottom sx={{ mb: 6, color: 'primary.dark' }}>
+                                How it works
+                            </Typography>
+
+                            <Grid container spacing={5} alignItems="center">
+                                <Grid item xs={12} md={6}>
+                                    <Box sx={{ p: 2 }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                                            <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>1</Avatar>
+                                            <Typography variant="h5" gutterBottom sx={{ color: 'primary.dark', fontWeight: 'bold', m: 0 }}>
+                                                Upload documents
+                                            </Typography>
+                                        </Box>
+                                        <Typography paragraph sx={{ ml: 7, color: 'text.secondary' }}>
+                                            Upload candidate CVs (PDF, DOC, DOCX) and the job description or project you're looking to fill.
+                                        </Typography>
+
+                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                                            <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>2</Avatar>
+                                            <Typography variant="h5" gutterBottom sx={{ color: 'primary.dark', fontWeight: 'bold', m: 0 }}>
+                                                Automated analysis
+                                            </Typography>
+                                        </Box>
+                                        <Typography paragraph sx={{ ml: 7, color: 'text.secondary' }}>
+                                            Our AI algorithm extracts relevant information and analyzes compatibility based on multiple criteria.
+                                        </Typography>
+
+                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                                            <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>3</Avatar>
+                                            <Typography variant="h5" gutterBottom sx={{ color: 'primary.dark', fontWeight: 'bold', m: 0 }}>
+                                                Actionable results
+                                            </Typography>
+                                        </Box>
+                                        <Typography paragraph sx={{ ml: 7, color: 'text.secondary' }}>
+                                            Get a ranking of candidates, with compatibility scores and detailed explanations, allowing you to focus on the most promising candidates.
+                                        </Typography>
+                                    </Box>
+                                </Grid>
+                                <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'center' }}>
+                                </Grid>
+                            </Grid>
+                        </Container>
+                    </Box>
 
                     {/* Buttons Section */}
                     <Container maxWidth="lg">
@@ -178,3 +250,4 @@ function Home({
         </ThemeProvider>
     );
 }
+export default Home;
