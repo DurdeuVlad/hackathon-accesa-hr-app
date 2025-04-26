@@ -2,9 +2,7 @@ package eu.cvmatch.backend.service;
 
 import ai.djl.MalformedModelException;
 import ai.djl.ModelException;
-import ai.djl.huggingface.tokenizers.HuggingFaceTokenizer;
 import ai.djl.inference.Predictor;
-import ai.djl.modality.nlp.translator.NlpTranslatorFactory;
 import ai.djl.repository.zoo.Criteria;
 import ai.djl.repository.zoo.ZooModel;
 import org.springframework.stereotype.Service;
@@ -15,15 +13,14 @@ import java.util.List;
 @Service
 public class CrossEncoderRerankerService {
 
-    private final ZooModel<List<String>, float[]> model;
-    private final Predictor<List<String>, float[]> predictor;
+    private final ZooModel<List, float[]> model;
+    private final Predictor<List, float[]> predictor;
 
     public CrossEncoderRerankerService() throws IOException, ModelException {
-        // Load the Hugging Face cross-encoder model for MS MARCO :contentReference[oaicite:7]{index=7}
-        Criteria<List<String>, float[]> criteria = Criteria.builder()
+        // Load the Hugging Face cross-encoder model for MS MARCO
+        Criteria<List, float[]> criteria = Criteria.builder()
                 .setTypes(List.class, float[].class)
-                .optModelUrls("huggingface://cross-encoder/ms-marco-MiniLM-L-6-v2")
-                .optTranslatorFactory(NlpTranslatorFactory.class)
+                .optModelUrls("djl://ai.djl.huggingface.pytorch/cross-encoder/ms-marco-MiniLM-L-6-v2")
                 .build();
         this.model = criteria.loadModel();
         this.predictor = model.newPredictor();

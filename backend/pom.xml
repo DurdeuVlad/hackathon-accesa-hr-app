@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -18,13 +17,16 @@
 
     <properties>
         <java.version>21</java.version>
+        <!-- Use a released Lucene version that includes lucene-analysis-common -->
+        <lucene.version>9.8.0</lucene.version>
+        <!-- Deep Java Library BOM version -->
         <djl.version>0.32.0</djl.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <!-- DJL BOM ensures all DJL modules use the same version -->
             <dependency>
-                <!-- BOM for managing DJL module versions -->
                 <groupId>ai.djl</groupId>
                 <artifactId>bom</artifactId>
                 <version>${djl.version}</version>
@@ -34,19 +36,14 @@
         </dependencies>
     </dependencyManagement>
 
-
     <dependencies>
-        <!-- Spring Boot core -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
+        <!-- Spring Boot Web Starter -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- Apache POI for DOCX parsing -->
+        <!-- Apache POI for .docx parsing -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
@@ -69,20 +66,15 @@
             <artifactId>google-auth-library-oauth2-http</artifactId>
             <version>1.20.0</version>
         </dependency>
-        <dependency>
-            <groupId>com.google.api</groupId>
-            <artifactId>gax-grpc</artifactId>
-            <version>2.36.0</version>
-        </dependency>
 
-        <!-- Dotenv for local .env support -->
+        <!-- Dotenv for .env support -->
         <dependency>
             <groupId>io.github.cdimascio</groupId>
             <artifactId>dotenv-java</artifactId>
             <version>3.0.2</version>
         </dependency>
 
-        <!-- DJL modules: no <version> here, BOM will enforce 0.32.0 -->
+        <!-- DJL Core API, ONNX Runtime engine, and Hugging Face Tokenizers -->
         <dependency>
             <groupId>ai.djl</groupId>
             <artifactId>api</artifactId>
@@ -94,6 +86,18 @@
         <dependency>
             <groupId>ai.djl.huggingface</groupId>
             <artifactId>tokenizers</artifactId>
+        </dependency>
+
+        <!-- Lucene for vector indexing and analysis -->
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-analysis-common</artifactId>
+            <version>${lucene.version}</version>
         </dependency>
 
         <!-- Testing & Devtools -->
@@ -108,34 +112,47 @@
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
 
-        <!-- DJL core API -->
+
+        <!-- JFaiss CPU wrapper -->
+        <dependency>
+            <groupId>com.criteo</groupId>
+            <artifactId>jfaiss-cpu</artifactId>
+            <version>2.1.0-dd6ed70</version>
+        </dependency>
+        <!-- Native-loader helper -->
+        <dependency>
+            <groupId>com.github.victor-paltz</groupId>
+            <artifactId>global-load-library</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.criteo</groupId>
+            <artifactId>jfaiss-cpu</artifactId>
+            <version>2.1.0-dd6ed70</version>
+        </dependency>
         <dependency>
             <groupId>ai.djl</groupId>
-            <artifactId>api</artifactId>
+            <artifactId>model-zoo</artifactId>
             <version>${djl.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>ai.djl</groupId>
-            <artifactId>api</artifactId>
-        </dependency>
-
-        <!-- ONNX Runtime engine -->
-        <dependency>
-            <groupId>ai.djl.onnxruntime</groupId>
-            <artifactId>onnxruntime-engine</artifactId>
-        </dependency>
-
-        <!-- Hugging Face Tokenizers -->
         <dependency>
             <groupId>ai.djl.huggingface</groupId>
             <artifactId>tokenizers</artifactId>
+            <version>${djl.version}</version>
         </dependency>
+
+
     </dependencies>
 
     <build>
         <plugins>
+            <!-- Enable annotation processing for Spring Boot configuration -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -148,6 +165,7 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+            <!-- Spring Boot Maven plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -164,5 +182,6 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
+
     </repositories>
 </project>

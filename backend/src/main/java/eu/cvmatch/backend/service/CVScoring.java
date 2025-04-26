@@ -8,14 +8,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class CVScoring {
     private final Gson gson;
     private final GenerativeLanguageClient glClient;
     private final OnnxSentenceEmbeddingService onnxService;
+
+    // Retrieval & reranking components
+    @Autowired
+    private LexicalRetrievalService lexicalService;
+    @Autowired
+    private EmbeddingRetrievalService embeddingService;
+    @Autowired
+    private CrossEncoderRerankerService reranker;
 
     @Autowired
     public CVScoring(GenerativeLanguageClient glClient,
@@ -31,67 +38,77 @@ public class CVScoring {
 
         // 2) Prompt LLM and parse JSON response
         String prompt = buildPrompt(cvText, job);
-        JsonArray candidates = glClient.generateMessage(List.of(prompt), null, 1);
-        JsonObject candidate = candidates.get(0).getAsJsonObject();
+        JsonArray responses = glClient.generateMessage(List.of(prompt), null, 1);
+        JsonObject candidate = responses.get(0).getAsJsonObject();
         String raw = extractRawContent(candidate).trim();
         JsonObject data = tryParseOrFix(raw);
 
-        // 3) Extract LLM fields
+        // 3) Extract LLM scores and ideal profile
         double industryScore = data.get("industryScore").getAsDouble();
         double techScore     = data.get("techScore").getAsDouble();
         double llmJdScore    = data.get("jdScore").getAsDouble();
-        String explanation   = data.get("explanation").getAsString();
-        String jobSummary    = data.get("jobSummary").getAsString();
-        String candidateSummary = data.get("candidateSummary").getAsString();
         JsonArray idealArr   = data.getAsJsonArray("idealProfile");
         List<String> idealProfile = new ArrayList<>();
         for (JsonElement el : idealArr) {
             idealProfile.add(el.getAsString());
         }
 
-        // 4) Compute embeddings
-        float[] jobEmb    = onnxService.embed(job.getDescription());
-        float[] cvEmb     = onnxService.embed(cvText);
-        float[] jobSumEmb = onnxService.embed(jobSummary);
-        float[] candSumEmb= onnxService.embed(candidateSummary);
-        // join ideal bullets into a single text
-        String joinedIdeal = String.join(" ", idealProfile);
-        float[] idealEmb  = onnxService.embed(joinedIdeal);
+        // 4) Embedding similarity (CV vs Job)
+        float[] jobEmb = onnxService.embed(job.getDescription());
+        float[] cvEmb  = onnxService.embed(cvText);
+        double embedScore = OnnxSentenceEmbeddingService.cosineSimilarity(jobEmb, cvEmb) * 100.0;
 
-        // 5) Similarities (0–100)
-        double simCvJob      = OnnxSentenceEmbeddingService.cosineSimilarity(jobEmb, cvEmb) * 100.0;
-        double simCvSumm     = OnnxSentenceEmbeddingService.cosineSimilarity(candSumEmb, jobSumEmb) * 100.0;
-        double simCvIdeal    = OnnxSentenceEmbeddingService.cosineSimilarity(cvEmb, idealEmb) * 100.0;
-        double simJobIdeal   = OnnxSentenceEmbeddingService.cosineSimilarity(jobEmb, idealEmb) * 100.0;
-        double embedScore    = simCvJob;
+        // 5) Cross-encoder for JD match
+        List<String> crossInput = Collections.singletonList(job.getDescription() + "\t" + cvText);
+        float[] crossOut = reranker.score(crossInput);
+        double crossScore = crossOut.length > 0 ? crossOut[0] * 100.0 : 0.0;
 
-        // 6) Blend JD scores (LLM + embed)
-        double blendedJdScore = (llmJdScore + embedScore) / 2.0;
+        // 6) Lexical BM25 presence-based score
+        List<String> lexHits = lexicalService.search(job.getDescription(), 50);
+        double lexicalScore = lexHits.stream()
+                .anyMatch(text -> text.contains(cvText.substring(0, Math.min(50, cvText.length()))))
+                ? 100.0 : 0.0;
 
-        // 7) Final weighted score
+        // 7) Structure extraction via LLM
+        String structJobPrompt = "Extract a JSON array of the top 5 responsibilities in this job description:\n" + job.getDescription();
+        String structCvPrompt  = "Extract a JSON array of the top 5 responsibilities in this CV text:\n" + cvText;
+        JsonArray jobStruct = glClient.generateMessage(List.of(structJobPrompt), null, 1)
+                .get(0).getAsJsonObject().getAsJsonArray("content");
+        JsonArray cvStruct  = glClient.generateMessage(List.of(structCvPrompt), null, 1)
+                .get(0).getAsJsonObject().getAsJsonArray("content");
+        Set<String> setJob = new HashSet<>();
+        jobStruct.forEach(e -> setJob.add(e.getAsString().toLowerCase()));
+        Set<String> setCv = new HashSet<>();
+        cvStruct.forEach(e -> setCv.add(e.getAsString().toLowerCase()));
+        Set<String> intersect = new HashSet<>(setJob);
+        intersect.retainAll(setCv);
+        double structureScore = setJob.isEmpty() ? 0.0 : (double) intersect.size() / setJob.size() * 100.0;
+
+        // 8) Blend JD scores evenly
+        double blendedJdScore = (llmJdScore + embedScore + crossScore + lexicalScore + structureScore) / 5.0;
+
+        // 9) Final weighted score
         double finalScore = industryScore * 0.10
                 + techScore       * 0.30
                 + blendedJdScore  * 0.60;
 
-        // 8) Assemble explanation with extras
-        StringBuilder fullExplanation = new StringBuilder()
-                .append(explanation)
-                .append("\nONNX Embedding similarity (CV↔Job): ")
-                .append(String.format("%.2f%%", simCvJob))
-                .append("\nLLM JD Score: ").append(String.format("%.2f%%", llmJdScore))
-                .append("\nBlended JD Match: ").append(String.format("%.2f%%", blendedJdScore))
-                .append("\nJob Summary: ").append(jobSummary)
-                .append("\nCandidate Summary: ").append(candidateSummary)
-                .append("\nIdeal Profile: \n");
+        // 10) Assemble explanation
+        StringBuilder exp = new StringBuilder();
+        exp.append("LLM JD: ").append(String.format("%.2f%%", llmJdScore)).append("\n");
+        exp.append("Embed: ").append(String.format("%.2f%%", embedScore)).append("\n");
+        exp.append("Cross: ").append(String.format("%.2f%%", crossScore)).append("\n");
+        exp.append("Lexical: ").append(String.format("%.2f%%", lexicalScore)).append("\n");
+        exp.append("Structure: ").append(String.format("%.2f%%", structureScore)).append("\n");
+        exp.append("Blended JD: ").append(String.format("%.2f%%", blendedJdScore)).append("\n");
+        exp.append("Industry: ").append(String.format("%.2f%%", industryScore)).append("\n");
+        exp.append("Tech: ").append(String.format("%.2f%%", techScore)).append("\n");
+        exp.append("Ideal Profile:\n");
         for (String trait : idealProfile) {
-            fullExplanation.append(" - ").append(trait).append("\n");
+            exp.append(" - ").append(trait).append("\n");
         }
-        fullExplanation.append("Similarity (CV↔Ideal): ").append(String.format("%.2f%%", simCvIdeal))
-                .append("\nSimilarity (Job↔Ideal): ").append(String.format("%.2f%%", simJobIdeal));
 
-        return new CVMatchResult(finalScore, industryScore, techScore, blendedJdScore, fullExplanation.toString());
+        return new CVMatchResult(finalScore, industryScore, techScore, blendedJdScore, exp.toString());
     }
-
     /**
      * Safely extract the LLM content field, whether primitive or nested object.
      */
