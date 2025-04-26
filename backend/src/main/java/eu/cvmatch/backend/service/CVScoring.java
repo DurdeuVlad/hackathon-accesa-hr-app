@@ -4,107 +4,153 @@ import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
 import eu.cvmatch.backend.model.CVMatchResult;
 import eu.cvmatch.backend.model.JobPosting;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class CVScoring {
-    private final Gson gson = new Gson();
+    private final Gson gson;
+    private final GenerativeLanguageClient glClient;
+    private final OnnxSentenceEmbeddingService onnxService;
 
-    private final GenerativeLanguageClient glClient = new GenerativeLanguageClient();;
-
-    private final EmbeddingSimilarityService embeddingService = new EmbeddingSimilarityService(glClient);;
+    @Autowired
+    public CVScoring(GenerativeLanguageClient glClient,
+                     OnnxSentenceEmbeddingService onnxService) {
+        this.gson = new Gson();
+        this.glClient = glClient;
+        this.onnxService = onnxService;
+    }
 
     public CVMatchResult calculateScore(String cvText, JobPosting job) throws Exception {
+        // 1) Normalize technical-skill weights
         job.normalizeTechnicalSkillsScore();
-        // 1) get the LLM breakdown
+
+        // 2) Prompt LLM and parse JSON response
         String prompt = buildPrompt(cvText, job);
         JsonArray candidates = glClient.generateMessage(List.of(prompt), null, 1);
-        if (candidates == null || candidates.isEmpty()) {
-            throw new IllegalStateException("Gemini returned no candidates");
-        }
-        String raw = candidates.get(0).getAsJsonObject().get("content").getAsString().trim();
-        JsonObject data = tryParseOrFix(raw, glClient);
+        JsonObject candidate = candidates.get(0).getAsJsonObject();
+        String raw = extractRawContent(candidate).trim();
+        JsonObject data = tryParseOrFix(raw);
 
-        // 2) pull out their scores
+        // 3) Extract LLM fields
         double industryScore = data.get("industryScore").getAsDouble();
         double techScore     = data.get("techScore").getAsDouble();
         double llmJdScore    = data.get("jdScore").getAsDouble();
         String explanation   = data.get("explanation").getAsString();
+        String jobSummary    = data.get("jobSummary").getAsString();
+        String candidateSummary = data.get("candidateSummary").getAsString();
+        JsonArray idealArr   = data.getAsJsonArray("idealProfile");
+        List<String> idealProfile = new ArrayList<>();
+        for (JsonElement el : idealArr) {
+            idealProfile.add(el.getAsString());
+        }
 
-        // 3) compute an embedding‑based JD match (0.0–1.0 → 0–100)
-        double embedSim   = embeddingService.cosineSimilarity(job.getDescription(), cvText);
-        double embedScore = embedSim * 100.0;
+        // 4) Compute embeddings
+        float[] jobEmb    = onnxService.embed(job.getDescription());
+        float[] cvEmb     = onnxService.embed(cvText);
+        float[] jobSumEmb = onnxService.embed(jobSummary);
+        float[] candSumEmb= onnxService.embed(candidateSummary);
+        // join ideal bullets into a single text
+        String joinedIdeal = String.join(" ", idealProfile);
+        float[] idealEmb  = onnxService.embed(joinedIdeal);
 
-        // 4) blend the two JD scores
+        // 5) Similarities (0–100)
+        double simCvJob      = OnnxSentenceEmbeddingService.cosineSimilarity(jobEmb, cvEmb) * 100.0;
+        double simCvSumm     = OnnxSentenceEmbeddingService.cosineSimilarity(candSumEmb, jobSumEmb) * 100.0;
+        double simCvIdeal    = OnnxSentenceEmbeddingService.cosineSimilarity(cvEmb, idealEmb) * 100.0;
+        double simJobIdeal   = OnnxSentenceEmbeddingService.cosineSimilarity(jobEmb, idealEmb) * 100.0;
+        double embedScore    = simCvJob;
+
+        // 6) Blend JD scores (LLM + embed)
         double blendedJdScore = (llmJdScore + embedScore) / 2.0;
 
-        // 5) compute final
+        // 7) Final weighted score
         double finalScore = industryScore * 0.10
-                + techScore     * 0.30
-                + blendedJdScore* 0.60;
+                + techScore       * 0.30
+                + blendedJdScore  * 0.60;
 
-        // 6) append a note about the embedding match
-        String fullExplanation = explanation
-                + "\nEmbedding JD‑CV similarity: " + String.format("%.2f%%", embedScore)
-                + "\nBlended JD Match: "       + String.format("%.2f%%", blendedJdScore);
+        // 8) Assemble explanation with extras
+        StringBuilder fullExplanation = new StringBuilder()
+                .append(explanation)
+                .append("\nONNX Embedding similarity (CV↔Job): ")
+                .append(String.format("%.2f%%", simCvJob))
+                .append("\nLLM JD Score: ").append(String.format("%.2f%%", llmJdScore))
+                .append("\nBlended JD Match: ").append(String.format("%.2f%%", blendedJdScore))
+                .append("\nJob Summary: ").append(jobSummary)
+                .append("\nCandidate Summary: ").append(candidateSummary)
+                .append("\nIdeal Profile: \n");
+        for (String trait : idealProfile) {
+            fullExplanation.append(" - ").append(trait).append("\n");
+        }
+        fullExplanation.append("Similarity (CV↔Ideal): ").append(String.format("%.2f%%", simCvIdeal))
+                .append("\nSimilarity (Job↔Ideal): ").append(String.format("%.2f%%", simJobIdeal));
 
-        return new CVMatchResult(finalScore, industryScore, techScore, blendedJdScore, fullExplanation);
+        return new CVMatchResult(finalScore, industryScore, techScore, blendedJdScore, fullExplanation.toString());
     }
 
     /**
-     * Attempts to parse the raw JSON string leniently.
-     * If that doesn't yield an object, calls glClient.fixJson(...) once, then parses its output.
+     * Safely extract the LLM content field, whether primitive or nested object.
      */
-    private JsonObject tryParseOrFix(String raw, GenerativeLanguageClient glClient) throws Exception {
-        try {
-            JsonElement firstTry = parseLenient(raw);
-            if (firstTry.isJsonObject()) {
-                return firstTry.getAsJsonObject();
-            }
-        } catch (JsonSyntaxException ignored) {
-            // fall through to fix
+    private String extractRawContent(JsonObject candidate) {
+        JsonElement el = candidate.get("content");
+        if (el == null) {
+            return candidate.toString();
         }
-
-        // Ask Gemini to correct the JSON
-        JsonObject fixedJson = glClient.fixJson(raw);
-        String fixedString = fixedJson.toString();
-
-        JsonElement secondTry = parseLenient(fixedString);
-        if (!secondTry.isJsonObject()) {
-            throw new IllegalStateException("Fixed JSON is still not an object:\n" + fixedString);
+        if (el.isJsonPrimitive()) {
+            return el.getAsString();
         }
-        return secondTry.getAsJsonObject();
+        JsonObject obj = el.getAsJsonObject();
+        if (obj.has("content") && obj.get("content").isJsonPrimitive()) {
+            return obj.get("content").getAsString();
+        }
+        return el.toString();
     }
 
     /**
-     * Performs lenient parsing:
-     *  - allows comments/unterminated strings
-     *  - unwraps quoted JSON strings
+     * Attempt lenient JSON parse, otherwise ask LLM to correct.
+     */
+    private JsonObject tryParseOrFix(String raw) throws Exception {
+        try {
+            JsonElement first = parseLenient(raw);
+            if (first.isJsonObject()) {
+                return first.getAsJsonObject();
+            }
+        } catch (JsonSyntaxException ignore) {
+        }
+        JsonObject fixed = glClient.fixJson(raw);
+        JsonElement reparsed = parseLenient(fixed.toString());
+        if (!reparsed.isJsonObject()) {
+            throw new IllegalStateException("Fixed JSON is not an object: " + fixed);
+        }
+        return reparsed.getAsJsonObject();
+    }
+
+    /**
+     * Parse JSON leniently, unwrapping quoted strings.
      */
     private JsonElement parseLenient(String content) throws JsonSyntaxException {
         JsonReader reader = new JsonReader(new StringReader(content));
         reader.setLenient(true);
         JsonElement elem = JsonParser.parseReader(reader);
-
-        // If it's a primitive (i.e. model wrapped JSON in quotes), unwrap it
         if (elem.isJsonPrimitive()) {
             String inner = elem.getAsString()
                     .replaceAll("^\"|\"$", "")
                     .replace("\\\"", "\"")
                     .replace("\\\\n", "\n")
                     .replaceAll("```json|```", "");
-            JsonReader reader2 = new JsonReader(new StringReader(inner));
-            reader2.setLenient(true);
-            elem = JsonParser.parseReader(reader2);
+            JsonReader r2 = new JsonReader(new StringReader(inner));
+            r2.setLenient(true);
+            elem = JsonParser.parseReader(r2);
         }
         return elem;
     }
 
     private String buildPrompt(String cv, JobPosting job) {
+        // original template + new summary/profile steps
         return String.format(
                 "You are an expert recruiter and resume evaluator. Your task is to score the candidate’s CV against the given job posting.%n%n" +
 
@@ -149,11 +195,25 @@ public class CVScoring {
                         "EXPLANATION:%n" +
                         " Provide a brief rationale for Industry, Tech, JD Match, and final score, each on its own line.%n%n" +
 
-                        "OUTPUT REQUIREMENTS:%n" +
-                        " Return ONLY a single RAW JSON object: " +
-                        "{\"industryScore\":… , \"techScore\":… , \"jdScore\":… , \"score\":… , \"explanation\":\"…\"}%n%n" +
+                        "ADDITIONAL TASKS:%n" +
+                        " 1) Generate a concise **Job Summary** (2–3 sentences) that captures the core responsibilities and qualifications.%n" +
+                        " 2) Generate a concise **Candidate Summary** (2–3 sentences) of this CV’s key strengths and experience.%n" +
+                        " 3) Generate an **Ideal Candidate Profile**: a 3–5 bullet-point list of the top traits/skills you’d look for in a perfect match.%n%n" +
 
-                        "HINT: Use 0/25/50/75/100 as base checkpoints, but you may interpolate above the nearest lower bound if clearly warranted.%n%n" +
+                        "OUTPUT REQUIREMENTS:%n" +
+                        " Return ONLY a single RAW JSON object with these fields:%n" +
+                        " {\n" +
+                        "   \"industryScore\":…, \n" +
+                        "   \"techScore\":…, \n" +
+                        "   \"jdScore\":…, \n" +
+                        "   \"score\":…, \n" +
+                        "   \"explanation\":\"…\",\n" +
+                        "   \"jobSummary\":\"…\",\n" +
+                        "   \"candidateSummary\":\"…\",\n" +
+                        "   \"idealProfile\": [\"…\", …]\n" +
+                        " }%n%n" +
+
+                        "HINT: Use 0/25/50/75/100 as base checkpoints, but interpolate when warranted.%n%n" +
 
                         "Job Posting:%n" +
                         " Industry: %s%n" +

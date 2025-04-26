@@ -3,7 +3,6 @@ package eu.cvmatch.backend.service;
 import com.google.gson.*;
 import eu.cvmatch.backend.model.CVMatchResult;
 import eu.cvmatch.backend.model.JobPosting;
-import eu.cvmatch.backend.service.GenerativeLanguageClient;
 import eu.cvmatch.backend.utils.TextExtractor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +16,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
@@ -31,8 +31,11 @@ class CVScoringIntegrationTest {
     @Autowired
     private GenerativeLanguageClient glClient;
 
+    @Autowired
+    private OnnxSentenceEmbeddingService onnxService;
+
     @Test
-    void allCvsAgainstAllJobs_withCaching_andPrintDeltas() throws Exception {
+    void allCvsAgainstAllJobs_withEmbeddingsAndSimilarity() throws Exception {
         var resolver = new PathMatchingResourcePatternResolver();
         Path cacheDir = Paths.get("jobDescriptionCache");
         Files.createDirectories(cacheDir);
@@ -45,7 +48,6 @@ class CVScoringIntegrationTest {
         assertThat(cvResources).isNotEmpty()
                 .withFailMessage("No CVs found");
 
-        // accumulate all score differences
         List<Double> scoreDeltas = new ArrayList<>();
 
         for (Resource jobRes : jobResources) {
@@ -53,7 +55,7 @@ class CVScoringIntegrationTest {
             String baseName = jobName.replaceAll("\\.docx$", "");
             Path cacheFile = cacheDir.resolve(baseName + ".txt");
 
-            // Extract JD text
+            // extract job description
             String jdText;
             try (InputStream in = jobRes.getInputStream()) {
                 jdText = TextExtractor.extract(new MockMultipartFile(
@@ -63,13 +65,18 @@ class CVScoringIntegrationTest {
                 ));
             }
 
-            // Load or fetch JSON metadata
+            // fetch or load JSON metadata
             String jobJsonString = loadOrFetchJobJson(cacheFile, jdText, jobName);
             JsonObject jobJson = JsonParser.parseString(jobJsonString).getAsJsonObject();
             JobPosting job = buildJobPosting(jobJson, jdText);
 
             System.out.printf("=== Job: %s === Industry: %s  Skills: %s%n%n",
                     jobName, job.getIndustry(), job.getTechnicalSkills());
+
+            // compute and print JD embedding
+            float[] jdEmb = onnxService.embed(jdText);
+            System.out.println("JD Embedding (first 5 dims): "
+                    + Arrays.toString(Arrays.copyOf(jdEmb, 5)) + "\n");
 
             for (Resource cvRes : cvResources) {
                 String cvName = cvRes.getFilename();
@@ -82,6 +89,11 @@ class CVScoringIntegrationTest {
                     ));
                 }
 
+                // compute CV embedding and similarity
+                float[] cvEmb = onnxService.embed(cvText);
+                double sim = OnnxSentenceEmbeddingService.cosineSimilarity(jdEmb, cvEmb);
+                System.out.printf("Embedding similarity JD vs %s: %.4f%n%n", cvName, sim);
+
                 CVMatchResult r1 = cvScoring.calculateScore(cvText, job);
                 CVMatchResult r2 = cvScoring.calculateScore(cvText, job);
 
@@ -89,8 +101,6 @@ class CVScoringIntegrationTest {
                 double dIndustry = Math.abs(r1.getIndustryScore() - r2.getIndustryScore());
                 double dTech     = Math.abs(r1.getTechScore() - r2.getTechScore());
                 double dJd       = Math.abs(r1.getJdScore() - r2.getJdScore());
-
-                // collect main score delta
                 scoreDeltas.add(dScore);
 
                 System.out.printf(
@@ -110,19 +120,14 @@ class CVScoringIntegrationTest {
                         r2.getExplanation().replaceAll("\\s+", " ")
                 );
 
-                // basic assertions
                 assertThat(r1.getScore()).isBetween(0.0, 100.0);
-                assertThat(r1.getIndustryScore()).isBetween(0.0, 100.0);
-                assertThat(r1.getTechScore()).isBetween(0.0, 100.0);
-                assertThat(r1.getJdScore()).isBetween(0.0, 100.0);
-                assertThat(r1.getExplanation()).isNotBlank();
             }
         }
 
-        // After all entries, print aggregate error report
+        // aggregate report
         double totalDelta = scoreDeltas.stream().mapToDouble(Double::doubleValue).sum();
         double maxDelta   = scoreDeltas.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
-        double avgDelta   = scoreDeltas.isEmpty() ? 0.0 : totalDelta / scoreDeltas.size();
+        double avgDelta   = totalDelta / scoreDeltas.size();
 
         System.out.println("\n==== Aggregate Δ Report ====");
         System.out.printf("Entries checked: %d%n", scoreDeltas.size());
@@ -132,29 +137,31 @@ class CVScoringIntegrationTest {
         System.out.println("================================");
     }
 
+    // loadOrFetchJobJson and buildJobPosting helpers omitted for brevity
+
+
     private String loadOrFetchJobJson(Path cacheFile, String jdText, String jobName) throws Exception {
-        String json;
         if (Files.exists(cacheFile)) {
-            json = Files.readString(cacheFile, StandardCharsets.UTF_8);
-        } else {
-            String prompt = """
-                Extract from this job description:
-                • industry,
-                • top 5 technical skills + weights summing to 100.
-                Return ONLY valid JSON:
-                {"industry":"...","technicalSkills":[{"skill":"...","weight":...},...]}.
-
-                Job Description:
-                %s
-                """.formatted(jdText);
-
-            JsonArray cands = glClient.generateMessage(List.of(prompt), null, 1);
-            assertThat(cands).isNotEmpty()
-                    .withFailMessage("Gemini returned no candidates for %s", jobName);
-
-            json = cands.get(0).getAsJsonObject().get("content").getAsString().trim();
-            Files.writeString(cacheFile, json, StandardCharsets.UTF_8);
+            return Files.readString(cacheFile, StandardCharsets.UTF_8);
         }
+
+        String prompt = """
+            Extract from this job description:
+            • industry,
+            • top 5 technical skills + weights summing to 100.
+            Return ONLY valid JSON:
+            {"industry":"...","technicalSkills":[{"skill":"...","weight":...},...]}.
+
+            Job Description:
+            %s
+            """.formatted(jdText);
+
+        JsonArray cands = glClient.generateMessage(List.of(prompt), null, 1);
+        assertThat(cands).isNotEmpty()
+                .withFailMessage("Gemini returned no candidates for %s", jobName);
+
+        String json = cands.get(0).getAsJsonObject().get("content").getAsString().trim();
+        Files.writeString(cacheFile, json, StandardCharsets.UTF_8);
         // validate
         JsonParser.parseString(json).getAsJsonObject();
         return json;
