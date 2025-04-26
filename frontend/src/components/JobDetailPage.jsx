@@ -371,21 +371,22 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
 
                                         {/* Industry and Location */}
                                         <Box sx={{ display: 'flex', gap: 3 }}>
-                                            <FormControl fullWidth required variant="outlined" size="medium">
-                                                <InputLabel id="industry-label">Industry *</InputLabel>
-                                                <Select
-                                                    labelId="industry-label"
-                                                    name="industry"
-                                                    value={jobDescription.industry}
-                                                    onChange={handleInputChange}
-                                                    label="Industry *"
-                                                    sx={{ height: '56px' }}
-                                                >
-                                                    {industries.map(industry => (
-                                                        <MenuItem key={industry} value={industry}>{industry}</MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
+                                            <TextField
+                                                name="industry"
+                                                label="Industry *"
+                                                value={jobDescription.industry}
+                                                onChange={handleInputChange}
+                                                fullWidth
+                                                required
+                                                variant="outlined"
+                                                placeholder="e.g. Automotive"
+                                                size="medium"
+                                                InputProps={{
+                                                    sx: {
+                                                        height: '56px',
+                                                    }
+                                                }}
+                                            />
                                             <TextField
                                                 name="location"
                                                 label="Location"
