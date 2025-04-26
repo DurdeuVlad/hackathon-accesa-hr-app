@@ -1,4 +1,5 @@
 # CVMatch Webapp
+# 📘 GitHub Rules for CVMatch Webapp Repository
 
 This repo uses a **monorepo** layout:
 
