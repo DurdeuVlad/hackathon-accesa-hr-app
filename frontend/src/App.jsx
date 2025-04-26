@@ -208,11 +208,6 @@ function App() {
             {currentPage === 'statisticspage' && (
                 <StatisticsPage
                     onBack={() => handleBack('statisticspage')}
-                />
-            )}
-            {currentPage === 'statisticspage' && (
-                <StatisticsPage
-                    onBack={() => handleBack('statisticspage')}
                     onNavigate={handleNavigate}
                 />
             )}
