@@ -12,7 +12,10 @@ import {
     Avatar,
     Button,
     Divider,
-    Rating
+    Rating,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 
@@ -176,8 +179,8 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                                             borderTop: '4px solid #3b82f6'
                                         }}>
                                             <CardContent sx={{ p: 3 }}>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                                    <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
+                                                <Box sx={{ display: 'flex', justifyContent: 'center', transform: 'translate(-20px)', mb: 2 }}>
+                                                    <Avatar sx={{ bgcolor: 'primary.main', transform: 'translate(-10px)', width: 47, height: 47 }}>
                                                         <WorkIcon />
                                                     </Avatar>
                                                     <Box>
@@ -202,7 +205,7 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                                                 <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                                                     Required Skills
                                                 </Typography>
-                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2}}>
+                                                <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 1, mb: 2}}>
                                                     {jobDetails.requirements.map((skill, index) => (
                                                         <Chip
                                                             key={index}
@@ -299,6 +302,7 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                                             <Card
                                                 key={index}
                                                 sx={{
+                                                    width: '100%',
                                                     mb: 3,
                                                     borderRadius: 3,
                                                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
@@ -310,10 +314,10 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                                                     borderLeft: `4px solid ${getScoreColor(score.score)}`
                                                 }}
                                             >
-                                                <CardContent sx={{ p: 3 }}>
+                                                <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
                                                     <Grid container spacing={2}>
                                                         <Grid item xs={12} sm={8}>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                            <Box sx={{ display: 'flex', felxDirection: 'column', alignItems: 'center', gap: 1 }}>
                                                                 <Avatar
                                                                     variant="rounded"
                                                                     sx={{
@@ -337,8 +341,8 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                                                                 </Box>
                                                             </Box>
 
-                                                            <Box sx={{ mt: 3, pl: 2 }}>
-                                                                <Grid container spacing={2}>
+                                                            <Box sx={{ mt: 3 }}>
+                                                                <Grid container spacing={2} justifyContent="center" textAlign="center">
                                                                     <Grid item xs={4}>
                                                                         <Typography variant="body2" color="text.secondary" gutterBottom>
                                                                             Technical Match
@@ -376,8 +380,8 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                                                             </Box>
                                                         </Grid>
 
-                                                        <Grid item xs={12} sm={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                                            <Box sx={{ position: 'relative', display: 'inline-flex', mb: 1 }}>
+                                                        <Grid item xs={12} sm={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pl: 5 }}>
+                                                            <Box sx={{ position: 'relative', display: 'inline-flex', mb: 1}}>
                                                                 <CircularProgress
                                                                     variant="determinate"
                                                                     value={100}
@@ -405,7 +409,7 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                                                                         position: 'absolute',
                                                                         display: 'flex',
                                                                         alignItems: 'center',
-                                                                        justifyContent: 'center',
+                                                                        justifyContent: 'center'
                                                                     }}
                                                                 >
                                                                     <Typography variant="h6" fontWeight="bold">
@@ -425,16 +429,55 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                                                                 size="small"
                                                             />
 
-                                                            <Button
-                                                                variant="outlined"
-                                                                size="small"
-                                                                endIcon={<ArrowForwardIcon />}
-                                                                sx={{ fontSize: '0.8rem' }}
-                                                            >
-                                                                View Details
-                                                            </Button>
                                                         </Grid>
                                                     </Grid>
+                                                    <Accordion sx={{ mt: 3, bgcolor: 'transparent', boxShadow: 'none', border: '1px solid #ccc', borderRadius: 2 }}>
+                                                        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ justifyContent: 'center' }}>
+                                                            <Typography fontWeight="bold" textAlign="center" width="100%">View More Details</Typography>
+                                                        </AccordionSummary>
+
+                                                        <AccordionDetails sx={{ p: 0 }}>
+
+                                                            <Box sx={{ width: '100%' , px: 3, py: 2}}>
+                                                                <Card sx={{ bgcolor: '#e0f2ff', p: 3, mb: 2, width: '100%', borderRadius: 2, boxShadow: 'none' }}>
+                                                                    <Typography variant="h6" fontWeight="bold" textAlign="center">Job Info</Typography>
+                                                                    <Typography align="center">Title: Frontend Developer</Typography>
+                                                                    <Typography align="center">Industry: Tech</Typography>
+                                                                    <Typography align="center">Description:</Typography>
+                                                                    <Typography align="center" paragraph>
+                                                                        Looking for a skilled React developer with experience in modern JS frameworks.
+                                                                    </Typography>
+                                                                </Card>
+
+                                                                <Card sx={{ bgcolor: '#e0f2ff', p: 3, mb: 2, width: '100%', borderRadius: 2, boxShadow: 'none' }}>
+                                                                    <Typography variant="h6" fontWeight="bold" textAlign="center">Candidate Info</Typography>
+                                                                    <Typography align="center">File: {score.cvName}</Typography>
+                                                                    <Typography align="center">Uploaded: 2025-04-01</Typography>
+                                                                    <Typography variant="subtitle2" align="center">Extracted Skills:</Typography>
+                                                                    <Box display="flex" justifyContent="center" flexWrap="wrap" gap={1} mt={1}>
+                                                                        {['React', 'JavaScript', 'Node.js'].map((skill, i) => (
+                                                                            <Chip key={i} label={skill} color="primary" size="small" />
+                                                                        ))}
+                                                                    </Box>
+                                                                </Card>
+
+                                                                <Card sx={{ bgcolor: '#e0f2ff', p: 3, mb: 2, width: '100%', borderRadius: 2, boxShadow: 'none' }}>
+                                                                    <Typography variant="subtitle2" fontWeight="bold" textAlign="center">Required Skills:</Typography>
+                                                                    <Box sx={{ mt: 1, textAlign: 'center' }}>
+                                                                        <Typography>React - 40%</Typography>
+                                                                        <Typography>JavaScript - 30%</Typography>
+                                                                        <Typography>Redux - 30%</Typography>
+                                                                    </Box>
+                                                                </Card>
+
+                                                                <Card sx={{ bgcolor: '#e0f2ff', p: 3, width: '100%', borderRadius: 2, boxShadow: 'none' }}>
+                                                                    <Typography variant="h6" fontWeight="bold" textAlign="center">Explanation</Typography>
+                                                                    <Typography align="center">This candidate scored {score.score}% matching the job requirements for {jobId}.</Typography>
+                                                                </Card>
+                                                            </Box>
+                                                        </AccordionDetails>
+                                                    </Accordion>
+
                                                 </CardContent>
                                             </Card>
                                         ))}
