@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/processcv")
 public class ProcessCVController {
@@ -18,16 +20,24 @@ public class ProcessCVController {
     }
 
     @PostMapping
-    public ResponseEntity<String> processCV(
+    public ResponseEntity<?> processCV(
             @RequestParam("jobId") String jobId,
             @RequestParam("file") MultipartFile file
     ) {
         try {
             CVMatchResult result = cvProcessingService.process(jobId, file);
-            return ResponseEntity.ok("✅ CV processed. Score: " + result.getScore());
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "✅ CV processed successfully",
+                    "score", result.getScore(),
+                    "result", result
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("❌ Failed to process CV: " + e.getMessage());
+                    .body(Map.of("error", "❌ Failed to process CV: " + e.getMessage()));
         }
     }
 }

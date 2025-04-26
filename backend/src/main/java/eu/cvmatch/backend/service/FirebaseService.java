@@ -10,10 +10,7 @@ import eu.cvmatch.backend.model.CVMatchResult;
 import eu.cvmatch.backend.model.JobPosting;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class FirebaseService {
@@ -112,7 +109,6 @@ public class FirebaseService {
             CV cv = new CV();
             cv.setId(doc.getId());
 
-            // fetch the DocumentReference field
             DocumentReference storedRef =
                     doc.get("userId", DocumentReference.class);
             cv.setUserId(storedRef != null ? storedRef.getId() : null);
@@ -134,5 +130,34 @@ public class FirebaseService {
 
             return cv;
         }).toList();
+    }
+
+    public String saveCV(CV cv) {
+        String cvId = cv.getId();
+        if (cvId == null || cvId.isBlank()) {
+            cvId = UUID.randomUUID().toString();
+            cv.setId(cvId);
+        }
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("fileName", cv.getFileName());
+        data.put("contentText", cv.getContentText());
+        data.put("uploadedAt", FieldValue.serverTimestamp());
+
+        if (cv.getUserId() != null && !cv.getUserId().isBlank()) {
+            data.put("userId", db.document("users/" + cv.getUserId()));
+        }
+
+        if (cv.getIndustryTags() != null) {
+            data.put("industryTags", cv.getIndustryTags());
+        }
+
+        if (cv.getTechSkills() != null) {
+            data.put("techSkills", cv.getTechSkills());
+        }
+
+        db.collection("cvs").document(cvId).set(data);
+
+        return cvId;
     }
 }
