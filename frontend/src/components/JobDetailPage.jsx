@@ -273,14 +273,8 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                     </Box>
 
                     <Container maxWidth="lg" sx={{ my: 4, pb: 6 }}>
-                        <Box sx={{
-                            mb: 4,
-                            height: '60px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'center',
-                            overflow: 'hidden'
-                        }}>
+                        <Box sx={{ mb: 4 }}>
+
                             {successMessage && (
                                 <Alert
                                     severity="success"
@@ -325,7 +319,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                             </Stepper>
                         </Box>
 
-                        {/* Step 1: Job Information */}
                         {activeStep === 0 && (
                             <Card sx={{
                                 borderRadius: 2,
@@ -452,7 +445,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                             </Card>
                         )}
 
-                        {/* Step 2: Technical Skills */}
                         {activeStep === 1 && (
                             <Card sx={{
                                 borderRadius: 2,
@@ -652,69 +644,59 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                         <Typography variant="caption" color="#6b7280" mt={1} display="block">Accepted formats: PDF, DOC, DOCX</Typography>
                                     </Box>
 
-                                    {/* Files List */}
-                                    <Box mt={4} sx={{ minHeight: '100px', transition: 'all 0.3s ease' }}>
-                                        {cvFiles.length > 0 && (
-                                            <>
-                                                <Typography variant="subtitle1" color="#1e3a8a" display="flex" alignItems="center" gap={1} fontWeight={500} mb={2}>
-                                                    <CheckCircle sx={{ color: '#10b981' }} /> Uploaded Files ({cvFiles.length})
-                                                </Typography>
-                                                <Grid container spacing={2}>
-                                                    {cvFiles.map((file, index) => (
-                                                        <Grid item xs={12} sm={6} key={index}>
-                                                            <Paper sx={{
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                p: 2,
-                                                                borderRadius: 2,
-                                                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                                                                border: '1px solid #e5e7eb',
-                                                                '&:hover': { boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }
-                                                            }}>
-                                                                <Avatar
-                                                                    variant="rounded"
-                                                                    sx={{
-                                                                        bgcolor: '#eff6ff',
-                                                                        color: '#3b82f6',
-                                                                        mr: 2
-                                                                    }}
-                                                                >
-                                                                    <InsertDriveFile />
-                                                                </Avatar>
-                                                                <Box flex={1}>
-                                                                    <Typography fontWeight={500} color="#111827" noWrap>
-                                                                        {file.name}
-                                                                    </Typography>
-                                                                    <Typography fontSize={12} color="#6b7280">
-                                                                        {(file.size / 1024).toFixed(2)} KB
-                                                                    </Typography>
-                                                                </Box>
-                                                                <IconButton
-                                                                    onClick={() => handleRemoveFile(index)}
-                                                                    sx={{ '&:hover': { backgroundColor: '#fee2e2' } }}
-                                                                    size="small"
-                                                                >
-                                                                    <RemoveCircle sx={{ color: '#ef4444' }} />
-                                                                </IconButton>
-                                                            </Paper>
-                                                        </Grid>
-                                                    ))}
-                                                </Grid>
-                                            </>
-                                        )}
-                                    </Box>
+                                    {cvFiles.length > 0 && (
+                                        <Box mt={4}>
+                                            <Typography variant="subtitle1" color="#1e3a8a" display="flex" alignItems="center" gap={1} fontWeight={500} mb={2}>
+                                                <CheckCircle sx={{ color: '#10b981' }} /> Uploaded Files ({cvFiles.length})
+                                            </Typography>
+                                            <Grid container spacing={2}>
+                                                {cvFiles.map((file, index) => (
+                                                    <Grid item xs={12} sm={6} key={index}>
+                                                        <Paper sx={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            p: 2,
+                                                            borderRadius: 2,
+                                                            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                                                            border: '1px solid #e5e7eb',
+                                                            '&:hover': { boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }
+                                                        }}>
+                                                            <Avatar
+                                                                variant="rounded"
+                                                                sx={{
+                                                                    bgcolor: '#eff6ff',
+                                                                    color: '#3b82f6',
+                                                                    mr: 2
+                                                                }}
+                                                            >
+                                                                <InsertDriveFile />
+                                                            </Avatar>
+                                                            <Box flex={1}>
+                                                                <Typography fontWeight={500} color="#111827" noWrap>
+                                                                    {file.name}
+                                                                </Typography>
+                                                                <Typography fontSize={12} color="#6b7280">
+                                                                    {(file.size / 1024).toFixed(2)} KB
+                                                                </Typography>
+                                                            </Box>
+                                                            <IconButton
+                                                                onClick={() => handleRemoveFile(index)}
+                                                                sx={{ '&:hover': { backgroundColor: '#fee2e2' } }}
+                                                                size="small"
+                                                            >
+                                                                <RemoveCircle sx={{ color: '#ef4444' }} />
+                                                            </IconButton>
+                                                        </Paper>
+                                                    </Grid>
+                                                ))}
+                                            </Grid>
+                                        </Box>
+                                    )}
                                 </CardContent>
                             </Card>
                         )}
 
-                        {/* Navigation Buttons */}
-                        <Box sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            mt: 4,
-                            height: '48px',
-                            position: 'relative'
-                        }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
                             <Button
                                 variant="outlined"
                                 onClick={onBack}

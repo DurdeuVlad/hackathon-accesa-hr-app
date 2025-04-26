@@ -20,7 +20,6 @@ import {
     FormControl,
     InputLabel,
     Divider,
-    Tooltip,
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import {
@@ -150,7 +149,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
         setSearchTerm('');
     };
 
-    // Filter and sort jobs
     const processedJobs = jobs
         .filter(job => {
             const matchesTerm = job.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -221,27 +219,25 @@ const JobListPage = ({ onBack, onNavigate }) => {
                     display: 'flex',
                     flexDirection: 'column',
                     overflow: 'auto',
-                    mt: 0, // No margin between navbar and content
+                    mt: 0,
                 }}>
-                    {/* Header */}
                     <Box sx={{
                         background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
                         color: 'white',
-                        py: 1.5,
+                        py: 3,
                         width: '100%',
-                        mb: 2, // Reduced bottom margin
+                        mb: 3,
                     }}>
-                        <Box sx={{ width: '100%', maxWidth: '1400px', margin: '0 auto', px: 2 }}>
-                            <Typography variant="h5" component="h1" fontWeight="bold" textAlign="center">
+                        <Box sx={{ width: '100%', maxWidth: '1600px', margin: '0 auto', px: 3 }}>
+                            <Typography variant="h4" component="h1" fontWeight="bold" textAlign="center" sx={{ mb: 1 }}>
                                 Job Listings
                             </Typography>
-                            <Typography variant="body1" textAlign="center">
+                            <Typography variant="h6" textAlign="center" sx={{ opacity: 0.9 }}>
                                 Manage your job postings and find the perfect candidate match
                             </Typography>
                         </Box>
                     </Box>
 
-                    {/* Main content area with filter bar and job listings */}
                     <Box sx={{
                         flex: 1,
                         px: { xs: 2, sm: 3 },
@@ -249,7 +245,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                         maxWidth: '1400px',
                         margin: '0 auto'
                     }}>
-                        {/* Filter Bar - Simplified and inline */}
                         <Box sx={{
                             display: 'flex',
                             flexDirection: { xs: 'column', sm: 'row' },
@@ -258,7 +253,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                             gap: 2,
                             mb: 2
                         }}>
-                            {/* Search field */}
                             <TextField
                                 placeholder="Search jobs..."
                                 value={searchTerm}
@@ -298,7 +292,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                 alignItems: 'center',
                                 width: { xs: '100%', sm: 'auto' }
                             }}>
-                                {/* Industry Filter */}
                                 <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
                                     <Typography variant="body2" sx={{ mr: 1, color: 'text.secondary', display: { xs: 'none', md: 'block' } }}>
                                         Sort By
@@ -326,7 +319,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                     </FormControl>
                                 </Box>
 
-                                {/* Sort By Filter */}
                                 <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
                                     <Typography variant="body2" sx={{ mr: 1, color: 'text.secondary', display: { xs: 'none', md: 'block' } }}>
                                         Sort By
@@ -371,7 +363,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                             </Box>
                         </Box>
 
-                        {/* Jobs Found Count */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
                             <Typography variant="body2" color="text.secondary">
                                 {processedJobs.length} jobs found
@@ -393,7 +384,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                             )}
                         </Box>
 
-                        {/* Job Listings */}
                         {isLoading ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
                                 <CircularProgress />
@@ -417,7 +407,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                             }}
                                             onClick={() => onNavigate('jobdetail')}
                                         >
-                                            {/* Job Header */}
                                             <Box sx={{ p: 2 }}>
                                                 {/* Job Title and Company */}
                                                 <Box sx={{
@@ -458,7 +447,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                                     </IconButton>
                                                 </Box>
 
-                                                {/* Job Description */}
                                                 <Typography
                                                     variant="body2"
                                                     color="text.primary"
@@ -474,7 +462,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                                     {job.description}
                                                 </Typography>
 
-                                                {/* Skills */}
                                                 <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                                     {job.technicalSkills.map((skill, idx) => (
                                                         <Chip
@@ -494,7 +481,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
 
                                             <Divider />
 
-                                            {/* Job Footer */}
                                             <Box sx={{
                                                 p: 1.5,
                                                 bgcolor: '#fafafa',
@@ -502,7 +488,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                                 justifyContent: 'space-between',
                                                 flexWrap: 'wrap'
                                             }}>
-                                                {/* Job Metadata */}
                                                 <Box sx={{
                                                     display: 'flex',
                                                     gap: { xs: 1.5, md: 3 },
@@ -528,7 +513,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                                     </Box>
                                                 </Box>
 
-                                                {/* Action Buttons */}
                                                 <Box sx={{
                                                     display: 'flex',
                                                     gap: 1,
@@ -608,7 +592,6 @@ const JobListPage = ({ onBack, onNavigate }) => {
                     </Box>
                 </Box>
 
-                {/* Delete confirmation dialog */}
                 <Dialog
                     open={showDeleteConfirm}
                     onClose={() => setShowDeleteConfirm(false)}
