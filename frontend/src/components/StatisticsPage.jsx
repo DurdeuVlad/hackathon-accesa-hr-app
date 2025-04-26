@@ -93,7 +93,6 @@ function StatisticsPage({ onBack, onNavigate }) {
                     </Box>
 
                     <Container maxWidth="xl" sx={{ px: { xs: 2, md: 6 }, pb: 6 }}>
-                        {/* Filters */}
                         <Box sx={{
                             maxWidth: '1100px',
                             mx: 'auto',
@@ -298,7 +297,6 @@ function StatisticsPage({ onBack, onNavigate }) {
 
                         <Box sx={{ maxWidth: '1500px', mx: 'auto' }}>
                             <Grid container spacing={4} justifyContent="center">
-                                {/* First Row: Two charts side by side */}
                                 <Grid item xs={12} md={12} lg={6}>
                                     <Card sx={{
                                         borderRadius: 3,

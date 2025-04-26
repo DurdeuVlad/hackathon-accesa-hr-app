@@ -15,7 +15,10 @@ import {
     ListItemIcon,
     ListItemText,
     Divider,
-    Avatar
+    Avatar,
+    ToggleButtonGroup,
+    ToggleButton,
+    Tooltip
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import {
@@ -37,8 +40,8 @@ function MatchCV({ onBack, onNavigate }) {
     const [uploading, setUploading] = useState(false);
     const [uploadComplete, setUploadComplete] = useState(false);
     const [error, setError] = useState('');
-    const [searchMode, setSearchMode] = useState('cv-to-jobs'); // 'cv-to-jobs' or 'jobs-to-cv'
     const fileInputRef = useRef(null);
+    const [searchMode, setSearchMode] = useState('cv-to-jobs'); // 'cv-to-jobs' sau 'jobs-to-cv'
 
     const handleDragOver = (e) => {
         e.preventDefault();
@@ -96,26 +99,42 @@ function MatchCV({ onBack, onNavigate }) {
         }
     };
 
-    const handleButtonClick = () => fileInputRef.current.click();
-
-    const handleRemoveFile = (idx) => {
-        setFiles(files.filter((_, i) => i !== idx));
+    const handleButtonClick = () => {
+        fileInputRef.current.click();
     };
 
-    const runSearch = () => {
-        if (!files.length) {
+    const handleRemoveFile = (index) => {
+        setFiles(files.filter((_, i) => i !== index));
+    };
+
+    const handleSearch = () => {
+        if (files.length === 0) {
             setError('Please upload at least one file first.');
             return;
         }
+
         setError('');
         setUploading(true);
+
         setTimeout(() => {
             setUploading(false);
             setUploadComplete(true);
+
             setTimeout(() => {
-                onNavigate(searchMode === 'cv-to-jobs' ? 'jobmatchesresults' : 'jobmatching');
+                // Navigate to the appropriate page based on search mode
+                if (searchMode === 'cv-to-jobs') {
+                    onNavigate('jobmatchesresults');
+                } else {
+                    onNavigate('jobmatching');
+                }
             }, 1000);
         }, 1500);
+    };
+
+    const handleSearchModeChange = (event, newMode) => {
+        if (newMode !== null) {
+            setSearchMode(newMode);
+        }
     };
 
     const formatFileSize = (bytes) => {
@@ -127,17 +146,23 @@ function MatchCV({ onBack, onNavigate }) {
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
-            <Box
-                sx={{
-                    position: 'fixed',
-                    inset: 0,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    bgcolor: 'background.default',
-                }}
-            >
+            <Box sx={{
+                minHeight: '100vh',
+                width: '100vw',
+                display: 'flex',
+                flexDirection: 'column',
+                bgcolor: 'background.default',
+                margin: 0,
+                padding: 0,
+                overflow: 'hidden',
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+            }}>
                 <NavBar
-                    showBackButton
+                    showBackButton={true}
                     onBack={onBack}
                     onNavigate={onNavigate}
                     title="Match & Find"
@@ -164,7 +189,7 @@ function MatchCV({ onBack, onNavigate }) {
                             <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
                                 {searchMode === 'cv-to-jobs' ? 'Find Perfect Job Matches' : 'Find Ideal Candidates'}
                             </Typography>
-                            <Typography variant="h6" sx={{ opacity: 0.9, mx: 'auto', maxWidth: 700 }}>
+                            <Typography variant="h6" sx={{ opacity: 0.9, margin: '0 auto', maxWidth: 700 }}>
                                 {searchMode === 'cv-to-jobs'
                                     ? 'Upload your CV to discover job opportunities that match your skills'
                                     : 'Upload job description to find candidates that match your requirements'}
@@ -180,6 +205,7 @@ function MatchCV({ onBack, onNavigate }) {
                             justifyContent: 'center',
                             width: '100%'
                         }}>
+                            {/* Main Upload Card */}
                             <Card
                                 elevation={0}
                                 sx={{
@@ -194,16 +220,9 @@ function MatchCV({ onBack, onNavigate }) {
                                 <CardContent sx={{ p: 4 }}>
                                     <Typography variant="h5" fontWeight="bold" color="primary.dark" textAlign="center" mb={3}>
                                         {searchMode === 'cv-to-jobs'
-                                            ? 'Drag & drop your CV files here'
-                                            : 'Drag & drop job description files here'}
+                                            ? 'Upload Your CV'
+                                            : 'Upload Job Description'}
                                     </Typography>
-                                    <Typography variant="body1" mb={2}>
-                                        or <strong style={{ color: '#3b82f6' }}>click to browse</strong>
-                                    </Typography>
-                                    <Typography variant="caption">
-                                        Accepts PDF, DOC, DOCX (max 5MB per file)
-                                    </Typography>
-                                </Box>
 
                                     {error && (
                                         <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
@@ -272,6 +291,7 @@ function MatchCV({ onBack, onNavigate }) {
                                         </Typography>
                                     </Box>
 
+                                    {/* Modern Toggle Mode Section */}
                                     <Box sx={{
                                         mt: 4,
                                         display: 'flex',
@@ -423,6 +443,56 @@ function MatchCV({ onBack, onNavigate }) {
                                                 <FileCopyIcon fontSize="small" sx={{ mr: 1, color: 'primary.main' }}/>
                                                 Selected Files ({files.length})
                                             </Typography>
+
+                                            <Paper
+                                                variant="outlined"
+                                                sx={{
+                                                    borderRadius: 2,
+                                                    overflow: 'hidden',
+                                                    border: '1px solid #e5e7eb',
+                                                    width: '100%'
+                                                }}
+                                            >
+                                                <List sx={{ py: 0 }}>
+                                                    {files.map((file, index) => (
+                                                        <Box key={index}>
+                                                            {index > 0 && <Divider />}
+                                                            <ListItem
+                                                                sx={{
+                                                                    py: 1.5,
+                                                                    '&:hover': {
+                                                                        bgcolor: 'rgba(59, 130, 246, 0.04)'
+                                                                    }
+                                                                }}
+                                                                secondaryAction={
+                                                                    <Button
+                                                                        edge="end"
+                                                                        aria-label="delete"
+                                                                        onClick={() => handleRemoveFile(index)}
+                                                                        color="error"
+                                                                        size="small"
+                                                                        startIcon={<DeleteIcon />}
+                                                                    >
+                                                                        Remove
+                                                                    </Button>
+                                                                }
+                                                            >
+                                                                <ListItemIcon>
+                                                                    <DescriptionIcon sx={{ color: 'primary.main' }} />
+                                                                </ListItemIcon>
+                                                                <ListItemText
+                                                                    primary={file.name}
+                                                                    secondary={formatFileSize(file.size)}
+                                                                    primaryTypographyProps={{
+                                                                        fontWeight: 500,
+                                                                        color: 'text.primary'
+                                                                    }}
+                                                                />
+                                                            </ListItem>
+                                                        </Box>
+                                                    ))}
+                                                </List>
+                                            </Paper>
                                         </Box>
                                     )}
 
@@ -431,7 +501,7 @@ function MatchCV({ onBack, onNavigate }) {
                                             variant="contained"
                                             size="large"
                                             endIcon={<ArrowForwardIcon />}
-                                            onClick={runSearch}
+                                            onClick={handleSearch}
                                             disabled={files.length === 0 || uploading || uploadComplete}
                                             sx={{
                                                 py: 1.5,

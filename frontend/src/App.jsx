@@ -1,19 +1,10 @@
-
 import { useState } from 'react'
+import { ThemeProvider } from '@mui/material/styles';
+import { CssBaseline } from '@mui/material';
 import './App.css'
 import Login from './components/Login'
 import MatchCV from './components/MatchCV'
 import Home from './components/Home'
-import React, { useState } from 'react';
-import { ThemeProvider } from '@mui/material/styles';
-import { CssBaseline } from '@mui/material';
-import './App.css';
-
-import theme from './components/CommonTheme';
-import TopNavBar from './components/TopNavBar';
-import Home from './components/Home';
-import Login from './components/Login';
-import MatchCV from './components/MatchCV';
 import JobMatching from './components/JobMatching';
 import JobMatchesResults from './components/JobMatchesResults';
 import JobDetailPage from './components/JobDetailPage';
@@ -21,20 +12,32 @@ import JobListPage from './components/JobListPage';
 import StatisticsPage from './components/StatisticsPage';
 import theme from './components/CommonTheme';
 
-function App() {
-    const [currentPage, setCurrentPage] = useState('home');
-    const [previousPage, setPreviousPage] = useState('home');
-    const [searchType, setSearchType] = useState('jobs-to-cv');
-    const [currentCvId, setCurrentCvId] = useState('');
-    const [currentCvName, setCurrentCvName] = useState('');
 
-    const handleNavigate = (page, data = {}) => {
+function App() {
+    const [currentPage, setCurrentPage] = useState('home')
+    const [previousPage, setPreviousPage] = useState('home')
+    const [searchType, setSearchType] = useState('jobs-to-cv')
+    const [currentCvId, setCurrentCvId] = useState('')
+    const [currentCvName, setCurrentCvName] = useState('')
+
+    const handleNavigate = (page, data) => {
         setPreviousPage(currentPage);
         setCurrentPage(page);
+        if (data) {
+            if (data.searchType) {
+                setSearchType(data.searchType);
+            }
+            if (data.cvId) {
+                setCurrentCvId(data.cvId);
+            }
+            if (data.cvName) {
+                setCurrentCvName(data.cvName);
+            }
+        }
+    };
 
-        if (data.searchType) setSearchType(data.searchType);
-        if (data.cvId) setCurrentCvId(data.cvId);
-        if (data.cvName) setCurrentCvName(data.cvName);
+    window.navigateToPage = (page) => {
+        handleNavigate(page);
     };
 
     const handleBack = (currentPageName) => {
@@ -50,10 +53,6 @@ function App() {
             setCurrentPage(previousPage);
         }
     };
-
-    // expose global navigation if needed
-    window.navigateToPage = handleNavigate;
-
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
@@ -178,7 +177,6 @@ function App() {
                     }}
                 />
             )}
-
             {currentPage === 'jobmatching' && (
                 <JobMatching
                     onBack={() => handleBack('jobmatching')}
@@ -194,7 +192,6 @@ function App() {
                     cvName={currentCvName}
                 />
             )}
-
             {currentPage === 'jobdetail' && (
                 <JobDetailPage
                     onBack={() => handleBack('jobdetail')}
@@ -202,7 +199,6 @@ function App() {
                     jobId="123"
                 />
             )}
-
             {currentPage === 'joblist' && (
                 <JobListPage
                     onBack={() => handleBack('joblist')}
@@ -216,7 +212,7 @@ function App() {
                 />
             )}
         </ThemeProvider>
-    );
+    )
 }
 
-export default App;
+export default App
