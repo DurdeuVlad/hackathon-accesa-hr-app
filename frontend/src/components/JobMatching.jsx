@@ -15,6 +15,7 @@ import {
     Rating
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
+
 import {
     Work as WorkIcon,
     InsertDriveFile as InsertDriveFileIcon,
@@ -25,6 +26,7 @@ import {
 import { getJobScores } from './jobService';
 import NavBar from './TopNavBar';
 import theme from './CommonTheme';
+
 const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
     const [scores, setScores] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -35,7 +37,6 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
         description: "Experienced developer proficient in modern JavaScript frameworks, specifically React and Redux. Should have strong UI/UX sensibilities and experience with responsive design.",
         requirements: ["React.js", "JavaScript", "Redux", "HTML/CSS", "Responsive Design"]
     });
-
     useEffect(() => {
         setLoading(true);
         getJobScores(jobId).then((res) => {
@@ -49,7 +50,6 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                 { cvName: "CV-Ioana.pdf", score: 43 },
                 { cvName: "CV-Cristian.pdf", score: 39 }
             ];
-
             const enhancedScores = mockData.map(score => ({
                 ...score,
                 details: {
@@ -59,7 +59,6 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                 }
             }));
             enhancedScores.sort((a, b) => b.score - a.score);
-
             setScores(enhancedScores);
             setLoading(false);
         });
@@ -70,17 +69,14 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
     };
     const displayedScores = scores.slice(0, displayLimit);
     const hasMoreResults = displayLimit < scores.length;
-
     const matchedJobsCount = scores.filter(score => score.score >= 80).length;
     const totalJobsCount = scores.length;
     const matchPercentage = totalJobsCount ? Math.round((matchedJobsCount / totalJobsCount) * 100) : 0;
-
     const getScoreColor = (score) => {
         if (score >= 80) return '#10b981';
         if (score >= 60) return '#f59e0b';
         return '#ef4444';
     };
-
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
@@ -113,6 +109,7 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                     flexDirection: 'column',
                     overflow: 'auto'
                 }}>
+
                     <Box sx={{
                         background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
                         color: 'white',
@@ -171,7 +168,6 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                             <Grid container spacing={4} justifyContent="center">
                                 <Grid item xs={12} md={4}>
                                     <Box sx={{ position: 'sticky', top: 20 }}>
-                                        {/* Job Card */}
                                         <Card sx={{
                                             borderRadius: 3,
                                             mb: 4,
@@ -206,7 +202,7 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                                                 <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                                                     Required Skills
                                                 </Typography>
-                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2}}>
                                                     {jobDetails.requirements.map((skill, index) => (
                                                         <Chip
                                                             key={index}
@@ -233,7 +229,6 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                                                     Match Overview
                                                 </Typography>
 
-                                                {/* Match Progress Circle */}
                                                 <Box display="flex" justifyContent="center" alignItems="center" sx={{ my: 4 }}>
                                                     <Box position="relative" display="flex" justifyContent="center" alignItems="center">
                                                         <CircularProgress
@@ -467,7 +462,6 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
                         )}
                     </Container>
                 </Box>
-
             </Box>
         </ThemeProvider>
     );
