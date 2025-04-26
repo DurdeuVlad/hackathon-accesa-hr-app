@@ -1,5 +1,6 @@
 package eu.cvmatch.backend.model;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -38,107 +39,47 @@ public class JobPosting {
 
     public List<TechnicalSkill> getTechnicalSkills() { return technicalSkills; }
     public void setTechnicalSkills(List<TechnicalSkill> technicalSkills) { this.technicalSkills = technicalSkills; }
-
-
     /**
-     * Normalizes the technical skills scores to sum up to 100%.
-     * This method modifies the weights of the technical skills in place.
+     * Normalizes the technical skills’ weights so they sum exactly to 100.
+     * Negative weights are clamped to zero. After proportional rounding,
+     * any leftover delta is applied to the largest-weight skill.
      */
     public void normalizeTechnicalSkillsScore() {
         if (technicalSkills == null || technicalSkills.isEmpty()) {
             return;
         }
+
+        // 1) Clamp negatives to zero
         technicalSkills.forEach(skill -> {
             if (skill.getWeight() < 0) {
                 skill.setWeight(0);
             }
         });
-        int totalWeight = technicalSkills.stream().mapToInt(TechnicalSkill::getWeight).sum();
-        if (totalWeight > 0) {
+
+        // 2) First pass: proportional rounding
+        int total = technicalSkills.stream()
+                .mapToInt(TechnicalSkill::getWeight)
+                .sum();
+        if (total > 0) {
             for (TechnicalSkill skill : technicalSkills) {
-                skill.setWeight((int) Math.round((double) skill.getWeight() / totalWeight * 100));
+                int w = skill.getWeight();
+                skill.setWeight((int) Math.round((double) w / total * 100));
             }
         }
 
-        // check if the sum is 100, if not, normalize again
-        totalWeight = technicalSkills.stream().mapToInt(TechnicalSkill::getWeight).sum();
-        if (totalWeight == 100) {
-            return;
+        // 3) Fix any rounding drift by adjusting the largest-weight skill
+        total = technicalSkills.stream()
+                .mapToInt(TechnicalSkill::getWeight)
+                .sum();
+        if (total != 100) {
+            int delta = 100 - total;
+            TechnicalSkill top = technicalSkills.stream()
+                    .max(Comparator.comparingInt(TechnicalSkill::getWeight))
+                    .orElseThrow();  // safe because we checked non-empty
+            top.setWeight(top.getWeight() + delta);
         }
-        for (TechnicalSkill skill : technicalSkills) {
-            skill.setWeight((int) Math.round((double) skill.getWeight() / totalWeight * 100));
-        }
-
-
     }
 
-
-    /**
-     * Normalizes the technical skills scores to sum up to 100%.
-     * This method modifies the weights of the technical skills in place.
-     */
-    public void normalizeTechnicalSkillsScore() {
-        if (technicalSkills == null || technicalSkills.isEmpty()) {
-            return;
-        }
-        technicalSkills.forEach(skill -> {
-            if (skill.getWeight() < 0) {
-                skill.setWeight(0);
-            }
-        });
-        int totalWeight = technicalSkills.stream().mapToInt(TechnicalSkill::getWeight).sum();
-        if (totalWeight > 0) {
-            for (TechnicalSkill skill : technicalSkills) {
-                skill.setWeight((int) Math.round((double) skill.getWeight() / totalWeight * 100));
-            }
-        }
-
-        // check if the sum is 100, if not, normalize again
-        totalWeight = technicalSkills.stream().mapToInt(TechnicalSkill::getWeight).sum();
-        if (totalWeight == 100) {
-            return;
-        }
-        for (TechnicalSkill skill : technicalSkills) {
-            skill.setWeight((int) Math.round((double) skill.getWeight() / totalWeight * 100));
-        }
-
-
-    }
-
-
-    /**
-     * Normalizes the technical skills scores to sum up to 100%.
-     * This method modifies the weights of the technical skills in place.
-     */
-    public void normalizeTechnicalSkillsScore() {
-        if (technicalSkills == null || technicalSkills.isEmpty()) {
-            return;
-        }
-        technicalSkills.forEach(skill -> {
-            if (skill.getWeight() < 0) {
-                skill.setWeight(0);
-            }
-        });
-        int totalWeight = technicalSkills.stream().mapToInt(TechnicalSkill::getWeight).sum();
-        if (totalWeight > 0) {
-            for (TechnicalSkill skill : technicalSkills) {
-                skill.setWeight((int) Math.round((double) skill.getWeight() / totalWeight * 100));
-            }
-        }
-
-        // check if the sum is 100, if not, normalize again
-        totalWeight = technicalSkills.stream().mapToInt(TechnicalSkill::getWeight).sum();
-        if (totalWeight != 100) {
-            int delta = 100 - totalWeight;
-            // Adjust the weight of the skill with the largest weight
-            TechnicalSkill skillToAdjust = technicalSkills.stream()
-                .max((a, b) -> Integer.compare(a.getWeight(), b.getWeight()))
-                .orElse(null);
-            if (skillToAdjust != null) {
-                skillToAdjust.setWeight(skillToAdjust.getWeight() + delta);
-            }
-        }
-    }
 
     @Override
     public String toString() {
