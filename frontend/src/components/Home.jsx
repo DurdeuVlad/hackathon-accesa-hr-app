@@ -1,3 +1,28 @@
+import React from 'react';
+import { ThemeProvider } from '@mui/material/styles';
+import {
+    CssBaseline,
+    Box,
+    AppBar,
+    Toolbar,
+    Typography,
+    Button,
+    IconButton,
+    Grid,
+    Container,
+    Avatar,
+    Card
+} from '@mui/material';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import BusinessIcon from '@mui/icons-material/Business';
+import PersonIcon from '@mui/icons-material/Person';
+import SettingsIcon from '@mui/icons-material/Settings';
+import SpeedIcon from '@mui/icons-material/Speed';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import PersonSearchIcon from '@mui/icons-material/PersonSearch';
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import theme from './CommonTheme';
+
 function Home({
                   onNavigateToLogin,
                   onNavigateToMatchCV,
@@ -9,21 +34,20 @@ function Home({
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
-            <Box sx={{
-                minHeight: '100vh',
-                width: '100vw',
-                display: 'flex',
-                flexDirection: 'column',
-                bgcolor: 'background.default',
-                margin: 0,
-                padding: 0,
-                overflow: 'hidden',
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-            }}>
+            <Box
+                sx={{
+                    minHeight: '100vh',
+                    width: '100vw',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    bgcolor: 'background.default',
+                    m: 0,
+                    p: 0,
+                    overflow: 'hidden',
+                    position: 'fixed',
+                    inset: 0
+                }}
+            >
                 {/* Top Navigation */}
                 <AppBar
                     position="static"
@@ -35,40 +59,68 @@ function Home({
                         borderRadius: 0
                     }}
                 >
-                    <Box sx={{ width: '100%' }}>
-                        <Toolbar sx={{
+                    <Toolbar
+                        sx={{
                             justifyContent: 'space-between',
-                            width: '100%',
-                            pl: { xs: 1, sm: 2 },
-                            pr: { xs: 1, sm: 2 }
-                        }}>
-                            <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
-                                DevMatch
-                            </Typography>
-
-                            <Box sx={{ display: 'flex', gap: 1 }}>
-                                <Button color="inherit" startIcon={<DashboardIcon />} onClick={() => onNavigate('dashboard')} sx={{ display: { xs: 'none', md: 'flex' }, borderRadius: 0 }}>
-                                    Dashboard
-                                </Button>
-                                <Button color="inherit" startIcon={<BusinessIcon />} onClick={() => onNavigate('joblist')} sx={{ display: { xs: 'none', md: 'flex' }, borderRadius: 0 }}>
-                                    Jobs
-                                </Button>
-                                <Button color="inherit" startIcon={<PersonIcon />} onClick={() => onNavigate('profile')} sx={{ display: { xs: 'none', md: 'flex' }, borderRadius: 0 }}>
-                                    Profile
-                                </Button>
-                                <IconButton color="inherit" onClick={() => onNavigate('settings')} sx={{ borderRadius: 0 }}>
-                                    <SettingsIcon />
-                                </IconButton>
-                            </Box>
-                        </Toolbar>
-                    </Box>
+                            px: { xs: 1, sm: 2 }
+                        }}
+                    >
+                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                            DevMatch
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Button
+                                color="inherit"
+                                startIcon={<DashboardIcon />}
+                                onClick={() => onNavigate('dashboard')}
+                                sx={{ display: { xs: 'none', md: 'flex' }, borderRadius: 0 }}
+                            >
+                                Dashboard
+                            </Button>
+                            <Button
+                                color="inherit"
+                                startIcon={<BusinessIcon />}
+                                onClick={() => onNavigate('joblist')}
+                                sx={{ display: { xs: 'none', md: 'flex' }, borderRadius: 0 }}
+                            >
+                                Jobs
+                            </Button>
+                            <Button
+                                color="inherit"
+                                startIcon={<PersonIcon />}
+                                onClick={() => onNavigate('profile')}
+                                sx={{ display: { xs: 'none', md: 'flex' }, borderRadius: 0 }}
+                            >
+                                Profile
+                            </Button>
+                            <IconButton
+                                color="inherit"
+                                onClick={() => onNavigate('settings')}
+                                sx={{ borderRadius: 0 }}
+                            >
+                                <SettingsIcon />
+                            </IconButton>
+                        </Box>
+                    </Toolbar>
                 </AppBar>
 
-                <Box sx={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+                <Box sx={{ flex: 1, overflow: 'auto' }}>
                     {/* Hero Section */}
-                    <Box sx={{ background: '#2351cc', color: 'white', py: 6, textAlign: 'center' }}>
+                    <Box
+                        sx={{
+                            background: '#2351cc',
+                            color: 'white',
+                            py: 6,
+                            textAlign: 'center'
+                        }}
+                    >
                         <Container maxWidth="lg">
-                            <Typography component="h1" gutterBottom fontWeight="bold" sx={{ fontSize: '2.5rem' }}>
+                            <Typography
+                                component="h1"
+                                gutterBottom
+                                fontWeight="bold"
+                                sx={{ fontSize: '2.5rem' }}
+                            >
                                 AI-Powered Recruitment Assistant
                             </Typography>
                             <Typography variant="h6" sx={{ mb: 2, opacity: 0.9 }}>
@@ -86,8 +138,8 @@ function Home({
                                     py: 1.5,
                                     '&:hover': {
                                         bgcolor: 'rgba(255,255,255,0.1)',
-                                        borderColor: 'white',
-                                    },
+                                        borderColor: 'white'
+                                    }
                                 }}
                             >
                                 Login
@@ -96,24 +148,34 @@ function Home({
                     </Box>
 
                     {/* Benefits Section */}
-                    <Grid container spacing={6} justifyContent="center" sx={{ width: '100%' , mt: 8, mb: 8 }}>
-                        {[{
-                            icon: <SpeedIcon sx={{ fontSize: 36 }} />,
-                            title: 'Reduce screening time',
-                            text: 'Process hundreds of CVs in minutes instead of hours.'
-                        }, {
-                            icon: <AssessmentIcon sx={{ fontSize: 36 }} />,
-                            title: 'Precise Matching',
-                            text: 'Evaluates skills (30%), industry (10%), and job fit (60%).'
-                        }, {
-                            icon: <PersonSearchIcon sx={{ fontSize: 36 }} />,
-                            title: 'Discover hidden talent',
-                            text: 'Uncover candidates often overlooked in manual screening.'
-                        }, {
-                            icon: <WorkIcon sx={{ fontSize: 36 }} />,
-                            title: 'Data-driven Decisions',
-                            text: 'Detailed reports on how each candidate fits the job.'
-                        }].map((item, index) => (
+                    <Grid
+                        container
+                        spacing={6}
+                        justifyContent="center"
+                        sx={{ width: '100%', mt: 8, mb: 8 }}
+                    >
+                        {[
+                            {
+                                icon: <SpeedIcon sx={{ fontSize: 36 }} />,
+                                title: 'Reduce screening time',
+                                text: 'Process hundreds of CVs in minutes instead of hours.'
+                            },
+                            {
+                                icon: <AssessmentIcon sx={{ fontSize: 36 }} />,
+                                title: 'Precise Matching',
+                                text: 'Evaluates skills (30%), industry (10%), and job fit (60%).'
+                            },
+                            {
+                                icon: <PersonSearchIcon sx={{ fontSize: 36 }} />,
+                                title: 'Discover hidden talent',
+                                text: 'Uncover candidates often overlooked in manual screening.'
+                            },
+                            {
+                                icon: <WorkOutlineIcon sx={{ fontSize: 36 }} />,
+                                title: 'Data-driven Decisions',
+                                text: 'Detailed reports on how each candidate fits the job.'
+                            }
+                        ].map((item, index) => (
                             <Grid item xs={12} sm={6} md={3} key={index}>
                                 <Card
                                     sx={{
@@ -127,7 +189,7 @@ function Home({
                                         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                                         '&:hover': {
                                             transform: 'translateY(-10px)',
-                                            boxShadow: '0 12px 24px rgba(0,0,0,0.2)',
+                                            boxShadow: '0 12px 24px rgba(0,0,0,0.2)'
                                         }
                                     }}
                                 >
@@ -137,7 +199,7 @@ function Home({
                                             color: 'primary.dark',
                                             width: 70,
                                             height: 70,
-                                            margin: '0 auto 20px',
+                                            margin: '0 auto 20px'
                                         }}
                                     >
                                         {item.icon}
@@ -155,7 +217,15 @@ function Home({
 
                     {/* Buttons Section */}
                     <Container maxWidth="lg">
-                        <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 2, my: 4 }}>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                flexWrap: 'wrap',
+                                gap: 2,
+                                my: 4
+                            }}
+                        >
                             <Button variant="contained" onClick={onNavigateToLogin} sx={{ fontWeight: 'bold' }}>
                                 Login
                             </Button>
@@ -178,3 +248,5 @@ function Home({
         </ThemeProvider>
     );
 }
+
+export default Home;
