@@ -389,7 +389,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                     </Grid>
                                 </CardContent>
                             </Card>
-                        )}
                         {activeStep === 1 && (
                             <Card sx={{ borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', mb: 4, borderTop: '4px solid #3b82f6' }}>
                                 <CardContent sx={{ p: 4 }}>
@@ -451,7 +450,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                             </Grid>
                                         </Grid>
                                     </Box>
-
                                     <Divider sx={{ my: 3 }} />
 
                                     <Box>
@@ -524,6 +522,7 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                 </CardContent>
                             </Card>
                         )}
+
                         {activeStep === 2 && (
                             <Card sx={{ borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', mb: 4, borderTop: '4px solid #3b82f6' }}>
                                 <CardContent sx={{ p: 4 }}>

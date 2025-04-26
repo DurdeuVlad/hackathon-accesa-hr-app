@@ -233,14 +233,13 @@ const JobListPage = ({ onBack, onNavigate }) => {
                             <Typography variant="h6" sx={{ opacity: 0.9, mx: 'auto', maxWidth: 700 }}>
                                 Find the perfect match for your technical positions
                             </Typography>
-
                             <Box sx={{
                                 display: 'flex',
                                 gap: 2,
                                 flexWrap: 'wrap',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                mt: 4  // Added top margin
+                                mt: 4
                             }}>
                                 <TextField
                                     placeholder="Search for jobs, skills, or companies..."
@@ -293,6 +292,7 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                 </Button>
                             </Box>
                         </Container>
+
                         <Box sx={{
                             position: 'absolute',
                             top: -100,

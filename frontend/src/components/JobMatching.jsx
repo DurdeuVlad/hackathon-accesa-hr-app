@@ -12,11 +12,9 @@ import {
     Avatar,
     Button,
     Divider,
-    Rating,
-    Accordion,
-    AccordionSummary,
-    AccordionDetails
+    Rating
 } from '@mui/material';
+import { ThemeProvider } from '@mui/material/styles';
 
 import {
     Work as WorkIcon,
@@ -25,7 +23,6 @@ import {
     ArrowForward as ArrowForwardIcon,
     ExpandMore as ExpandMoreIcon
 } from '@mui/icons-material';
-import { ThemeProvider } from '@mui/material/styles';
 import { getJobScores } from './jobService';
 import NavBar from './TopNavBar';
 import theme from './CommonTheme';
@@ -40,7 +37,6 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
         description: "Experienced developer proficient in modern JavaScript frameworks, specifically React and Redux. Should have strong UI/UX sensibilities and experience with responsive design.",
         requirements: ["React.js", "JavaScript", "Redux", "HTML/CSS", "Responsive Design"]
     });
-
     useEffect(() => {
         setLoading(true);
         getJobScores(jobId).then((res) => {
@@ -68,192 +64,405 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
         });
     }, [jobId]);
 
-
     const handleShowMore = () => {
         setDisplayLimit(prevLimit => prevLimit + 5);
     };
     const displayedScores = scores.slice(0, displayLimit);
     const hasMoreResults = displayLimit < scores.length;
-
+    const matchedJobsCount = scores.filter(score => score.score >= 80).length;
+    const totalJobsCount = scores.length;
+    const matchPercentage = totalJobsCount ? Math.round((matchedJobsCount / totalJobsCount) * 100) : 0;
     const getScoreColor = (score) => {
         if (score >= 80) return '#10b981';
         if (score >= 60) return '#f59e0b';
         return '#ef4444';
     };
-
-
-    const matchedJobsCount = scores.filter(score => score.score >= 80).length;
-    const totalJobsCount = scores.length;
-    const matchPercentage = totalJobsCount ? Math.round((matchedJobsCount / totalJobsCount) * 100) : 0;
-
-
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
-            <NavBar showBackButton={true} onBack={onBack} title="Job Matching Results" currentPage="jobmatching" />
-            <Container maxWidth="lg" sx={{ py: 4 }}>
-                {/* Job Info */}
-                <Card sx={{ mb: 4 }}>
-                    <CardContent>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', transform: 'translateX(-20px)' }}>
+            <Box sx={{
+                minHeight: '100vh',
+                width: '100vw',
+                display: 'flex',
+                flexDirection: 'column',
+                bgcolor: 'background.default',
+                margin: 0,
+                padding: 0,
+                overflow: 'hidden',
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+            }}>
+                <NavBar
+                    showBackButton={true}
+                    onBack={onBack}
+                    onNavigate={onNavigate}
+                    title="Job Matching Results"
+                    currentPage="jobmatching"
+                />
+                <Box sx={{
+                    width: '100%',
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'auto'
+                }}>
 
-                            <Avatar sx={{ bgcolor: 'primary.main', transform: 'translateX(-9px)', width: 47, height: 47 }}>
-                                    <WorkIcon />
-                                </Avatar>
-                                <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                                    <Typography variant="h6" fontWeight="bold">
-                                        {jobDetails.title}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {jobDetails.company}
-                                    </Typography>
-                                </Box>
+                    <Box sx={{
+                        background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
+                        color: 'white',
+                        py: 5,
+                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                        mb: 4,
+                        textAlign: 'center',
+                        width: '100%'
+                    }}>
+                        <Box sx={{
+                            position: 'absolute',
+                            top: -100,
+                            right: -100,
+                            width: 300,
+                            height: 300,
+                            borderRadius: '50%',
+                            background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)'
+                        }} />
+                        <Box sx={{
+                            position: 'absolute',
+                            bottom: -50,
+                            left: '30%',
+                            width: 200,
+                            height: 200,
+                            borderRadius: '50%',
+                            background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)'
+                        }} />
+
+                        <Container maxWidth="lg">
+                            <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
+                                CV-Job Matching Results
+                            </Typography>
+                            <Typography
+                                variant="h6"
+                                sx={{
+                                    opacity: 0.9,
+                                    maxWidth: 700,
+                                    textAlign: 'center',
+                                    mx: 'auto'
+                                }}
+                            >
+                                See how well your CV matches with job requirements
+                            </Typography>
+                        </Container>
+                    </Box>
+
+                    <Container maxWidth="lg" sx={{ mb: 6 }}>
+                        {loading ? (
+                            <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" minHeight="50vh">
+                                <CircularProgress size={60} thickness={4} />
+                                <Typography variant="h6" sx={{ mt: 3 }}>
+                                    Analyzing matches...
+                                </Typography>
                             </Box>
-                        </Box>
+                        ) : (
+                            <Grid container spacing={4} justifyContent="center">
+                                <Grid item xs={12} md={4}>
+                                    <Box sx={{ position: 'sticky', top: 20 }}>
+                                        <Card sx={{
+                                            borderRadius: 3,
+                                            mb: 4,
+                                            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+                                            overflow: 'visible',
+                                            borderTop: '4px solid #3b82f6'
+                                        }}>
+                                            <CardContent sx={{ p: 3 }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                                    <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
+                                                        <WorkIcon />
+                                                    </Avatar>
+                                                    <Box>
+                                                        <Typography variant="h6" fontWeight="bold">
+                                                            {jobDetails.title}
+                                                        </Typography>
+                                                        <Typography variant="body2" color="text.secondary">
+                                                            {jobDetails.company}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
 
+                                                <Divider sx={{ my: 2 }} />
 
+                                                <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                                                    Job Description
+                                                </Typography>
+                                                <Typography variant="body2" paragraph>
+                                                    {jobDetails.description}
+                                                </Typography>
 
-                        <Divider sx={{ my: 2 }} />
-                        <Typography align="center" fontWeight="bold" gutterBottom>Job Description</Typography>
-                        <Typography align="center" paragraph>{jobDetails.description}</Typography>
-                        <Typography align="center" fontWeight="bold">Required Skills</Typography>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-                            {jobDetails.requirements.map((skill, index) => (
-                                <Chip
-                                    key={index}
-                                    label={skill}
-                                    color="primary" size="small"
-                                />
-                            ))}
-                        </Box>
+                                                <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                                                    Required Skills
+                                                </Typography>
+                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2}}>
+                                                    {jobDetails.requirements.map((skill, index) => (
+                                                        <Chip
+                                                            key={index}
+                                                            label={skill}
+                                                            size="small"
+                                                            sx={{
+                                                                bgcolor: 'primary.light',
+                                                                color: 'primary.dark',
+                                                                fontWeight: 500
+                                                            }}
+                                                        />
+                                                    ))}
+                                                </Box>
+                                            </CardContent>
+                                        </Card>
 
-                    </CardContent>
-                </Card>
+                                        <Card sx={{
+                                            borderRadius: 3,
+                                            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+                                            overflow: 'visible'
+                                        }}>
+                                            <CardContent sx={{ p: 3 }}>
+                                                <Typography variant="h6" fontWeight="bold" gutterBottom>
+                                                    Match Overview
+                                                </Typography>
 
+                                                <Box display="flex" justifyContent="center" alignItems="center" sx={{ my: 4 }}>
+                                                    <Box position="relative" display="flex" justifyContent="center" alignItems="center">
+                                                        <CircularProgress
+                                                            variant="determinate"
+                                                            value={100}
+                                                            size={120}
+                                                            thickness={4}
+                                                            sx={{ color: 'rgba(0, 0, 0, 0.08)' }}
+                                                        />
+                                                        <CircularProgress
+                                                            variant="determinate"
+                                                            value={matchPercentage}
+                                                            size={120}
+                                                            thickness={4}
+                                                            sx={{
+                                                                color: getScoreColor(matchPercentage),
+                                                                position: 'absolute',
+                                                                left: 0,
+                                                            }}
+                                                        />
+                                                        <Box
+                                                            sx={{
+                                                                position: 'absolute',
+                                                                display: 'flex',
+                                                                flexDirection: 'column',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                            }}
+                                                        >
+                                                            <Typography variant="h5" fontWeight="bold">
+                                                                {matchPercentage}%
+                                                            </Typography>
+                                                            <Typography variant="caption" color="text.secondary">
+                                                                Match Rate
+                                                            </Typography>
+                                                        </Box>
+                                                    </Box>
+                                                </Box>
 
-                <Card sx={{ mb: 4 }}>
-                    <CardContent>
-                        <Typography variant="h6" fontWeight="bold" align="center" gutterBottom>
-                            Match Overview
-                        </Typography>
-                        <Box display="flex" justifyContent="center" alignItems="center" mb={2}>
-                            <Box position="relative" display="inline-flex">
-                                <CircularProgress variant="determinate" value={100} size={120} thickness={4} sx={{ color: '#e5e7eb' }} />
-                                <CircularProgress variant="determinate" value={matchPercentage} size={120} thickness={4} sx={{ color: getScoreColor(matchPercentage), position: 'absolute', left: 0 }} />
-                                <Box sx={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <Typography variant="h5" fontWeight="bold">{matchPercentage}%</Typography>
-                                </Box>
-                            </Box>
-                        </Box>
-                        <Typography align="center">{matchedJobsCount} of {totalJobsCount} CVs have strong matches</Typography>
-                        <Divider sx={{ my: 2 }} />
-                        <Typography variant="body2" color="text.secondary" align="center">
-                            Scroll down to view detailed match analysis for each CV
-                        </Typography>
-                    </CardContent>
-                </Card>
+                                                <Box sx={{ textAlign: 'center', mb: 2 }}>
+                                                    <Typography variant="body2" fontWeight="medium">
+                                                        {matchedJobsCount} of {totalJobsCount} CVs have strong matches
+                                                    </Typography>
+                                                </Box>
 
-                
-                <Typography variant="h6" fontWeight="bold" mb={3}>CV Match Results</Typography>
-                {scores.map((score, index) => (
-                    <Card key={index} sx={{ mb: 3, borderRadius: 4, px: 2, py: 3, borderLeft: `4px solid ${getScoreColor(score.score)}` }}>
-                        <Grid container spacing={2} alignItems="center" justifyContent="center">
-                            <Grid item xs={12} md={9}>
-                                <Box display="flex" alignItems="center" gap={2}>
-                                    <Avatar sx={{ bgcolor: 'primary.light', color: 'primary.dark' }}>
-                                        <InsertDriveFileIcon />
-                                    </Avatar>
-                                    <Box>
-                                        <Typography variant="h6" fontWeight="bold">{score.cvName}</Typography>
-                                        <Typography variant="body2" color="text.secondary">Candidate {index + 1}</Typography>
+                                                <Divider sx={{ my: 2 }} />
+
+                                                <Typography variant="body2" color="text.secondary" textAlign="center">
+                                                    Scroll down to view detailed match analysis for each CV
+                                                </Typography>
+                                            </CardContent>
+                                        </Card>
                                     </Box>
-                                </Box>
-                                <Box display="flex" gap={4} mt={2}>
-                                    <Box>
-                                        <Typography fontSize={13}>Technical Match</Typography>
-                                        <Rating value={score.details.technicalMatch / 20} precision={0.5} readOnly size="small" />
+                                </Grid>
+
+                                <Grid item xs={12} md={8}>
+                                    <Box sx={{ maxWidth: 900, mx: 'auto' }}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                                            <Typography variant="h6" fontWeight="bold">
+                                                CV Match Results
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Showing {displayedScores.length} of {scores.length} results
+                                            </Typography>
+                                        </Box>
+
+                                        {displayedScores.map((score, index) => (
+                                            <Card
+                                                key={index}
+                                                sx={{
+                                                    mb: 3,
+                                                    borderRadius: 3,
+                                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+                                                    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                                                    '&:hover': {
+                                                        transform: 'translateY(-4px)',
+                                                        boxShadow: '0 12px 20px rgba(0, 0, 0, 0.1)',
+                                                    },
+                                                    borderLeft: `4px solid ${getScoreColor(score.score)}`
+                                                }}
+                                            >
+                                                <CardContent sx={{ p: 3 }}>
+                                                    <Grid container spacing={2}>
+                                                        <Grid item xs={12} sm={8}>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                                <Avatar
+                                                                    variant="rounded"
+                                                                    sx={{
+                                                                        bgcolor: 'primary.light',
+                                                                        color: 'primary.dark',
+                                                                        mr: 2
+                                                                    }}
+                                                                >
+                                                                    <InsertDriveFileIcon />
+                                                                </Avatar>
+                                                                <Box>
+                                                                    <Typography variant="h6" fontWeight="bold">
+                                                                        {score.cvName}
+                                                                    </Typography>
+                                                                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                                                                        <PersonIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
+                                                                        <Typography variant="body2" color="text.secondary">
+                                                                            Candidate {index + 1}
+                                                                        </Typography>
+                                                                    </Box>
+                                                                </Box>
+                                                            </Box>
+
+                                                            <Box sx={{ mt: 3, pl: 2 }}>
+                                                                <Grid container spacing={2}>
+                                                                    <Grid item xs={4}>
+                                                                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                                                                            Technical Match
+                                                                        </Typography>
+                                                                        <Rating
+                                                                            value={score.details.technicalMatch / 20}
+                                                                            readOnly
+                                                                            precision={0.5}
+                                                                            size="small"
+                                                                        />
+                                                                    </Grid>
+                                                                    <Grid item xs={4}>
+                                                                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                                                                            Experience
+                                                                        </Typography>
+                                                                        <Rating
+                                                                            value={score.details.experienceMatch / 20}
+                                                                            readOnly
+                                                                            precision={0.5}
+                                                                            size="small"
+                                                                        />
+                                                                    </Grid>
+                                                                    <Grid item xs={4}>
+                                                                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                                                                            Education
+                                                                        </Typography>
+                                                                        <Rating
+                                                                            value={score.details.educationMatch / 20}
+                                                                            readOnly
+                                                                            precision={0.5}
+                                                                            size="small"
+                                                                        />
+                                                                    </Grid>
+                                                                </Grid>
+                                                            </Box>
+                                                        </Grid>
+
+                                                        <Grid item xs={12} sm={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                                            <Box sx={{ position: 'relative', display: 'inline-flex', mb: 1 }}>
+                                                                <CircularProgress
+                                                                    variant="determinate"
+                                                                    value={100}
+                                                                    size={80}
+                                                                    thickness={4}
+                                                                    sx={{ color: 'rgba(0, 0, 0, 0.08)' }}
+                                                                />
+                                                                <CircularProgress
+                                                                    variant="determinate"
+                                                                    value={score.score}
+                                                                    size={80}
+                                                                    thickness={4}
+                                                                    sx={{
+                                                                        color: getScoreColor(score.score),
+                                                                        position: 'absolute',
+                                                                        left: 0,
+                                                                    }}
+                                                                />
+                                                                <Box
+                                                                    sx={{
+                                                                        top: 0,
+                                                                        left: 0,
+                                                                        bottom: 0,
+                                                                        right: 0,
+                                                                        position: 'absolute',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                    }}
+                                                                >
+                                                                    <Typography variant="h6" fontWeight="bold">
+                                                                        {score.score}%
+                                                                    </Typography>
+                                                                </Box>
+                                                            </Box>
+
+                                                            <Chip
+                                                                label={score.score >= 80 ? "Strong Match" : score.score >= 60 ? "Good Match" : "Partial Match"}
+                                                                sx={{
+                                                                    bgcolor: score.score >= 80 ? 'success.light' : score.score >= 60 ? 'warning.light' : 'error.light',
+                                                                    color: score.score >= 80 ? 'success.dark' : score.score >= 60 ? 'warning.dark' : 'error.dark',
+                                                                    fontWeight: 'bold',
+                                                                    mb: 2
+                                                                }}
+                                                                size="small"
+                                                            />
+
+                                                            <Button
+                                                                variant="outlined"
+                                                                size="small"
+                                                                endIcon={<ArrowForwardIcon />}
+                                                                sx={{ fontSize: '0.8rem' }}
+                                                            >
+                                                                View Details
+                                                            </Button>
+                                                        </Grid>
+                                                    </Grid>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+
+                                        {hasMoreResults && (
+                                            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                                                <Button
+                                                    variant="outlined"
+                                                    onClick={handleShowMore}
+                                                    startIcon={<ExpandMoreIcon />}
+                                                    sx={{
+                                                        px: 4,
+                                                        py: 1,
+                                                        borderRadius: 2,
+                                                        fontWeight: 500
+                                                    }}
+                                                >
+                                                    Show More Results
+                                                </Button>
+                                            </Box>
+                                        )}
                                     </Box>
-                                    <Box>
-                                        <Typography fontSize={13}>Experience</Typography>
-                                        <Rating value={score.details.experienceMatch / 20} precision={0.5} readOnly size="small" />
-                                    </Box>
-                                    <Box>
-                                        <Typography fontSize={13}>Education</Typography>
-                                        <Rating value={score.details.educationMatch / 20} precision={0.5} readOnly size="small" />
-                                    </Box>
-                                </Box>
+                                </Grid>
                             </Grid>
-                            <Grid item xs={12} md={3}>
-                                <Box display="flex" flexDirection="column" alignItems="center">
-                                    <Box position="relative" display="inline-flex" mb={1}>
-                                        <CircularProgress variant="determinate" value={100} size={72} thickness={4} sx={{ color: '#e5e7eb' }} />
-                                        <CircularProgress variant="determinate" value={score.score} size={72} thickness={4} sx={{ color: getScoreColor(score.score), position: 'absolute', left: 0 }} />
-                                        <Box sx={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <Typography variant="subtitle1" fontWeight="bold">{score.score}%</Typography>
-                                        </Box>
-                                    </Box>
-                                    <Chip
-                                        label={score.score >= 80 ? 'Strong Match' : score.score >= 60 ? 'Good Match' : 'Partial Match'}
-                                        size="small"
-                                        sx={{ mt: 1, fontWeight: 'bold', bgcolor: '#dcfce7', color: '#166534' }}
-                                    />
-                                </Box>
-                            </Grid>
-                        </Grid>
-
-                        <Accordion sx={{ mt: 3, bgcolor: 'transparent', boxShadow: 'none', border: '1px solid #ccc', borderRadius: 2 }}>
-                            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ justifyContent: 'center' }}>
-                                <Typography fontWeight="bold" textAlign="center" width="100%">View More Details</Typography>
-                            </AccordionSummary>
-
-                            <AccordionDetails sx={{ p: 0 }}>
-
-                                <Box sx={{ width: '100%' , px: 3, py: 2}}>
-                                    <Card sx={{ bgcolor: '#e0f2ff', p: 3, mb: 2, width: '100%', borderRadius: 2, boxShadow: 'none' }}>
-                                        <Typography variant="h6" fontWeight="bold" textAlign="center">Job Info</Typography>
-                                        <Typography align="center">Title: Frontend Developer</Typography>
-                                        <Typography align="center">Industry: Tech</Typography>
-                                        <Typography align="center">Description:</Typography>
-                                        <Typography align="center" paragraph>
-                                            Looking for a skilled React developer with experience in modern JS frameworks.
-                                        </Typography>
-                                    </Card>
-
-                                    <Card sx={{ bgcolor: '#e0f2ff', p: 3, mb: 2, width: '100%', borderRadius: 2, boxShadow: 'none' }}>
-                                        <Typography variant="h6" fontWeight="bold" textAlign="center">Candidate Info</Typography>
-                                        <Typography align="center">File: {score.cvName}</Typography>
-                                        <Typography align="center">Uploaded: 2025-04-01</Typography>
-                                        <Typography variant="subtitle2" align="center">Extracted Skills:</Typography>
-                                        <Box display="flex" justifyContent="center" flexWrap="wrap" gap={1} mt={1}>
-                                            {['React', 'JavaScript', 'Node.js'].map((skill, i) => (
-                                                <Chip key={i} label={skill} color="primary" size="small" />
-                                            ))}
-                                        </Box>
-                                    </Card>
-
-                                    <Card sx={{ bgcolor: '#e0f2ff', p: 3, mb: 2, width: '100%', borderRadius: 2, boxShadow: 'none' }}>
-                                        <Typography variant="subtitle2" fontWeight="bold" textAlign="center">Required Skills:</Typography>
-                                        <Box sx={{ mt: 1, textAlign: 'center' }}>
-                                            <Typography>React - 40%</Typography>
-                                            <Typography>JavaScript - 30%</Typography>
-                                            <Typography>Redux - 30%</Typography>
-                                        </Box>
-                                    </Card>
-
-                                    <Card sx={{ bgcolor: '#e0f2ff', p: 3, width: '100%', borderRadius: 2, boxShadow: 'none' }}>
-                                        <Typography variant="h6" fontWeight="bold" textAlign="center">Explanation</Typography>
-                                        <Typography align="center">This candidate scored {score.score}% matching the job requirements for {jobId}.</Typography>
-                                    </Card>
-                                </Box>
-                            </AccordionDetails>
-                        </Accordion>
-
-
-                    </Card>
-                ))}
-            </Container>
-
+                        )}
+                    </Container>
+                </Box>
+            </Box>
         </ThemeProvider>
     );
 };
