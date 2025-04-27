@@ -16,6 +16,7 @@ import NavBar from './TopNavBar';
 import theme from './CommonTheme';
 import { PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Legend } from 'recharts';
 import { FilterAlt, Business, CalendarMonth } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
 const scoreDistribution = [
     { name: '0–50%', value: 4 },
@@ -39,7 +40,8 @@ const scoreBreakdown = [
 
 const COLORS = ['#ef4444', '#facc15', '#22c55e'];
 
-function StatisticsPage({ onBack, onNavigate }) {
+function StatisticsPage() {
+    const navigate = useNavigate();
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
@@ -60,8 +62,7 @@ function StatisticsPage({ onBack, onNavigate }) {
             }}>
                 <NavBar
                     showBackButton={true}
-                    onBack={onBack}
-                    onNavigate={onNavigate}
+                    onBack={() => navigate(-1)}
                     title="Statistics Dashboard"
                     currentPage="statisticspage"
                     fullWidth={true}

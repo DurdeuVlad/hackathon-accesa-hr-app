@@ -28,6 +28,7 @@ import {
 } from '@mui/icons-material';
 import NavBar from './TopNavBar';
 import theme from './CommonTheme';
+import {useNavigate} from 'react-router-dom'
 
 const getJobMatches = (cvId) => {
     return new Promise((resolve) => {
@@ -134,7 +135,8 @@ const getJobMatches = (cvId) => {
     });
 };
 
-const JobMatchesResults = ({ onBack, onNavigate, cvId = 'default-cv-001', cvName = 'Your CV' }) => {
+const JobMatchesResults = ({ cvId = 'default-cv-001', cvName = 'Your CV' }) => {
+    const navigate = useNavigate();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [displayLimit, setDisplayLimit] = useState(5);
@@ -199,8 +201,7 @@ const JobMatchesResults = ({ onBack, onNavigate, cvId = 'default-cv-001', cvName
             }}>
                 <NavBar
                     showBackButton={true}
-                    onBack={onBack}
-                    onNavigate={onNavigate}
+                    onBack={() => navigate(-1)}
                     title="Job Matches for Your CV"
                     currentPage="jobmatches"
                     fullWidth={true}
