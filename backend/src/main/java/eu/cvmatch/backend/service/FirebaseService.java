@@ -43,6 +43,33 @@ public class FirebaseService {
         return jobs;
     }
 
+    public List<CV> getAllCVs() throws Exception {
+        var querySnapshot = db.collection("cvs").get().get();
+        List<CV> cvs = new ArrayList<>();
+
+        for (var doc : querySnapshot.getDocuments()) {
+            cvs.add(doc.toObject(CV.class));
+        }
+
+        return cvs;
+    }
+
+    public String saveJob(JobPosting job) {
+        String jobId = UUID.randomUUID().toString();
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("jobTitle", job.getTitle());
+        data.put("industry", job.getIndustry());
+        data.put("description", job.getDescription());
+        data.put("technicalSkills", job.getTechnicalSkills());
+        data.put("createdAt", FieldValue.serverTimestamp());
+
+        // Save to Firestore
+        db.collection("jobs").document(jobId).set(data);
+
+        return jobId;
+    }
+
     /**
      * Save a CV match under jobs/{jobId}/cvMatches/{cvId}
      * according to the exact Firestore structure:
