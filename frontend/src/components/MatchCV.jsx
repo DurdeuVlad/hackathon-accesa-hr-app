@@ -44,7 +44,7 @@ function MatchCV({ onBack, onNavigate }) {
     const [error, setError] = useState('');
     const fileInputRef = useRef(null);
     const [searchMode, setSearchMode] = useState('cv-to-jobs'); // 'cv-to-jobs' sau 'jobs-to-cv'
-
+    const API_URL = "http://localhost:8080";
     const handleDragOver = (e) => {
         e.preventDefault();
         setIsDragActive(true);
@@ -108,8 +108,81 @@ function MatchCV({ onBack, onNavigate }) {
     const handleRemoveFile = (index) => {
         dispatch({ type: 'SET_MATCH_CV_FILES', payload: files.filter((_, i) => i !== index) });
     };
+    //permite duplicate momentan
+    const uploadCVToBackend = async (file, userId) => {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            const url = userId ?
+                `${API_URL}/cvs?userId=${encodeURIComponent(userId)}` :
+                `${API_URL}/cvs`;
 
-    const handleSearch = () => {
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData,
+            });
+
+            console.log(response);
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to upload CV');
+            }
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error uploading CV:', error);
+            throw error;
+        }
+    };
+
+    const uploadCVForJobMatching = async (file, jobId) => {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('jobId', jobId);
+
+            const response = await fetch(`${API_URL}/processcv`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to process CV');
+            }
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error processing CV:', error);
+            throw error;
+        }
+    };
+
+    const findMatchingJobs = async (file) => {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetch(`${API_URL}/searchjobsforcv`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to find matching jobs');
+            }
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error finding matching jobs:', error);
+            throw error;
+        }
+    };
+
+    const handleSearch = async () => {
         if (files.length === 0) {
             setError('Please upload at least one file first.');
             return;
@@ -118,20 +191,110 @@ function MatchCV({ onBack, onNavigate }) {
         setError('');
         setUploading(true);
 
-        setTimeout(() => {
-            setUploading(false);
+        try {
+            const userId = state.user?.id || null;
+
+            if (searchMode === 'cv-to-jobs') {
+                const results = [];
+
+                for (const file of files) {
+                    try {
+                        const uploadResult = await uploadCVToBackend(file, userId);
+                        console.log('CV uploaded:', uploadResult);
+
+                         const effectiveUserId = uploadResult.userId || userId;
+
+                        const matchingJobs = await findMatchingJobs(file);
+                        console.log('Matching jobs:', matchingJobs);
+
+                        results.push({
+                            file: file.name,
+                            uploadResult,
+                            matchingJobs,
+                            userId: effectiveUserId
+                        });
+                    } catch (fileError) {
+                        console.error(`Error processing file ${file.name}:`, fileError);
+                        results.push({
+                            file: file.name,
+                            error: fileError.message
+                        });
+                    }
+                }
+
+                dispatch({ type: 'SET_JOB_MATCH_RESULTS', payload: results });
+
+            } else {
+                const jobId = 'job_1'; //traba modificat
+
+                if (!jobId) {
+                    setError('Please select a job first.');
+                    setUploading(false);
+                    return;
+                }
+
+                const results = [];
+                for (const file of files) {
+                    try {
+                        const matchResult = await uploadCVForJobMatching(file, jobId);
+                        results.push({
+                            file: file.name,
+                            matchResult
+                        });
+                    } catch (fileError) {
+                        console.error(`Error processing file ${file.name}:`, fileError);
+                        results.push({
+                            file: file.name,
+                            error: fileError.message
+                        });
+                    }
+                }
+
+                dispatch({ type: 'SET_CV_MATCH_RESULTS', payload: results });
+            }
+
             setUploadComplete(true);
 
+            // Navigate after successful upload
             setTimeout(() => {
-                // Navigate to the appropriate page based on search mode
                 if (searchMode === 'cv-to-jobs') {
                     onNavigate('jobmatchesresults');
                 } else {
                     onNavigate('jobmatching');
                 }
             }, 1000);
-        }, 1500);
+
+        } catch (error) {
+            console.error('Error during search process:', error);
+            setError(`Failed to process: ${error.message}`);
+        } finally {
+            setUploading(false);
+        }
     };
+
+    // const handleSearch = () => {
+    //     if (files.length === 0) {
+    //         setError('Please upload at least one file first.');
+    //         return;
+    //     }
+    //
+    //     setError('');
+    //     setUploading(true);
+    //
+    //     setTimeout(() => {
+    //         setUploading(false);
+    //         setUploadComplete(true);
+    //
+    //         setTimeout(() => {
+    //             // Navigate to the appropriate page based on search mode
+    //             if (searchMode === 'cv-to-jobs') {
+    //                 onNavigate('jobmatchesresults');
+    //             } else {
+    //                 onNavigate('jobmatching');
+    //             }
+    //         }, 1000);
+    //     }, 1500);
+    // };
 
     const handleSearchModeChange = (event, newMode) => {
         if (newMode !== null) {
