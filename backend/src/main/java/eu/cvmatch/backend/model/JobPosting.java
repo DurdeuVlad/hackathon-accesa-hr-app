@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.StringJoiner;
 
 public class JobPosting {
-    private String jobTitle;
+    private String title;
     private String industry;
     private String description;
     private List<TechnicalSkill> technicalSkills;
@@ -28,8 +28,8 @@ public class JobPosting {
     }
 
     // Getters and setters
-    public String getJobTitle() { return jobTitle; }
-    public void setJobTitle(String jobTitle) { this.jobTitle = jobTitle; }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
     public String getIndustry() { return industry; }
     public void setIndustry(String industry) { this.industry = industry; }
@@ -84,7 +84,7 @@ public class JobPosting {
     @Override
     public String toString() {
         StringJoiner sj = new StringJoiner(", ", "JobPosting[", "]");
-        sj.add("jobTitle=" + jobTitle);
+        sj.add("jobTitle=" + title);
         sj.add("industry=" + industry);
         sj.add("description=" + (description != null && description.length() > 50
                 ? description.substring(0, 47) + "..."

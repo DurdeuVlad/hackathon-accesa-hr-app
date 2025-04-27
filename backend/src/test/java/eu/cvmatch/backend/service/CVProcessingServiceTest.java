@@ -3,20 +3,16 @@ package eu.cvmatch.backend.service;
 import eu.cvmatch.backend.model.CVMatchResult;
 import eu.cvmatch.backend.model.JobPosting;
 import eu.cvmatch.backend.utils.TextExtractor;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +34,7 @@ public class CVProcessingServiceTest {
 
     private JobPosting createDummyJobPosting() {
         JobPosting jobPosting = new JobPosting();
-        jobPosting.setJobTitle("Software Developer");
+        jobPosting.setTitle("Software Developer");
         jobPosting.setIndustry("Technology");
         jobPosting.setDescription("Job description for a software developer position");
 

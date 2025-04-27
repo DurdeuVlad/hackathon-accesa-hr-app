@@ -23,7 +23,6 @@ public class JobService {
     public List<JobMatchResult> matchCVToJobs(String cvText) {
         try {
             List<JobPosting> allJobs = firebaseService.getAllJobs();
-
             List<JobMatchResult> results = new ArrayList<>();
 
             for (JobPosting job : allJobs) {
@@ -31,7 +30,7 @@ public class JobService {
                     CVMatchResult cvMatchResult = scoringService.scoreCVAgainstJob(cvText, job);
 
                     JobMatchResult result = new JobMatchResult(
-                            job.getJobTitle(),
+                            job.getTitle(),
                             job.getIndustry(),
                             cvMatchResult.getScore(),
                             cvMatchResult.getExplanation()

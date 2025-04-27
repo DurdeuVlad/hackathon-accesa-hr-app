@@ -8,9 +8,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.text.Normalizer;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/cvs")
@@ -26,7 +29,7 @@ public class CVListController {
      * GET /cvs/user/{userId}
      * → returns all CVs uploaded by that user
      */
-    @GetMapping("/user/{userId}")
+    @GetMapping("/{userId}")
     public ResponseEntity<List<CV>> listUserCVs(@PathVariable String userId) {
         try {
             List<CV> cvs = firebaseService.getCVsForUser(userId);
@@ -38,16 +41,29 @@ public class CVListController {
         }
     }
 
-    @PostMapping()
+    @GetMapping
+    public ResponseEntity<List<CV>> listAllCVs() {
+        try {
+            List<CV> cvs = firebaseService.getAllCVs();
+            return ResponseEntity.ok(cvs);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(List.of());
+        }
+    }
+
+    @PostMapping
     public ResponseEntity<?> uploadCV(
-            @PathVariable String userId,
+            @RequestParam(value = "userId", required = false) String userId,
             @RequestParam("file") MultipartFile file) {
 
         try {
+            String effectiveUserId = (userId == null || userId.isBlank()) ?
+                    extractName(file.getOriginalFilename()) : userId;
             String cvText = TextExtractor.extract(file);
 
             CV cv = new CV();
-            cv.setUserId(userId);
+            cv.setUserId(effectiveUserId);
             cv.setFileName(file.getOriginalFilename());
             cv.setContentText(cvText);
             cv.setUploadedAt(Instant.now().toString());
@@ -56,7 +72,8 @@ public class CVListController {
 
             return ResponseEntity.ok(Map.of(
                     "message", "CV uploaded successfully",
-                    "cvId", cvId
+                    "cvId", cvId,
+                    "userId", effectiveUserId
             ));
 
         } catch (UnsupportedOperationException e) {
@@ -67,4 +84,40 @@ public class CVListController {
                     .body(Map.of("error", "Failed to upload CV: " + e.getMessage()));
         }
     }
+    //extrage numele din CV ca sa creeze un id unic
+    private static String extractName(String fileName) {
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex != -1) {
+            fileName = fileName.substring(0, dotIndex);
+        }
+
+        fileName = normalizeDiacritics(fileName);
+
+        fileName = fileName.replaceAll("_", " ");
+
+        fileName = fileName.replaceAll("[^a-zA-ZăîâșțĂÎÂȘȚ\\s]", " ");
+
+        fileName = fileName.replaceAll("\\s+", " ").trim();
+
+        String[] words = fileName.split(" ");
+
+        StringBuilder sb = new StringBuilder();
+        for (String word : words) {
+            if (!word.isEmpty() && Character.isUpperCase(word.charAt(0))) {
+                if (sb.length() > 0) {
+                    sb.append("_");
+                }
+                sb.append(word);
+            }
+        }
+
+        return sb.toString().trim();
+    }
+
+    private static String normalizeDiacritics(String input) {
+        String nfd = Normalizer.normalize(input, Normalizer.Form.NFD);
+        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+        return pattern.matcher(nfd).replaceAll("");
+    }
+
 }
