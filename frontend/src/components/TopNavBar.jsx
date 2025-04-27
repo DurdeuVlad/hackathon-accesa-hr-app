@@ -14,20 +14,17 @@ import {
     Dashboard,
     Business
 } from '@mui/icons-material';
+import { BarChart } from "@mui/icons-material";
+import {useNavigate} from 'react-router-dom';
 
 const TopNavBar = ({ showBackButton, onBack, onNavigate, title, currentPage }) => {
+    const navigate = useNavigate();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     const handleDashboardClick = () => {
         if (typeof onNavigate === 'function') {
             onNavigate('home');
-        }
-    };
-
-    const handleJobsClick = () => {
-        if (typeof onNavigate === 'function') {
-            onNavigate('joblist');
         }
     };
 
@@ -77,7 +74,7 @@ const TopNavBar = ({ showBackButton, onBack, onNavigate, title, currentPage }) =
                             <Button
                                 color="inherit"
                                 startIcon={<Dashboard />}
-                                onClick={handleDashboardClick}
+                                onClick={() => navigate('/')}
                                 sx={{
                                     fontWeight: currentPage === 'home' ? 700 : 400,
                                     display: isMobile ? 'none' : 'flex',
@@ -93,7 +90,7 @@ const TopNavBar = ({ showBackButton, onBack, onNavigate, title, currentPage }) =
                             <Button
                                 color="inherit"
                                 startIcon={<Business />}
-                                onClick={handleJobsClick}
+                                onClick={() => navigate('/joblist')}
                                 sx={{
                                     fontWeight: currentPage === 'joblist' ? 700 : 400,
                                     display: isMobile ? 'none' : 'flex',
@@ -105,6 +102,22 @@ const TopNavBar = ({ showBackButton, onBack, onNavigate, title, currentPage }) =
                                 }}
                             >
                                 Jobs
+                            </Button>
+                            <Button
+                                color="inherit"
+                                startIcon={<BarChart />}
+                                onClick={() => navigate('/statisticspage')}
+                                sx={{
+                                    fontWeight: currentPage === 'statisticspage' ? 700 : 400,
+                                    display: isMobile ? 'none' : 'flex',
+                                    borderBottom: currentPage === 'statisticspage'
+                                        ? '3px solid white'
+                                        : 'none',
+                                    borderRadius: 0,
+                                    paddingBottom: '2px'
+                                }}
+                            >
+                                Statistics
                             </Button>
                         </Box>
                     )}
