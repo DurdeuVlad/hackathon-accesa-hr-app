@@ -40,4 +40,26 @@ public class ProcessCVController {
                     .body(Map.of("error", "❌ Failed to process CV: " + e.getMessage()));
         }
     }
+
+    @PostMapping("/byid")
+    public ResponseEntity<?> processCVById(
+            @RequestParam("jobId") String jobId,
+            @RequestParam("cvId") String cvId
+    ) {
+        try {
+            CVMatchResult result = cvProcessingService.processById(jobId, cvId);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "✅ CV processed successfully by ID",
+                    "score", result.getScore(),
+                    "result", result
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "❌ Failed to process CV by ID: " + e.getMessage()));
+        }
+    }
 }

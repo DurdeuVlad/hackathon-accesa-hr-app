@@ -1,6 +1,5 @@
 package eu.cvmatch.backend.service;
 
-import eu.cvmatch.backend.model.CV;
 import eu.cvmatch.backend.model.CVMatchResult;
 import eu.cvmatch.backend.model.JobPosting;
 import eu.cvmatch.backend.utils.TextExtractor;
@@ -28,20 +27,33 @@ public class CVProcessingService {
         } catch (UnsupportedOperationException e) {
             throw new IllegalArgumentException("Unsupported file format. Please upload a DOCX, DOC, PDF, or TXT file.");
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new Exception("Failed to extract text from the file: " + e.getMessage());
+            throw new Exception("Failed to extract text from file: " + e.getMessage(), e);
         }
-        System.out.println("Extracted CV text: " + cvText);
+        String cvId = getOrCreateCvId(file.getOriginalFilename());
+        return scoreAndSaveMatch(jobId, cvText, cvId, file.getOriginalFilename());
+    }
+
+    public CVMatchResult processById(String jobId, String cvId) throws Exception {
+        if (jobId == null || jobId.isBlank() || cvId == null || cvId.isBlank()) {
+            throw new IllegalArgumentException("Job ID and CV ID cannot be null or blank");
+        }
+        String cvText = (String) firebaseService.getCVText(cvId);
+        if (cvText == null || cvText.isBlank()) {
+            throw new Exception("CV text not found for ID: " + cvId);
+        }
+        return scoreAndSaveMatch(jobId, cvText, cvId, cvId);
+    }
+
+    private CVMatchResult scoreAndSaveMatch(String jobId, String cvText, String cvId, String fileName) throws Exception {
         JobPosting job = firebaseService.getJobById(jobId);
         if (job == null) {
             throw new Exception("Job not found");
         }
-        System.out.println("Job details: " + job);
-
-        String cvId = getOrCreateCvId(file);
-
         CVMatchResult result = scoringService.scoreCVAgainstJob(cvText, job);
-        result.setFileName(file.getOriginalFilename());
+        if (result == null) {
+            throw new Exception("Failed to score CV against Job");
+        }
+        result.setFileName(fileName);
         result.setUploadedAt(Instant.now().toString());
 
         firebaseService.saveCVMatch(jobId, cvId, result);
@@ -49,8 +61,7 @@ public class CVProcessingService {
         return result;
     }
 
-    private String getOrCreateCvId(MultipartFile file) {
-        String filename = file.getOriginalFilename();
+    private String getOrCreateCvId(String filename) {
         return (filename != null && !filename.isBlank()) ? filename : UUID.randomUUID().toString();
     }
 }
