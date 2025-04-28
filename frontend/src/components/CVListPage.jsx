@@ -1,13 +1,14 @@
+// Enhanced CVListPage.jsx: correctly fetch CVs from Firebase after uploading, add instantly new items and fix delete button layout
+
 import React, { useEffect, useState, useRef } from 'react';
 import {
-    Box, Container, Typography, Card, CardContent, List, ListItem, ListItemText, Divider, CircularProgress, Alert, Button, CssBaseline, Chip, Grid
+    Box, Container, Typography, Card, CardContent, List, ListItem, Divider, CircularProgress, Alert, Button, CssBaseline, Chip, Grid, Fade
 } from '@mui/material';
 import { CloudUpload as CloudUploadIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { ThemeProvider } from '@mui/material/styles';
 import NavBar from './TopNavBar';
 import theme from './CommonTheme';
-
-import { db } from '../FirebaseInit.js';
+import { db } from '../FirebaseInit';
 import { collection, getDocs, orderBy, query, deleteDoc, doc } from 'firebase/firestore';
 
 const CVListPage = () => {
@@ -16,16 +17,18 @@ const CVListPage = () => {
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
     const [isDragActive, setIsDragActive] = useState(false);
+    const [page, setPage] = useState(0);
+    const cvsPerPage = 5;
     const fileInputRef = useRef(null);
-
-    const cvsCollection = collection(db, 'cvs');
 
     const fetchCvs = async () => {
         setLoading(true);
         try {
+            const cvsCollection = collection(db, 'cvs');
             const q = query(cvsCollection, orderBy('uploadedAt', 'desc'));
             const snapshot = await getDocs(q);
-            setCvs(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+            const fetchedCvs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setCvs(fetchedCvs);
         } catch (err) {
             console.error(err);
             setError('Failed to load CVs.');
@@ -52,12 +55,22 @@ const CVListPage = () => {
                 body: formData,
             });
 
+            const result = await response.json();
+
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to upload CV');
+                throw new Error(result.error || 'Failed to upload CV');
             }
 
-            await fetchCvs();
+            const newCV = {
+                id: result.cvId,
+                fileName: result.fileName,
+                contentText: result.cvText,
+                uploadedAt: { toDate: () => new Date(result.uploadedAt) }
+            };
+
+            setCvs(prev => [newCV, ...prev]);
+            setPage(0);
+
         } catch (err) {
             console.error('Error uploading CV:', err);
             setError('Upload failed: ' + err.message);
@@ -66,14 +79,13 @@ const CVListPage = () => {
         }
     };
 
-    const handleDelete = async id => {
-        setError('');
+    const handleDelete = async (id) => {
         try {
             await deleteDoc(doc(db, 'cvs', id));
             fetchCvs();
         } catch (err) {
-            console.error(err);
-            setError('Delete failed.');
+            console.error('Error deleting CV:', err);
+            setError('Delete failed: ' + err.message);
         }
     };
 
@@ -82,27 +94,7 @@ const CVListPage = () => {
     const handleDrop = e => { e.preventDefault(); setIsDragActive(false); Array.from(e.dataTransfer.files).forEach(uploadFile); };
     const handleFileSelect = e => Array.from(e.target.files).forEach(uploadFile);
 
-    const parseName = (text) => {
-        const match = text.match(/^(.+?)\s(?:Technical Skills|Professional Skills)/);
-        return match ? match[1].trim() : 'Unnamed';
-    };
-
-    const parseSkills = (text) => {
-        const match = text.match(/Professional Skills (.*?) Foreign Languages/);
-        if (!match) return [];
-        return match[1].split(/[-,]/).map(s => s.trim()).filter(s => s);
-    };
-
-    const parseCertifications = (text) => {
-        const match = text.match(/Certifications - (.*?) Project Experience/);
-        if (!match) return [];
-        return match[1].split(/[-,]/).map(s => s.trim()).filter(s => s);
-    };
-
-    const parseSnippet = (text) => {
-        const snippet = text.substring(0, 300);
-        return snippet.length === 300 ? snippet + '...' : snippet;
-    };
+    const paginatedCvs = cvs.slice(page * cvsPerPage, (page + 1) * cvsPerPage);
 
     return (
         <ThemeProvider theme={theme}>
@@ -133,8 +125,6 @@ const CVListPage = () => {
                             </CardContent>
                         </Card>
 
-                        {uploading && <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}><CircularProgress /></Box>}
-
                         {loading ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}><CircularProgress size={60} /></Box>
                         ) : (
@@ -142,32 +132,44 @@ const CVListPage = () => {
                                 <CardContent>
                                     <Typography variant="h6" fontWeight="bold" gutterBottom>Uploaded CVs</Typography>
                                     <List>
-                                        {cvs.length === 0
+                                        {paginatedCvs.length === 0
                                             ? <Typography color="text.secondary">No CVs available.</Typography>
-                                            : cvs.map((cv, idx) => (
-                                                <React.Fragment key={cv.id}>
-                                                    {idx > 0 && <Divider sx={{ my: 1 }} />}
+                                            : paginatedCvs.map((cv) => (
+                                                <Fade in timeout={500} key={cv.id}>
                                                     <ListItem alignItems="flex-start">
-                                                        <Grid container spacing={2} alignItems="flex-start">
-                                                            <Grid item xs={12} md={10}>
-                                                                <Typography variant="h6" fontWeight="bold" color="primary.main">{parseName(cv.contentText)}</Typography>
-                                                                <Typography variant="body2" color="text.secondary">Uploaded: {cv.uploadedAt?.toDate().toLocaleString()}</Typography>
-                                                                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>{parseSnippet(cv.contentText)}</Typography>
-                                                                <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                                                    {parseSkills(cv.contentText).map((skill, i) => <Chip key={i} label={skill} color="primary" size="small" />)}
-                                                                    {parseCertifications(cv.contentText).map((cert, i) => <Chip key={`cert-${i}`} label={cert} color="secondary" size="small" />)}
-                                                                </Box>
+                                                        <Grid container spacing={2} alignItems="center">
+                                                            <Grid item xs={10}>
+                                                                <Typography variant="h6" fontWeight="bold" color="primary.main">
+                                                                    {cv.fileName || 'Unnamed'}
+                                                                </Typography>
+                                                                <Typography variant="body2" color="text.secondary">
+                                                                    Uploaded: {new Date(cv.uploadedAt.toDate ? cv.uploadedAt.toDate() : cv.uploadedAt).toLocaleString()}
+                                                                </Typography>
+                                                                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>{cv.contentText?.substring(0, 300)}...</Typography>
                                                             </Grid>
-                                                            <Grid item xs={12} md={2} sx={{ display: 'flex', justifyContent: { md: 'flex-end', xs: 'flex-start' }, alignItems: 'center' }}>
-                                                                <Button variant="outlined" color="error" size="small" startIcon={<DeleteIcon />} onClick={() => handleDelete(cv.id)}>
+                                                            <Grid item xs={2} sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+                                                                <Button
+                                                                    variant="outlined"
+                                                                    color="error"
+                                                                    size="small"
+                                                                    startIcon={<DeleteIcon />}
+                                                                    onClick={() => handleDelete(cv.id)}
+                                                                >
                                                                     Delete
                                                                 </Button>
                                                             </Grid>
                                                         </Grid>
                                                     </ListItem>
-                                                </React.Fragment>
+                                                </Fade>
                                             ))}
                                     </List>
+
+                                    {cvs.length > cvsPerPage && (
+                                        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3, gap: 2 }}>
+                                            <Button variant="outlined" onClick={() => setPage(page - 1)} disabled={page === 0}>Previous</Button>
+                                            <Button variant="outlined" onClick={() => setPage(page + 1)} disabled={(page + 1) * cvsPerPage >= cvs.length}>Next</Button>
+                                        </Box>
+                                    )}
                                 </CardContent>
                             </Card>
                         )}
