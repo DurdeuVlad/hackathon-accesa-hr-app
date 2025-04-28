@@ -11,6 +11,8 @@ import JobDetailPage from './components/JobDetailPage';
 import JobListPage from './components/JobListPage';
 import StatisticsPage from './components/StatisticsPage';
 import theme from './components/CommonTheme';
+import CVListPage from './components/CVListPage';
+
 
 
 function App() {
@@ -26,6 +28,8 @@ function App() {
                 <Route path="/jobdetail" element={<JobDetailPage />} />
                 <Route path="/joblist" element={<JobListPage />} />
                 <Route path="/statisticspage" element={<StatisticsPage />} />
+                <Route path="/cvlist" element={<CVListPage />} />
+
             </Routes>
         </ThemeProvider>
     );
