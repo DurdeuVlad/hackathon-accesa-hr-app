@@ -610,9 +610,19 @@ const JobMatchesResults = () => {
                                                                                 </Typography>
                                                                             </Grid>
 
-
                                                                         </Grid>
                                                                     </Box>
+                                                                </Grid>
+                                                                <Box
+                                                                    sx={{
+                                                                        display: 'flex',
+                                                                        justifyContent: 'center',
+                                                                        alignItems: 'center',
+                                                                        flexDirection: 'column',
+                                                                        width: '100%',
+                                                                        height: '100%',
+                                                                    }}
+                                                                >
                                                                     <Grid item xs={12} sm={4} sx={{
                                                                         display: 'flex',
                                                                         flexDirection: 'column',
@@ -669,33 +679,8 @@ const JobMatchesResults = () => {
                                                                             }}
                                                                         />
                                                                     </Grid>
-                                                                    <Collapse in={expandedJobId === job.jobId} timeout="auto" unmountOnExit>
-                                                                        <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(0,0,0,0.02)', borderRadius: 2, width: '100%' }}>
-                                                                            <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                                                                                Explanation
-                                                                            </Typography>
-                                                                            <Typography variant="body2">
-                                                                                {job.description}
-                                                                            </Typography>
-                                                                        </Box>
-                                                                    </Collapse>
-
-                                                                    {/*<Button*/}
-                                                                    {/*    variant="outlined"*/}
-                                                                    {/*    size="small"*/}
-                                                                    {/*    onClick={() => toggleJobDetails(job.jobId)}*/}
-                                                                    {/*    endIcon={expandedJobId === job.jobId ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}*/}
-                                                                    {/*    sx={{*/}
-                                                                    {/*        mt: 2,*/}
-                                                                    {/*        borderRadius: 2,*/}
-                                                                    {/*        textTransform: 'none',*/}
-                                                                    {/*    }}*/}
-                                                                    {/*>*/}
-                                                                    {/*    {expandedJobId === job.jobId ? 'Hide Details' : 'View Details'}*/}
-                                                                    {/*</Button>*/}
+                                                                </Box>
                                                                 </Grid>
-
-                                                            </Grid>
                                                         </CardContent>
                                                     </Card>
                                                 ))}
