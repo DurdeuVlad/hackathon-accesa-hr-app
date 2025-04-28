@@ -12,7 +12,7 @@ import {
 import {
     ArrowBack,
     Dashboard,
-    Business
+    Business, EditDocument, DocumentScanner, HomeMax, HomeWork
 } from '@mui/icons-material';
 import { BarChart } from "@mui/icons-material";
 import {useNavigate} from 'react-router-dom';
@@ -73,7 +73,7 @@ const TopNavBar = ({ showBackButton, onBack, onNavigate, title, currentPage }) =
                         <Box sx={{ display: 'flex', gap: 1 }}>
                             <Button
                                 color="inherit"
-                                startIcon={<Dashboard />}
+                                startIcon={<HomeWork />}
                                 onClick={() => navigate('/')}
                                 sx={{
                                     fontWeight: currentPage === 'home' ? 700 : 400,
@@ -85,7 +85,23 @@ const TopNavBar = ({ showBackButton, onBack, onNavigate, title, currentPage }) =
                                     paddingBottom: '2px'
                                 }}
                             >
-                                Dashboard
+                                Home
+                            </Button>
+                            <Button
+                                color="inherit"
+                                startIcon={<DocumentScanner />}
+                                onClick={() => navigate('/matchcv')}
+                                sx={{
+                                    fontWeight: currentPage === 'matchcv' ? 700 : 400,
+                                    display: isMobile ? 'none' : 'flex',
+                                    borderBottom: currentPage === 'home'
+                                        ? '3px solid white'
+                                        : 'none',
+                                    borderRadius: 0,
+                                    paddingBottom: '2px'
+                                }}
+                            >
+                                Match
                             </Button>
                             <Button
                                 color="inherit"
@@ -102,6 +118,22 @@ const TopNavBar = ({ showBackButton, onBack, onNavigate, title, currentPage }) =
                                 }}
                             >
                                 Jobs
+                            </Button>
+                            <Button
+                                color="inherit"
+                                startIcon={<EditDocument />}
+                                onClick={() => navigate('/cvlist')}
+                                sx={{
+                                    fontWeight: currentPage === 'cvlist' ? 700 : 400,
+                                    display: isMobile ? 'none' : 'flex',
+                                    borderBottom: currentPage === 'cvlist'
+                                        ? '3px solid white'
+                                        : 'none',
+                                    borderRadius: 0,
+                                    paddingBottom: '2px'
+                                }}
+                            >
+                                CVs
                             </Button>
                             <Button
                                 color="inherit"
