@@ -36,6 +36,7 @@ const JobDetailPage = () => {
                 try {
                     setLoading(true);
                     const jobData = await jobApiService.getJobById(jobId);
+
                     dispatch({
                         type: 'SET_JOB_DESCRIPTION',
                         payload: {
@@ -53,6 +54,20 @@ const JobDetailPage = () => {
                 } finally {
                     setLoading(false);
                 }
+            } else {
+                // ADD NEW JOB ➔ golește câmpurile
+                dispatch({
+                    type: 'SET_JOB_DESCRIPTION',
+                    payload: {
+                        jobTitle: '',
+                        company: '',
+                        industry: '',
+                        location: '',
+                        description: '',
+                        technicalSkills: []
+                    }
+                });
+                setLocalSkills([]);
             }
         };
         fetchJobDetails();
