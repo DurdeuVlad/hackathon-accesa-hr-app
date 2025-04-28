@@ -1,0 +1,3 @@
+GEMINI_API_KEY=AIzaSyC-6BEkPWdsl9_grZdq0SzfkX-p-1pCuq4
+GEMINI_MODEL_ID=gemini-2.0-flash    #optional
+GEMINI_EMBED_MODEL_ID=embedding-001  #optional

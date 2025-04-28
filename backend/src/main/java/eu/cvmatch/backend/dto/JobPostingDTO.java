@@ -5,25 +5,50 @@ import eu.cvmatch.backend.model.JobPosting;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Data Transfer Object for JobPosting to avoid serialization issues with Firebase objects
  */
 public class JobPostingDTO {
     private String id;
+
+    @JsonProperty("title")
     private String title;
+
+    @JsonProperty("industry")
     private String industry;
+
+    @JsonProperty("description")
     private String description;
+
+    @JsonProperty("company")
     private String company;
+
+    @JsonProperty("location")
     private String location;
+
+    @JsonProperty("technicalSkills")
     private List<TechnicalSkillDTO> technicalSkills;
+
+    @JsonProperty("userId")
     private String userId;
+
+    @JsonProperty("createdAt")
     private Date createdAt;
+
+
+    @JsonProperty("updatedAt")
     private Date updatedAt;
+
+    @JsonProperty("applicants")
     private int applicants;
 
     public static class TechnicalSkillDTO {
+        @JsonProperty("skill")
         private String skill;
+
+        @JsonProperty("weight")
         private int weight;
 
         // Default constructor for Jackson

@@ -56,9 +56,7 @@ const JobListPage = ({ onNavigate }) => {
     const searchTerm = state.jobFilters.searchTerm;
     const filterIndustry = state.jobFilters.filterIndustry;
     const sortOrder = state.jobFilters.sortOrder;
-
-    // Mock user ID - in a real app, this would come from auth context
-    const userId = "user_1";
+    const userId = "user123";
 
     useEffect(() => {
         const fetchJobs = async () => {
@@ -67,12 +65,11 @@ const JobListPage = ({ onNavigate }) => {
 
             try {
                 const jobData = await jobApiService.getJobsForUser(userId);
-                // Ensure we have an array, even if the API returns something else
                 setJobs(Array.isArray(jobData) ? jobData : []);
             } catch (err) {
                 console.error("Error fetching jobs:", err);
                 setError("Failed to load job listings. Please try again later.");
-                setJobs([]); // Set to empty array in case of error
+                setJobs([]);
             } finally {
                 setIsLoading(false);
             }
@@ -92,7 +89,6 @@ const JobListPage = ({ onNavigate }) => {
 
         try {
             await jobApiService.deleteJob(jobToDelete);
-            // Use safe array methods to avoid errors if jobs isn't an array
             setJobs(prevJobs => {
                 if (!Array.isArray(prevJobs)) return [];
                 return prevJobs.filter(job => job.id !== jobToDelete);
@@ -120,7 +116,6 @@ const JobListPage = ({ onNavigate }) => {
         dispatch({ type: 'SET_FILTERS', payload: { searchTerm: '', filterIndustry: '', sortOrder: 'newest' } });
     };
 
-    // Initialize empty array or use existing jobs array
     const processedJobs = Array.isArray(jobs) ? jobs
         .filter(job => {
             const matchesTerm = job.jobTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -401,7 +396,11 @@ const JobListPage = ({ onNavigate }) => {
                                                 transform: 'translateY(-2px)'
                                             }
                                         }}
-                                        onClick={() => onNavigate('jobdetail', { jobId: job.id })}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate('/jobdetail', { state: { jobId: job.id, edit: true } });
+                                        }}
+
                                     >
                                         <Box sx={{ p: 2 }}>
                                             {/* Job Title and Company */}
@@ -517,22 +516,10 @@ const JobListPage = ({ onNavigate }) => {
                                                 <Button
                                                     variant="outlined"
                                                     size="small"
-                                                    startIcon={<Visibility fontSize="small" />}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        onNavigate('jobdetail', { jobId: job.id });
-                                                    }}
-                                                    sx={{ fontSize: '0.75rem', py: 0.5 }}
-                                                >
-                                                    View
-                                                </Button>
-                                                <Button
-                                                    variant="outlined"
-                                                    size="small"
                                                     startIcon={<Edit fontSize="small" />}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        onNavigate('jobdetail', { jobId: job.id, edit: true });
+                                                        navigate('/jobdetail', { state: { jobId: job.id, edit: true } });
                                                     }}
                                                     sx={{ fontSize: '0.75rem', py: 0.5 }}
                                                 >
