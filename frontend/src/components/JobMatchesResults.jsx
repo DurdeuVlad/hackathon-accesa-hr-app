@@ -63,14 +63,30 @@ const JobMatchesResults = () => {
             try {
                 setLoading(true);
                 const file = uploadedFiles[0]; // Take the first CV file
-                const formData = new FormData();
-                formData.append('file', file);
+                let response;
 
-                const response = await axios.post(`${API_BASE_URL}/searchjobsforcv`, formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
+                if (file.type === 'from-database' && file.contentText) {
+                    // 📄 CV selected from database, use text
+                    const formData = new FormData();
+                    formData.append('cvText', file.contentText);
+
+                    response = await axios.post(`${API_BASE_URL}/searchjobsforcv/bytext`, formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    });
+                } else {
+                    // 📎 CV uploaded manually, use file
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    response = await axios.post(`${API_BASE_URL}/searchjobsforcv`, formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    });
+                }
+
 
                 if (response.data && Array.isArray(response.data)) {
                     // Transform the API response to match our component's expected data structure
@@ -550,7 +566,7 @@ const JobMatchesResults = () => {
                                                                         <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                                                                             Job Match Details
                                                                         </Typography>
-                                                                        <Grid container spacing={2}>
+                                                                        <Grid container spacing={2} justifyContent="center" alignItems="center">
                                                                             <Grid item xs={4}>
                                                                                 <Typography variant="body2" color="text.secondary" gutterBottom>
                                                                                     Skills Match
@@ -595,89 +611,75 @@ const JobMatchesResults = () => {
                                                                             </Grid>
                                                                         </Grid>
                                                                     </Box>
-
-                                                                    <Collapse in={expandedJobId === job.jobId} timeout="auto" unmountOnExit>
-                                                                        <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(0,0,0,0.02)', borderRadius: 2, width: '100%' }}>
-                                                                            <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                                                                                Explanation
-                                                                            </Typography>
-                                                                            <Typography variant="body2">
-                                                                                {job.description}
-                                                                            </Typography>
-                                                                        </Box>
-                                                                    </Collapse>
-
-                                                                    <Button
-                                                                        variant="outlined"
-                                                                        size="small"
-                                                                        onClick={() => toggleJobDetails(job.jobId)}
-                                                                        endIcon={expandedJobId === job.jobId ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                                                                        sx={{
-                                                                            mt: 2,
-                                                                            borderRadius: 2,
-                                                                            textTransform: 'none',
-                                                                        }}
-                                                                    >
-                                                                        {expandedJobId === job.jobId ? 'Hide Details' : 'View Details'}
-                                                                    </Button>
                                                                 </Grid>
-                                                                <Grid item xs={12} sm={4} sx={{
-                                                                    display: 'flex',
-                                                                    flexDirection: 'column',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center',
-                                                                }}>
-                                                                    <Box sx={{
-                                                                        position: 'relative',
-                                                                        display: 'inline-flex',
-                                                                        mb: 1
+                                                                <Box
+                                                                    sx={{
+                                                                        display: 'flex',
+                                                                        justifyContent: 'center',
+                                                                        alignItems: 'center',
+                                                                        flexDirection: 'column',
+                                                                        width: '100%',
+                                                                        height: '100%',
+                                                                    }}
+                                                                >
+                                                                    <Grid item xs={12} sm={4} sx={{
+                                                                        display: 'flex',
+                                                                        flexDirection: 'column',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
                                                                     }}>
-                                                                        <CircularProgress
-                                                                            variant="determinate"
-                                                                            value={100}
-                                                                            size={80}
-                                                                            thickness={4}
-                                                                            sx={{ color: 'rgba(0, 0, 0, 0.08)' }}
-                                                                        />
-                                                                        <CircularProgress
-                                                                            variant="determinate"
-                                                                            value={job.score}
-                                                                            size={80}
-                                                                            thickness={4}
-                                                                            sx={{
-                                                                                color: getScoreColor(job.score),
-                                                                                position: 'absolute',
-                                                                                left: 0,
-                                                                            }}
-                                                                        />
-                                                                        <Box
-                                                                            sx={{
-                                                                                top: 0,
-                                                                                left: 0,
-                                                                                bottom: 0,
-                                                                                right: 0,
-                                                                                position: 'absolute',
-                                                                                display: 'flex',
-                                                                                alignItems: 'center',
-                                                                                justifyContent: 'center',
-                                                                            }}
-                                                                        >
-                                                                            <Typography variant="h6" fontWeight="bold">
-                                                                                {job.score}%
-                                                                            </Typography>
+                                                                        <Box sx={{
+                                                                            position: 'relative',
+                                                                            display: 'inline-flex',
+                                                                            mb: 1
+                                                                        }}>
+                                                                            <CircularProgress
+                                                                                variant="determinate"
+                                                                                value={100}
+                                                                                size={80}
+                                                                                thickness={4}
+                                                                                sx={{ color: 'rgba(0, 0, 0, 0.08)' }}
+                                                                            />
+                                                                            <CircularProgress
+                                                                                variant="determinate"
+                                                                                value={job.score}
+                                                                                size={80}
+                                                                                thickness={4}
+                                                                                sx={{
+                                                                                    color: getScoreColor(job.score),
+                                                                                    position: 'absolute',
+                                                                                    left: 0,
+                                                                                }}
+                                                                            />
+                                                                            <Box
+                                                                                sx={{
+                                                                                    top: 0,
+                                                                                    left: 0,
+                                                                                    bottom: 0,
+                                                                                    right: 0,
+                                                                                    position: 'absolute',
+                                                                                    display: 'flex',
+                                                                                    alignItems: 'center',
+                                                                                    justifyContent: 'center',
+                                                                                }}
+                                                                            >
+                                                                                <Typography variant="h6" fontWeight="bold">
+                                                                                    {job.score}%
+                                                                                </Typography>
+                                                                            </Box>
                                                                         </Box>
-                                                                    </Box>
 
-                                                                    <Chip
-                                                                        label={getMatchLabel(job.score)}
-                                                                        sx={{
-                                                                            bgcolor: job.score >= 80 ? 'success.light' : job.score >= 60 ? 'warning.light' : 'error.light',
-                                                                            color: job.score >= 80 ? 'success.dark' : job.score >= 60 ? 'warning.dark' : 'error.dark',
-                                                                            fontWeight: 600
-                                                                        }}
-                                                                    />
+                                                                        <Chip
+                                                                            label={getMatchLabel(job.score)}
+                                                                            sx={{
+                                                                                bgcolor: job.score >= 80 ? 'success.light' : job.score >= 60 ? 'warning.light' : 'error.light',
+                                                                                color: job.score >= 80 ? 'success.dark' : job.score >= 60 ? 'warning.dark' : 'error.dark',
+                                                                                fontWeight: 600
+                                                                            }}
+                                                                        />
+                                                                    </Grid>
+                                                                </Box>
                                                                 </Grid>
-                                                            </Grid>
                                                         </CardContent>
                                                     </Card>
                                                 ))}

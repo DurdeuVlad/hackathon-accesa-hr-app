@@ -37,6 +37,8 @@ import NavBar from './TopNavBar';
 import theme from './CommonTheme';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from "../context/AppContext.jsx";
+import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { db } from '../FirebaseInit';
 
 function MatchCV({ onBack, onNavigate }) {
     const navigate = useNavigate();
@@ -52,13 +54,29 @@ function MatchCV({ onBack, onNavigate }) {
     const [selectedJobId, setSelectedJobId] = useState('');
     const [loadingJobs, setLoadingJobs] = useState(false);
     const API_URL = "http://localhost:8080";
+    const [availableCvs, setAvailableCvs] = useState([]);
+    const [selectedCvId, setSelectedCvId] = useState('');
 
     useEffect(() => {
-        // Fetch jobs when in jobs-to-cv mode
         if (searchMode === 'jobs-to-cv') {
             fetchJobs();
+        } else if (searchMode === 'cv-to-jobs') {
+            fetchAvailableCvs();
         }
     }, [searchMode]);
+
+    const fetchAvailableCvs = async () => {
+        try {
+            const cvsCollection = collection(db, 'cvs');
+            const q = query(cvsCollection, orderBy('uploadedAt', 'desc'));
+            const snapshot = await getDocs(q);
+            const fetchedCvs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setAvailableCvs(fetchedCvs);
+        } catch (err) {
+            console.error('Failed to fetch CVs:', err);
+        }
+    };
+
 
     const fetchJobs = async () => {
         try {
@@ -204,71 +222,105 @@ function MatchCV({ onBack, onNavigate }) {
 
     const findMatchingJobs = async (file) => {
         try {
-            const formData = new FormData();
-            formData.append('file', file);
+            if (file.type === 'from-database' && file.contentText) {
+                // NEW: Send text directly
+                const formData = new FormData();
+                formData.append('cvText', file.contentText);
 
-            const response = await fetch(`${API_URL}/searchjobsforcv`, {
-                method: 'POST',
-                body: formData,
-            });
+                const response = await fetch(`${API_URL}/searchjobsforcv/bytext`, {
+                    method: 'POST',
+                    body: formData,
+                });
 
-            if (!response.ok) {
-                throw new Error('Failed to find matching jobs');
+                if (!response.ok) {
+                    throw new Error('Failed to find matching jobs by text');
+                }
+
+                const data = await response.json();
+                return data;
+            } else {
+                // Uploaded file flow
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch(`${API_URL}/searchjobsforcv`, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to find matching jobs');
+                }
+
+                const data = await response.json();
+                return data;
             }
-
-            const data = await response.json();
-            return data;
         } catch (error) {
             console.error('Error finding matching jobs:', error);
             throw error;
         }
     };
 
+
+
     const handleSearch = async () => {
         if (searchMode === 'cv-to-jobs') {
-            // For cv-to-jobs mode, we need files
             if (files.length === 0) {
                 setError('Please upload at least one file first.');
                 return;
             }
-        } else {
-            // For jobs-to-cv mode, we need a selected job
-            if (!selectedJobId) {
-                setError('Please select a job first.');
-                return;
-            }
-        }
 
-        setError('');
-        setUploading(true);
+            setError('');
+            setUploading(true);
 
-        try {
-            const userId = state.user?.id || null;
-
-            if (searchMode === 'cv-to-jobs') {
+            try {
                 const results = [];
 
                 for (const file of files) {
                     try {
-                        const uploadResult = await uploadCVToBackend(file, userId);
-                        console.log('CV uploaded:', uploadResult);
+                        let matchingJobs;
 
-                        const effectiveUserId = uploadResult.userId || userId;
+                        if (file.type === 'from-database' && file.contentText) {
+                            // 📄 Send cvText directly (NEW /bytext API)
+                            const formData = new FormData();
+                            formData.append('cvText', file.contentText);
 
-                        const matchingJobs = await findMatchingJobs(file);
-                        console.log('Matching jobs:', matchingJobs);
+                            const response = await fetch(`${API_URL}/searchjobsforcv/bytext`, {
+                                method: 'POST',
+                                body: formData,
+                            });
+
+                            if (!response.ok) {
+                                throw new Error('Failed to find matching jobs from database CV');
+                            }
+
+                            matchingJobs = await response.json();
+                        } else {
+                            // 📎 Send real uploaded file
+                            const formData = new FormData();
+                            formData.append('file', file);
+
+                            const response = await fetch(`${API_URL}/searchjobsforcv`, {
+                                method: 'POST',
+                                body: formData,
+                            });
+
+                            if (!response.ok) {
+                                throw new Error('Failed to find matching jobs from uploaded file');
+                            }
+
+                            matchingJobs = await response.json();
+                        }
 
                         results.push({
                             file: file.name,
-                            uploadResult,
                             matchingJobs,
-                            userId: effectiveUserId
                         });
                     } catch (fileError) {
                         console.error(`Error processing file ${file.name}:`, fileError);
                         results.push({
                             file: file.name,
-                            error: fileError.message
+                            error: fileError.message,
                         });
                     }
                 }
@@ -276,46 +328,43 @@ function MatchCV({ onBack, onNavigate }) {
                 dispatch({ type: 'SET_JOB_MATCH_RESULTS', payload: results });
                 setUploadComplete(true);
 
-                // Navigate after successful upload
                 setTimeout(() => {
                     navigate('/jobmatchesresults');
                 }, 1000);
-
-            } else {
-                // For jobs-to-cv mode, just navigate to the job matching page with the selected job
-                if (!selectedJobId) {
-                    setError('Please select a job first.');
-                    setUploading(false);
-                    return;
-                }
-
-                // Pass the selected job to the context
-                dispatch({
-                    type: 'SET_JOB_DESCRIPTION',
-                    payload: jobs.find(job => job.id === selectedJobId) || {}
-                });
-
-                setUploadComplete(true);
-
-                // Navigate directly to job matching page
-                setTimeout(() => {
-                    navigate('/jobmatching');
-                }, 1000);
+            } catch (err) {
+                console.error('Global error during search:', err);
+                setError(err.message);
+            } finally {
+                setUploading(false);
             }
-        } catch (error) {
-            console.error('Error during search process:', error);
-            setError(`Failed to process: ${error.message}`);
-        } finally {
-            setUploading(false);
+        }
+        else if (searchMode === 'jobs-to-cv') {
+            if (!selectedJobId) {
+                setError('Please select a job first.');
+                return;
+            }
+
+            setError('');
+            setUploading(true);
+
+            dispatch({
+                type: 'SET_JOB_DESCRIPTION',
+                payload: jobs.find(job => job.id === selectedJobId) || {},
+            });
+
+            setUploadComplete(true);
+
+            setTimeout(() => {
+                navigate('/jobmatching');
+            }, 1000);
         }
     };
+
 
     const handleSearchModeChange = (mode) => {
         if (mode !== searchMode) {
             setSearchMode(mode);
-            // Clear any previous errors
             setError('');
-            // If switching to cv-to-jobs mode, clear the selected job
             if (mode === 'cv-to-jobs') {
                 setSelectedJobId('');
             }
@@ -327,6 +376,25 @@ function MatchCV({ onBack, onNavigate }) {
         else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
         else return (bytes / 1048576).toFixed(1) + ' MB';
     };
+
+    const handleAddSelectedCv = () => {
+        const selectedCv = availableCvs.find(cv => cv.id === selectedCvId);
+        if (selectedCv) {
+            const filePlaceholder = {
+                name: selectedCv.fileName || 'SelectedCV',
+                type: 'from-database',
+                contentText: selectedCv.contentText || '',
+                id: selectedCv.id
+            };
+            dispatch({ type: 'SET_MATCH_CV_FILES', payload: [...files, filePlaceholder] });
+            setSelectedCvId('');
+            setAvailableCvs(availableCvs.filter(cv => cv.id !== selectedCvId));
+        }
+    };
+
+
+
+
 
     return (
         <ThemeProvider theme={theme}>
@@ -510,6 +578,7 @@ function MatchCV({ onBack, onNavigate }) {
 
                                     {/* File upload UI - only show in cv-to-jobs mode */}
                                     {searchMode === 'cv-to-jobs' && (
+
                                         <>
                                             <Box
                                                 onDragOver={handleDragOver}
@@ -595,13 +664,27 @@ function MatchCV({ onBack, onNavigate }) {
                                                                             <DescriptionIcon sx={{ color: 'primary.main' }} />
                                                                         </ListItemIcon>
                                                                         <ListItemText
-                                                                            primary={file.name}
-                                                                            secondary={formatFileSize(file.size)}
+                                                                            primary={
+                                                                                <>
+                                                                                    {file.name}
+                                                                                    {file.type === 'from-database' && (
+                                                                                        <Chip
+                                                                                            label="DB"
+                                                                                            size="small"
+                                                                                            color="secondary"
+                                                                                            sx={{ ml: 1, fontSize: '0.7rem', height: 18 }}
+                                                                                        />
+                                                                                    )}
+                                                                                </>
+                                                                            }
+                                                                            secondary={file.size ? formatFileSize(file.size) : 'From Database'}
                                                                             primaryTypographyProps={{
                                                                                 fontWeight: 500,
                                                                                 color: 'text.primary'
                                                                             }}
                                                                         />
+
+
                                                                     </ListItem>
                                                                 </Box>
                                                             ))}
@@ -609,8 +692,43 @@ function MatchCV({ onBack, onNavigate }) {
                                                     </Paper>
                                                 </Box>
                                             )}
+                                            {availableCvs.length > 0 && (
+                                                <Box sx={{ mt: 4 }}>
+                                                    <Typography variant="subtitle1" fontWeight="bold" mb={1}>
+                                                        Or select a CV from database
+                                                    </Typography>
+                                                    <FormControl fullWidth sx={{ mb: 2 }}>
+                                                        <InputLabel id="select-cv-label">Select CV</InputLabel>
+                                                        <Select
+                                                            labelId="select-cv-label"
+                                                            value={selectedCvId}
+                                                            onChange={(e) => setSelectedCvId(e.target.value)}
+                                                            label="Select CV"
+                                                        >
+                                                            {availableCvs.map((cv) => (
+                                                                <MenuItem key={cv.id} value={cv.id}>
+                                                                    {cv.fileName || 'Unnamed CV'}
+                                                                </MenuItem>
+                                                            ))}
+                                                        </Select>
+                                                    </FormControl>
+                                                    <Button
+                                                        variant="outlined"
+                                                        onClick={() => handleAddSelectedCv()}
+                                                        disabled={!selectedCvId}
+                                                        sx={{ mb: 2 }}
+                                                    >
+                                                        Add Selected CV
+                                                    </Button>
+                                                </Box>
+                                            )}
+
                                         </>
-                                    )}
+                                    )
+
+                                    }
+
+
 
                                     {/* Modern Toggle Mode Section */}
                                     <Box sx={{
