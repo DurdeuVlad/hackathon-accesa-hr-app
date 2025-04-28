@@ -695,7 +695,7 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                             </Card>
                         )}
 
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4, position:'relative' }}>
                             <Button
                                 variant="outlined"
                                 onClick={onBack}
