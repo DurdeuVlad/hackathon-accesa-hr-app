@@ -47,6 +47,8 @@ public class CVListController {
             List<CV> cvs = firebaseService.getAllCVs();
             return ResponseEntity.ok(cvs);
         } catch (Exception e) {
+            System.err.println("Error listing all CVs: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(List.of());
         }
@@ -68,7 +70,7 @@ public class CVListController {
             cv.setContentText(cvText);
             cv.setUploadedAt(Instant.now().toString());
 
-            String cvId = firebaseService.saveCV(cv);
+            String cvId = firebaseService.saveCV(cv, file.getOriginalFilename());
 
             return ResponseEntity.ok(Map.of(
                     "message", "CV uploaded successfully",
@@ -84,7 +86,7 @@ public class CVListController {
                     .body(Map.of("error", "Failed to upload CV: " + e.getMessage()));
         }
     }
-    //extrage numele din CV ca sa creeze un id unic
+
     private static String extractName(String fileName) {
         int dotIndex = fileName.lastIndexOf('.');
         if (dotIndex != -1) {
@@ -119,5 +121,4 @@ public class CVListController {
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
         return pattern.matcher(nfd).replaceAll("");
     }
-
 }

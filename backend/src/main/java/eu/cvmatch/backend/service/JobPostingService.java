@@ -19,6 +19,13 @@ public class JobPostingService {
     }
 
     /**
+     * Retrieves all job postings in the system
+     */
+    public List<JobPosting> getAllJobs() {
+        return firebaseService.getAllJobs();
+    }
+
+    /**
      * Retrieves all job postings created by a specific user
      * This method tries a custom approach to handle document references
      */

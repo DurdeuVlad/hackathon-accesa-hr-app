@@ -11,9 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import java.util.List;
-import java.util.Map;
-
 @RestController
 @RequestMapping("/job-postings")
 public class JobPostingController {
@@ -22,6 +19,26 @@ public class JobPostingController {
 
     public JobPostingController(JobPostingService jobPostingService) {
         this.jobPostingService = jobPostingService;
+    }
+
+    /**
+     * GET /job-postings
+     * Returns all job postings in the system
+     */
+    @GetMapping
+    public ResponseEntity<List<JobPostingDTO>> getAllJobPostings() {
+        try {
+            List<JobPosting> jobs = jobPostingService.getAllJobs();
+
+            // Convert to DTOs
+            List<JobPostingDTO> jobDTOs = jobs.stream()
+                    .map(JobPostingDTO::new)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(jobDTOs);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     /**
@@ -35,8 +52,8 @@ public class JobPostingController {
 
             // Convert to DTOs
             List<JobPostingDTO> jobDTOs = jobs.stream()
-                .map(JobPostingDTO::new)
-                .collect(Collectors.toList());
+                    .map(JobPostingDTO::new)
+                    .collect(Collectors.toList());
 
             return ResponseEntity.ok(jobDTOs);
         } catch (Exception e) {
@@ -52,8 +69,8 @@ public class JobPostingController {
     public ResponseEntity<?> createJobPosting(@RequestBody JobPostingDTO jobPostingDTO) {
         try {
             if (jobPostingDTO.getJobTitle() == null || jobPostingDTO.getJobTitle().isEmpty() ||
-                jobPostingDTO.getIndustry() == null || jobPostingDTO.getIndustry().isEmpty() ||
-                jobPostingDTO.getDescription() == null || jobPostingDTO.getDescription().isEmpty()) {
+                    jobPostingDTO.getIndustry() == null || jobPostingDTO.getIndustry().isEmpty() ||
+                    jobPostingDTO.getDescription() == null || jobPostingDTO.getDescription().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Missing required fields"));
             }
 
@@ -67,12 +84,12 @@ public class JobPostingController {
 
             String jobId = jobPostingService.saveJob(jobPosting);
             return ResponseEntity.ok(Map.of(
-                "message", "Job posting created successfully",
-                "jobId", jobId
+                    "message", "Job posting created successfully",
+                    "jobId", jobId
             ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Failed to create job posting: " + e.getMessage()));
+                    .body(Map.of("error", "Failed to create job posting: " + e.getMessage()));
         }
     }
 
@@ -118,10 +135,10 @@ public class JobPostingController {
             return ResponseEntity.ok(Map.of("message", "Job posting updated successfully"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", "Job posting not found"));
+                    .body(Map.of("error", "Job posting not found"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Failed to update job posting: " + e.getMessage()));
+                    .body(Map.of("error", "Failed to update job posting: " + e.getMessage()));
         }
     }
 
@@ -136,10 +153,10 @@ public class JobPostingController {
             return ResponseEntity.ok(Map.of("message", "Job posting deleted successfully"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("error", "Job posting not found"));
+                    .body(Map.of("error", "Job posting not found"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Failed to delete job posting: " + e.getMessage()));
+                    .body(Map.of("error", "Failed to delete job posting: " + e.getMessage()));
         }
     }
 }
