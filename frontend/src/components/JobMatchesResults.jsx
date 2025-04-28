@@ -609,7 +609,6 @@ const JobMatchesResults = () => {
                                                                                     {job.matchDetails.educationMatch}%
                                                                                 </Typography>
                                                                             </Grid>
-
                                                                         </Grid>
                                                                     </Box>
                                                                 </Grid>
