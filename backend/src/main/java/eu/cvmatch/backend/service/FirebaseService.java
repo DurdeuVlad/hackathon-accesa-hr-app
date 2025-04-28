@@ -30,15 +30,124 @@ public class FirebaseService {
         return snapshot.toObject(JobPosting.class);
     }
 
-    public List<JobPosting> getAllJobs() throws Exception {
-        var querySnapshot = db.collection("jobs").get().get();
-        List<JobPosting> jobs = new ArrayList<>();
+    public List<JobPosting> getAllJobs() {
+        try {
+            List<JobPosting> jobs = new ArrayList<>();
 
-        for (var doc : querySnapshot.getDocuments()) {
-            jobs.add(doc.toObject(JobPosting.class));
+            // Fetch all jobs from the collection
+            QuerySnapshot allJobs = db.collection("jobs").get().get();
+            System.out.println("Total jobs in database: " + allJobs.size());
+
+            // Process each document with manual conversion
+            for (DocumentSnapshot document : allJobs.getDocuments()) {
+                try {
+                    // Get the job ID
+                    String jobId = document.getId();
+
+                    // Manually build the JobPosting object
+                    JobPosting job = new JobPosting();
+                    job.setId(jobId);
+                    job.setJobTitle(document.getString("jobTitle"));
+                    job.setIndustry(document.getString("industry"));
+                    job.setCompany(document.getString("company"));
+                    job.setLocation(document.getString("location"));
+                    job.setDescription(document.getString("description"));
+
+                    // Handle userId which could be a DocumentReference or String
+                    Object docUserId = document.get("userId");
+                    if (docUserId instanceof DocumentReference) {
+                        DocumentReference userDocRef = (DocumentReference) docUserId;
+                        job.setUserIdRef(userDocRef);
+                        job.setUserId(userDocRef.getId());
+                    } else if (docUserId instanceof String) {
+                        job.setUserId((String) docUserId);
+                    }
+
+                    // Handle date fields
+                    if (document.getDate("createdAt") != null) {
+                        job.setCreatedAt(document.getDate("createdAt"));
+                    }
+                    if (document.getDate("updatedAt") != null) {
+                        job.setUpdatedAt(document.getDate("updatedAt"));
+                    }
+
+                    // Handle applicants count
+                    Object applicantsObj = document.get("applicants");
+                    if (applicantsObj instanceof Number) {
+                        job.setApplicants(((Number) applicantsObj).intValue());
+                    } else if (applicantsObj instanceof String) {
+                        try {
+                            job.setApplicants(Integer.parseInt((String) applicantsObj));
+                        } catch (NumberFormatException e) {
+                            job.setApplicants(0);
+                        }
+                    }
+
+                    // Handle technical skills
+                    Object skillsObject = document.get("technicalSkills");
+                    List<JobPosting.TechnicalSkill> skills = new ArrayList<>();
+
+                    if (skillsObject instanceof Map) {
+                        // Handle as map of skill -> weight
+                        Map<String, Object> skillsMap = (Map<String, Object>) skillsObject;
+                        for (Map.Entry<String, Object> entry : skillsMap.entrySet()) {
+                            JobPosting.TechnicalSkill skill = new JobPosting.TechnicalSkill();
+                            skill.setSkill(entry.getKey());
+
+                            // Handle weight which could be Long, Integer, etc.
+                            Object weightObj = entry.getValue();
+                            if (weightObj instanceof Number) {
+                                skill.setWeight(((Number) weightObj).intValue());
+                            } else if (weightObj instanceof String) {
+                                try {
+                                    skill.setWeight(Integer.parseInt((String) weightObj));
+                                } catch (NumberFormatException e) {
+                                    skill.setWeight(0);
+                                }
+                            }
+
+                            skills.add(skill);
+                        }
+                    } else if (skillsObject instanceof List) {
+                        // Handle as list of skill objects
+                        List<Map<String, Object>> skillsList = (List<Map<String, Object>>) skillsObject;
+                        for (Map<String, Object> skillMap : skillsList) {
+                            JobPosting.TechnicalSkill skill = new JobPosting.TechnicalSkill();
+
+                            Object skillName = skillMap.get("skill");
+                            if (skillName != null) {
+                                skill.setSkill(skillName.toString());
+                            }
+
+                            Object weight = skillMap.get("weight");
+                            if (weight instanceof Number) {
+                                skill.setWeight(((Number) weight).intValue());
+                            } else if (weight instanceof String) {
+                                try {
+                                    skill.setWeight(Integer.parseInt((String) weight));
+                                } catch (NumberFormatException e) {
+                                    skill.setWeight(0);
+                                }
+                            }
+
+                            skills.add(skill);
+                        }
+                    }
+
+                    job.setTechnicalSkills(skills);
+                    jobs.add(job);
+
+                } catch (Exception e) {
+                    System.err.println("Error processing document " + document.getId() + ": " + e.getMessage());
+                }
+            }
+
+            return jobs;
+        } catch (Exception e) {
+            System.err.println("Error in getAllJobs: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
         }
-
-        return jobs;
     }
 
     /**
@@ -229,15 +338,52 @@ public class FirebaseService {
         }
     }
 
-    public List<CV> getAllCVs() throws Exception {
-        var querySnapshot = db.collection("cvs").get().get();
-        List<CV> cvs = new ArrayList<>();
+    public List<CV> getAllCVs() {
+        try {
+            QuerySnapshot querySnapshot = db.collection("cvs").get().get();
+            List<CV> cvs = new ArrayList<>();
 
-        for (var doc : querySnapshot.getDocuments()) {
-            cvs.add(doc.toObject(CV.class));
+            for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                try {
+                    // Manually construct CV object to handle DocumentReferences properly
+                    CV cv = new CV();
+                    cv.setId(doc.getId());
+                    cv.setFileName(doc.getString("fileName"));
+                    cv.setContentText(doc.getString("contentText"));
+
+                    // Handle userId which could be a DocumentReference
+                    Object userIdObj = doc.get("userId");
+                    if (userIdObj instanceof DocumentReference) {
+                        DocumentReference userRef = (DocumentReference) userIdObj;
+                        cv.setUserId(userRef.getId());
+                    } else if (userIdObj instanceof String) {
+                        cv.setUserId((String) userIdObj);
+                    }
+
+                    // Handle uploadedAt timestamp
+                    if (doc.getTimestamp("uploadedAt") != null) {
+                        cv.setUploadedAt(doc.getTimestamp("uploadedAt").toDate().toInstant().toString());
+                    }
+
+                    // Handle array fields
+                    List<String> industryTags = (List<String>) doc.get("industryTags");
+                    cv.setIndustryTags(industryTags != null ? industryTags : List.of());
+
+                    List<String> techSkills = (List<String>) doc.get("techSkills");
+                    cv.setTechSkills(techSkills != null ? techSkills : List.of());
+
+                    cvs.add(cv);
+                } catch (Exception e) {
+                    System.err.println("Error processing CV document " + doc.getId() + ": " + e.getMessage());
+                }
+            }
+
+            return cvs;
+        } catch (Exception e) {
+            System.err.println("Error in getAllCVs: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
         }
-
-        return cvs;
     }
 
     public String saveJob(JobPosting job) {
@@ -345,10 +491,10 @@ public class FirebaseService {
         }).toList();
     }
 
-    public String saveCV(CV cv) {
+    public String saveCV(CV cv,String filename) {
         String cvId = cv.getId();
         if (cvId == null || cvId.isBlank()) {
-            cvId = UUID.randomUUID().toString();
+            cvId = extractId(filename);
             cv.setId(cvId);
         }
 
@@ -373,4 +519,18 @@ public class FirebaseService {
 
         return cvId;
     }
+    private static String extractId(String fileName) {
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex != -1) {
+            fileName = fileName.substring(0, dotIndex);
+        }
+
+        int secondUnderscore = fileName.indexOf('_', fileName.indexOf('_') + 1);
+        if (secondUnderscore != -1) {
+            return fileName.substring(0, secondUnderscore);
+        } else {
+            return fileName;
+        }
+    }
+
 }

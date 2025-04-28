@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
     Box,
     Typography,
@@ -16,9 +16,11 @@ import {
     ListItemText,
     Divider,
     Avatar,
-    ToggleButtonGroup,
-    ToggleButton,
-    Tooltip
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    Tooltip, Chip
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import {
@@ -45,8 +47,45 @@ function MatchCV({ onBack, onNavigate }) {
     const [uploadComplete, setUploadComplete] = useState(false);
     const [error, setError] = useState('');
     const fileInputRef = useRef(null);
-    const [searchMode, setSearchMode] = useState('cv-to-jobs'); // 'cv-to-jobs' sau 'jobs-to-cv'
+    const [searchMode, setSearchMode] = useState('cv-to-jobs'); // 'cv-to-jobs' or 'jobs-to-cv'
+    const [jobs, setJobs] = useState([]);
+    const [selectedJobId, setSelectedJobId] = useState('');
+    const [loadingJobs, setLoadingJobs] = useState(false);
     const API_URL = "http://localhost:8080";
+
+    useEffect(() => {
+        // Fetch jobs when in jobs-to-cv mode
+        if (searchMode === 'jobs-to-cv') {
+            fetchJobs();
+        }
+    }, [searchMode]);
+
+    const fetchJobs = async () => {
+        try {
+            setLoadingJobs(true);
+            const response = await fetch(`${API_URL}/job-postings`);
+
+            if (!response.ok) {
+                throw new Error(`Error fetching jobs: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data && Array.isArray(data)) {
+                setJobs(data);
+                if (data.length > 0) {
+                    setSelectedJobId(data[0].id);
+                }
+            } else {
+                setJobs([]);
+            }
+        } catch (error) {
+            console.error("Error fetching jobs:", error);
+            setError("Failed to load jobs. Please try again.");
+        } finally {
+            setLoadingJobs(false);
+        }
+    };
 
     const handleDragOver = (e) => {
         e.preventDefault();
@@ -112,7 +151,6 @@ function MatchCV({ onBack, onNavigate }) {
         dispatch({ type: 'SET_MATCH_CV_FILES', payload: files.filter((_, i) => i !== index) });
     };
 
-    //permite duplicate momentan
     const uploadCVToBackend = async (file, userId) => {
         try {
             const formData = new FormData();
@@ -187,9 +225,18 @@ function MatchCV({ onBack, onNavigate }) {
     };
 
     const handleSearch = async () => {
-        if (files.length === 0) {
-            setError('Please upload at least one file first.');
-            return;
+        if (searchMode === 'cv-to-jobs') {
+            // For cv-to-jobs mode, we need files
+            if (files.length === 0) {
+                setError('Please upload at least one file first.');
+                return;
+            }
+        } else {
+            // For jobs-to-cv mode, we need a selected job
+            if (!selectedJobId) {
+                setError('Please select a job first.');
+                return;
+            }
         }
 
         setError('');
@@ -227,56 +274,34 @@ function MatchCV({ onBack, onNavigate }) {
                 }
 
                 dispatch({ type: 'SET_JOB_MATCH_RESULTS', payload: results });
+                setUploadComplete(true);
+
+                // Navigate after successful upload
+                setTimeout(() => {
+                    navigate('/jobmatchesresults');
+                }, 1000);
 
             } else {
-                const jobId = 'job_1'; //traba modificat
-
-                if (!jobId) {
+                // For jobs-to-cv mode, just navigate to the job matching page with the selected job
+                if (!selectedJobId) {
                     setError('Please select a job first.');
                     setUploading(false);
                     return;
                 }
 
-                const results = [];
-                for (const file of files) {
-                    try {
-                        const matchResult = await uploadCVForJobMatching(file, jobId);
-                        results.push({
-                            file: file.name,
-                            matchResult
-                        });
-                    } catch (fileError) {
-                        console.error(`Error processing file ${file.name}:`, fileError);
-                        results.push({
-                            file: file.name,
-                            error: fileError.message
-                        });
-                    }
-                }
+                // Pass the selected job to the context
+                dispatch({
+                    type: 'SET_JOB_DESCRIPTION',
+                    payload: jobs.find(job => job.id === selectedJobId) || {}
+                });
 
-                dispatch({ type: 'SET_CV_MATCH_RESULTS', payload: results });
+                setUploadComplete(true);
+
+                // Navigate directly to job matching page
+                setTimeout(() => {
+                    navigate('/jobmatching');
+                }, 1000);
             }
-
-            setUploadComplete(true);
-
-            // FIXED: Use the navigate function from useNavigate instead of calling useNavigate directly
-            setTimeout(() => {
-                if (searchMode === 'cv-to-jobs') {
-                    // Try to use onNavigate prop if available, otherwise use navigate
-                    if (typeof onNavigate === 'function') {
-                        onNavigate('jobmatchesresults');
-                    } else {
-                        navigate('/jobmatchesresults');
-                    }
-                } else {
-                    if (typeof onNavigate === 'function') {
-                        onNavigate('jobmatching');
-                    } else {
-                        navigate('/jobmatching');
-                    }
-                }
-            }, 1000);
-
         } catch (error) {
             console.error('Error during search process:', error);
             setError(`Failed to process: ${error.message}`);
@@ -285,9 +310,15 @@ function MatchCV({ onBack, onNavigate }) {
         }
     };
 
-    const handleSearchModeChange = (event, newMode) => {
-        if (newMode !== null) {
-            setSearchMode(newMode);
+    const handleSearchModeChange = (mode) => {
+        if (mode !== searchMode) {
+            setSearchMode(mode);
+            // Clear any previous errors
+            setError('');
+            // If switching to cv-to-jobs mode, clear the selected job
+            if (mode === 'cv-to-jobs') {
+                setSelectedJobId('');
+            }
         }
     };
 
@@ -345,7 +376,7 @@ function MatchCV({ onBack, onNavigate }) {
                             <Typography variant="h6" sx={{ opacity: 0.9, margin: '0 auto', maxWidth: 700 }}>
                                 {searchMode === 'cv-to-jobs'
                                     ? 'Upload your CV to discover job opportunities that match your skills'
-                                    : 'Upload job description to find candidates that match your requirements'}
+                                    : 'Choose a job to find candidates that match your requirements'}
                             </Typography>
                         </Container>
                     </Box>
@@ -374,7 +405,7 @@ function MatchCV({ onBack, onNavigate }) {
                                     <Typography variant="h5" fontWeight="bold" color="primary.dark" textAlign="center" mb={3}>
                                         {searchMode === 'cv-to-jobs'
                                             ? 'Upload Your CV'
-                                            : 'Upload Job Description'}
+                                            : 'Select Job to Find Candidates'}
                                     </Typography>
 
                                     {error && (
@@ -387,7 +418,7 @@ function MatchCV({ onBack, onNavigate }) {
                                         <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }}>
                                             {searchMode === 'cv-to-jobs'
                                                 ? 'CV uploaded successfully! Finding job matches...'
-                                                : 'Job description uploaded! Finding matching candidates...'}
+                                                : 'Job selected! Finding matching candidates...'}
                                         </Alert>
                                     )}
 
@@ -396,53 +427,190 @@ function MatchCV({ onBack, onNavigate }) {
                                             <Typography variant="body2" mb={1} textAlign="center">
                                                 {searchMode === 'cv-to-jobs'
                                                     ? 'Analyzing CV and finding job matches...'
-                                                    : 'Analyzing job requirements and finding candidates...'}
+                                                    : 'Analyzing job and finding matching candidates...'}
                                             </Typography>
                                             <LinearProgress color="primary" />
                                         </Box>
                                     )}
 
-                                    <Box
-                                        onDragOver={handleDragOver}
-                                        onDragLeave={handleDragLeave}
-                                        onDrop={handleDrop}
-                                        onClick={handleButtonClick}
-                                        sx={{
-                                            border: isDragActive ? '2px dashed #3b82f6' : '2px dashed #93c5fd',
-                                            borderRadius: 3,
-                                            p: 5,
-                                            textAlign: 'center',
-                                            cursor: 'pointer',
-                                            backgroundColor: isDragActive ? 'rgba(219, 234, 254, 0.4)' : 'white',
-                                            transition: 'all 0.2s ease',
-                                            width: '100%',
-                                            '&:hover': {
-                                                borderColor: '#3b82f6',
-                                                backgroundColor: 'rgba(239, 246, 255, 0.7)',
-                                            }
-                                        }}
-                                    >
-                                        <input
-                                            type="file"
-                                            ref={fileInputRef}
-                                            onChange={handleFileInputChange}
-                                            style={{ display: 'none' }}
-                                            accept=".pdf,.doc,.docx"
-                                            multiple={searchMode === 'cv-to-jobs'}
-                                        />
-                                        <CloudUploadIcon sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
-                                        <Typography variant="h6" color="primary.dark" fontWeight={500} mb={1}>
-                                            {searchMode === 'cv-to-jobs'
-                                                ? 'Drag & drop your CV here'
-                                                : 'Drag & drop job description here'}
-                                        </Typography>
-                                        <Typography variant="body1" color="text.secondary" mb={2}>
-                                            or <span style={{ color: '#3b82f6', fontWeight: 500 }}>click to browse</span> files
-                                        </Typography>
-                                        <Typography variant="caption" color="text.secondary">
-                                            Accepts PDF, DOC, DOCX (max 5MB per file)
-                                        </Typography>
-                                    </Box>
+                                    {/* Job selection dropdown for jobs-to-cv mode */}
+                                    {searchMode === 'jobs-to-cv' && (
+                                        <Box sx={{ mb: 4 }}>
+                                            <Typography variant="h6" fontWeight="600" mb={2} color="text.primary">
+                                                Select Job to Match Against
+                                            </Typography>
+
+                                            {loadingJobs ? (
+                                                <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+                                                    <LinearProgress sx={{ width: '100%', maxWidth: '400px' }} />
+                                                </Box>
+                                            ) : jobs.length === 0 ? (
+                                                <Alert severity="info" sx={{ mb: 3, borderRadius: 2 }}>
+                                                    No jobs found. Please create a job first from the Job List page.
+                                                </Alert>
+                                            ) : (
+                                                <FormControl fullWidth sx={{ mb: 2 }}>
+                                                    <InputLabel id="job-select-label">Job</InputLabel>
+                                                    <Select
+                                                        labelId="job-select-label"
+                                                        value={selectedJobId}
+                                                        onChange={(e) => setSelectedJobId(e.target.value)}
+                                                        label="Job"
+                                                    >
+                                                        {jobs.map((job) => (
+                                                            <MenuItem key={job.id} value={job.id}>
+                                                                {job.jobTitle} - {job.company}
+                                                            </MenuItem>
+                                                        ))}
+                                                    </Select>
+                                                </FormControl>
+                                            )}
+
+                                            {selectedJobId && jobs.length > 0 && (
+                                                <Box sx={{
+                                                    p: 2,
+                                                    bgcolor: 'background.paper',
+                                                    borderRadius: 2,
+                                                    border: '1px solid #e0e0e0'
+                                                }}>
+                                                    {jobs.filter(job => job.id === selectedJobId).map((job) => (
+                                                        <Box key={job.id}>
+                                                            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                                                                Selected Job Details
+                                                            </Typography>
+                                                            <Typography variant="body2"><strong>Title:</strong> {job.jobTitle}</Typography>
+                                                            <Typography variant="body2"><strong>Company:</strong> {job.company}</Typography>
+                                                            <Typography variant="body2"><strong>Industry:</strong> {job.industry}</Typography>
+                                                            {job.technicalSkills && job.technicalSkills.length > 0 && (
+                                                                <Box sx={{ mt: 1 }}>
+                                                                    <Typography variant="body2"><strong>Required Skills:</strong></Typography>
+                                                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                                                                        {job.technicalSkills.map((skill, idx) => (
+                                                                            <Chip
+                                                                                key={idx}
+                                                                                label={`${skill.skill} (${skill.weight}%)`}
+                                                                                size="small"
+                                                                                sx={{
+                                                                                    fontSize: '0.7rem',
+                                                                                    height: 24,
+                                                                                    bgcolor: '#e0f2fe',
+                                                                                    color: '#0369a1',
+                                                                                }}
+                                                                            />
+                                                                        ))}
+                                                                    </Box>
+                                                                </Box>
+                                                            )}
+                                                        </Box>
+                                                    ))}
+                                                </Box>
+                                            )}
+                                        </Box>
+                                    )}
+
+                                    {/* File upload UI - only show in cv-to-jobs mode */}
+                                    {searchMode === 'cv-to-jobs' && (
+                                        <>
+                                            <Box
+                                                onDragOver={handleDragOver}
+                                                onDragLeave={handleDragLeave}
+                                                onDrop={handleDrop}
+                                                onClick={handleButtonClick}
+                                                sx={{
+                                                    border: isDragActive ? '2px dashed #3b82f6' : '2px dashed #93c5fd',
+                                                    borderRadius: 3,
+                                                    p: 5,
+                                                    textAlign: 'center',
+                                                    cursor: 'pointer',
+                                                    backgroundColor: isDragActive ? 'rgba(219, 234, 254, 0.4)' : 'white',
+                                                    transition: 'all 0.2s ease',
+                                                    width: '100%',
+                                                    '&:hover': {
+                                                        borderColor: '#3b82f6',
+                                                        backgroundColor: 'rgba(239, 246, 255, 0.7)',
+                                                    }
+                                                }}
+                                            >
+                                                <input
+                                                    type="file"
+                                                    ref={fileInputRef}
+                                                    onChange={handleFileInputChange}
+                                                    style={{ display: 'none' }}
+                                                    accept=".pdf,.doc,.docx"
+                                                    multiple
+                                                />
+                                                <CloudUploadIcon sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
+                                                <Typography variant="h6" color="primary.dark" fontWeight={500} mb={1}>
+                                                    Drag & drop your CV here
+                                                </Typography>
+                                                <Typography variant="body1" color="text.secondary" mb={2}>
+                                                    or <span style={{ color: '#3b82f6', fontWeight: 500 }}>click to browse</span> files
+                                                </Typography>
+                                                <Typography variant="caption" color="text.secondary">
+                                                    Accepts PDF, DOC, DOCX (max 5MB per file)
+                                                </Typography>
+                                            </Box>
+
+                                            {files.length > 0 && (
+                                                <Box mt={4} width="100%">
+                                                    <Typography variant="subtitle1" fontWeight="bold" mb={2} display="flex" alignItems="center" justifyContent="center">
+                                                        <FileCopyIcon fontSize="small" sx={{ mr: 1, color: 'primary.main' }}/>
+                                                        Selected Files ({files.length})
+                                                    </Typography>
+
+                                                    <Paper
+                                                        variant="outlined"
+                                                        sx={{
+                                                            borderRadius: 2,
+                                                            overflow: 'hidden',
+                                                            border: '1px solid #e5e7eb',
+                                                            width: '100%'
+                                                        }}
+                                                    >
+                                                        <List sx={{ py: 0 }}>
+                                                            {files.map((file, index) => (
+                                                                <Box key={index}>
+                                                                    {index > 0 && <Divider />}
+                                                                    <ListItem
+                                                                        sx={{
+                                                                            py: 1.5,
+                                                                            '&:hover': {
+                                                                                bgcolor: 'rgba(59, 130, 246, 0.04)'
+                                                                            }
+                                                                        }}
+                                                                        secondaryAction={
+                                                                            <Button
+                                                                                edge="end"
+                                                                                aria-label="delete"
+                                                                                onClick={() => handleRemoveFile(index)}
+                                                                                color="error"
+                                                                                size="small"
+                                                                                startIcon={<DeleteIcon />}
+                                                                            >
+                                                                                Remove
+                                                                            </Button>
+                                                                        }
+                                                                    >
+                                                                        <ListItemIcon>
+                                                                            <DescriptionIcon sx={{ color: 'primary.main' }} />
+                                                                        </ListItemIcon>
+                                                                        <ListItemText
+                                                                            primary={file.name}
+                                                                            secondary={formatFileSize(file.size)}
+                                                                            primaryTypographyProps={{
+                                                                                fontWeight: 500,
+                                                                                color: 'text.primary'
+                                                                            }}
+                                                                        />
+                                                                    </ListItem>
+                                                                </Box>
+                                                            ))}
+                                                        </List>
+                                                    </Paper>
+                                                </Box>
+                                            )}
+                                        </>
+                                    )}
 
                                     {/* Modern Toggle Mode Section */}
                                     <Box sx={{
@@ -490,7 +658,7 @@ function MatchCV({ onBack, onNavigate }) {
                                                 gap: 2
                                             }}>
                                                 <Card
-                                                    onClick={() => setSearchMode('cv-to-jobs')}
+                                                    onClick={() => handleSearchModeChange('cv-to-jobs')}
                                                     sx={{
                                                         flex: 1,
                                                         borderRadius: 4,
@@ -539,7 +707,7 @@ function MatchCV({ onBack, onNavigate }) {
                                                 </Card>
 
                                                 <Card
-                                                    onClick={() => setSearchMode('jobs-to-cv')}
+                                                    onClick={() => handleSearchModeChange('jobs-to-cv')}
                                                     sx={{
                                                         flex: 1,
                                                         borderRadius: 4,
@@ -590,72 +758,16 @@ function MatchCV({ onBack, onNavigate }) {
                                         </Box>
                                     </Box>
 
-                                    {files.length > 0 && (
-                                        <Box mt={4} width="100%">
-                                            <Typography variant="subtitle1" fontWeight="bold" mb={2} display="flex" alignItems="center" justifyContent="center">
-                                                <FileCopyIcon fontSize="small" sx={{ mr: 1, color: 'primary.main' }}/>
-                                                Selected Files ({files.length})
-                                            </Typography>
-
-                                            <Paper
-                                                variant="outlined"
-                                                sx={{
-                                                    borderRadius: 2,
-                                                    overflow: 'hidden',
-                                                    border: '1px solid #e5e7eb',
-                                                    width: '100%'
-                                                }}
-                                            >
-                                                <List sx={{ py: 0 }}>
-                                                    {files.map((file, index) => (
-                                                        <Box key={index}>
-                                                            {index > 0 && <Divider />}
-                                                            <ListItem
-                                                                sx={{
-                                                                    py: 1.5,
-                                                                    '&:hover': {
-                                                                        bgcolor: 'rgba(59, 130, 246, 0.04)'
-                                                                    }
-                                                                }}
-                                                                secondaryAction={
-                                                                    <Button
-                                                                        edge="end"
-                                                                        aria-label="delete"
-                                                                        onClick={() => handleRemoveFile(index)}
-                                                                        color="error"
-                                                                        size="small"
-                                                                        startIcon={<DeleteIcon />}
-                                                                    >
-                                                                        Remove
-                                                                    </Button>
-                                                                }
-                                                            >
-                                                                <ListItemIcon>
-                                                                    <DescriptionIcon sx={{ color: 'primary.main' }} />
-                                                                </ListItemIcon>
-                                                                <ListItemText
-                                                                    primary={file.name}
-                                                                    secondary={formatFileSize(file.size)}
-                                                                    primaryTypographyProps={{
-                                                                        fontWeight: 500,
-                                                                        color: 'text.primary'
-                                                                    }}
-                                                                />
-                                                            </ListItem>
-                                                        </Box>
-                                                    ))}
-                                                </List>
-                                            </Paper>
-                                        </Box>
-                                    )}
-
                                     <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                                         <Button
                                             variant="contained"
                                             size="large"
                                             endIcon={<ArrowForwardIcon />}
                                             onClick={handleSearch}
-                                            disabled={files.length === 0 || uploading || uploadComplete}
+                                            disabled={(searchMode === 'cv-to-jobs' && files.length === 0) ||
+                                                uploading ||
+                                                uploadComplete ||
+                                                (searchMode === 'jobs-to-cv' && !selectedJobId)}
                                             sx={{
                                                 py: 1.5,
                                                 px: 5,
