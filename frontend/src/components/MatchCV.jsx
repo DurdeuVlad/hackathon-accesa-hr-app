@@ -35,6 +35,8 @@ import NavBar from './TopNavBar';
 import theme from './CommonTheme';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from "../context/AppContext.jsx";
+import {useNavigate} from 'react-router-dom'
+import {useAppContext} from "../context/AppContext.jsx";
 
 function MatchCV({ onBack, onNavigate }) {
     const navigate = useNavigate();
@@ -56,6 +58,8 @@ function MatchCV({ onBack, onNavigate }) {
     const handleDragLeave = () => {
         setIsDragActive(false);
     };
+
+    const navigate = useNavigate();
 
     const handleDrop = (e) => {
         e.preventDefault();

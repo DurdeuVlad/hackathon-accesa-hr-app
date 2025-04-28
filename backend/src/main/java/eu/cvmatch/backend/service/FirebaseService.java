@@ -1,9 +1,6 @@
 package eu.cvmatch.backend.service;
 
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.FieldValue;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.*;
 import com.google.firebase.database.GenericTypeIndicator;
 import eu.cvmatch.backend.model.CV;
 import eu.cvmatch.backend.model.CVMatchResult;
@@ -11,6 +8,7 @@ import eu.cvmatch.backend.model.JobPosting;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class FirebaseService {
@@ -43,6 +41,194 @@ public class FirebaseService {
         return jobs;
     }
 
+    /**
+     * Retrieves all job postings created by a specific user
+     * This method tries a custom approach to handle document references
+     */
+    public List<JobPosting> getJobsForUser(String userId) {
+        try {
+            List<JobPosting> jobs = new ArrayList<>();
+            DocumentReference userRef = db.document("users/" + userId);
+
+            System.out.println("Looking for jobs with userId: " + userId);
+
+            // Try directly fetching the jobs collection
+            QuerySnapshot allJobs = db.collection("jobs").get().get();
+            System.out.println("Total jobs in database: " + allJobs.size());
+
+            // Use a custom approach to extract data and manually build JobPosting objects
+            for (DocumentSnapshot document : allJobs.getDocuments()) {
+                try {
+                    // Get the job ID
+                    String jobId = document.getId();
+
+                    // Get userId from document (DocumentReference or String)
+                    Object docUserId = document.get("userId");
+                    String docUserIdStr = null;
+
+                    if (docUserId instanceof DocumentReference) {
+                        DocumentReference userDocRef = (DocumentReference) docUserId;
+                        docUserIdStr = userDocRef.getId();
+
+                        // Log for debugging
+                        System.out.println("Document " + jobId + " has userId reference: " + docUserIdStr);
+
+                        // Check if this document belongs to the user we're looking for
+                        if (userId.equals(docUserIdStr)) {
+                            // Manually build the JobPosting object
+                            JobPosting job = new JobPosting();
+                            job.setId(jobId);
+                            job.setJobTitle(document.getString("jobTitle"));
+                            job.setIndustry(document.getString("industry"));
+                            job.setCompany(document.getString("company"));
+                            job.setLocation(document.getString("location"));
+                            job.setDescription(document.getString("description"));
+                            job.setUserIdRef((DocumentReference) docUserId);
+
+                            // Handle date fields
+                            if (document.getDate("createdAt") != null) {
+                                job.setCreatedAt(document.getDate("createdAt"));
+                            }
+                            if (document.getDate("updatedAt") != null) {
+                                job.setUpdatedAt(document.getDate("updatedAt"));
+                            }
+
+                            // Handle applicants count
+                            Object applicantsObj = document.get("applicants");
+                            if (applicantsObj instanceof Number) {
+                                job.setApplicants(((Number) applicantsObj).intValue());
+                            } else if (applicantsObj instanceof String) {
+                                try {
+                                    job.setApplicants(Integer.parseInt((String) applicantsObj));
+                                } catch (NumberFormatException e) {
+                                    // Default to 0 if cannot parse
+                                    job.setApplicants(0);
+                                }
+                            }
+
+                            // Handle technical skills which could be a List or a Map
+                            Object skillsObject = document.get("technicalSkills");
+                            List<JobPosting.TechnicalSkill> skills = new ArrayList<>();
+
+                            if (skillsObject instanceof Map) {
+                                // Handle as map of skill -> weight
+                                Map<String, Object> skillsMap = (Map<String, Object>) skillsObject;
+                                for (Map.Entry<String, Object> entry : skillsMap.entrySet()) {
+                                    JobPosting.TechnicalSkill skill = new JobPosting.TechnicalSkill();
+                                    skill.setSkill(entry.getKey());
+
+                                    // Handle weight which could be Long, Integer, etc.
+                                    Object weightObj = entry.getValue();
+                                    if (weightObj instanceof Number) {
+                                        skill.setWeight(((Number) weightObj).intValue());
+                                    } else if (weightObj instanceof String) {
+                                        try {
+                                            skill.setWeight(Integer.parseInt((String) weightObj));
+                                        } catch (NumberFormatException e) {
+                                            skill.setWeight(0);
+                                        }
+                                    }
+
+                                    skills.add(skill);
+                                }
+                            }
+
+                            job.setTechnicalSkills(skills);
+
+                            jobs.add(job);
+                        }
+                    } else {
+                        System.out.println("Document " + jobId + " has userId (non-reference): " + docUserId);
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error processing document " + document.getId() + ": " + e.getMessage());
+                }
+            }
+
+            return jobs;
+        } catch (Exception e) {
+            System.err.println("Error in getJobsForUser: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Gets a job posting by its ID
+     */
+    public JobPosting getJobByJobId(String jobId) throws ExecutionException, InterruptedException {
+        try {
+            DocumentSnapshot document = db.collection("jobs").document(jobId).get().get();
+
+            if (!document.exists()) {
+                return null;
+            }
+
+            // Since we can't use document.toObject due to serialization issues,
+            // we'll manually construct the JobPosting object
+            JobPosting job = new JobPosting();
+            job.setId(document.getId());
+            job.setJobTitle(document.getString("jobTitle"));
+            job.setIndustry(document.getString("industry"));
+            job.setCompany(document.getString("company"));
+            job.setLocation(document.getString("location"));
+            job.setDescription(document.getString("description"));
+
+            // Handle userId (could be DocumentReference or String)
+            Object docUserId = document.get("userId");
+            if (docUserId instanceof DocumentReference) {
+                DocumentReference userDocRef = (DocumentReference) docUserId;
+                job.setUserIdRef(userDocRef);
+                job.setUserId(userDocRef.getId());
+            } else if (docUserId instanceof String) {
+                job.setUserId((String) docUserId);
+            }
+
+            // Handle date fields
+            if (document.getDate("createdAt") != null) {
+                job.setCreatedAt(document.getDate("createdAt"));
+            }
+            if (document.getDate("updatedAt") != null) {
+                job.setUpdatedAt(document.getDate("updatedAt"));
+            }
+
+            // Handle technical skills which could be a List or a Map
+            Object skillsObject = document.get("technicalSkills");
+            List<JobPosting.TechnicalSkill> skills = new ArrayList<>();
+
+            if (skillsObject instanceof Map) {
+                // Handle as map of skill -> weight
+                Map<String, Object> skillsMap = (Map<String, Object>) skillsObject;
+                for (Map.Entry<String, Object> entry : skillsMap.entrySet()) {
+                    JobPosting.TechnicalSkill skill = new JobPosting.TechnicalSkill();
+                    skill.setSkill(entry.getKey());
+
+                    // Handle weight which could be Long, Integer, etc.
+                    Object weightObj = entry.getValue();
+                    if (weightObj instanceof Number) {
+                        skill.setWeight(((Number) weightObj).intValue());
+                    } else if (weightObj instanceof String) {
+                        try {
+                            skill.setWeight(Integer.parseInt((String) weightObj));
+                        } catch (NumberFormatException e) {
+                            skill.setWeight(0);
+                        }
+                    }
+
+                    skills.add(skill);
+                }
+            }
+
+            job.setTechnicalSkills(skills);
+
+            return job;
+        } catch (Exception e) {
+            System.err.println("Error in getJobById: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
     public List<CV> getAllCVs() throws Exception {
         var querySnapshot = db.collection("cvs").get().get();
         List<CV> cvs = new ArrayList<>();
@@ -58,7 +244,7 @@ public class FirebaseService {
         String jobId = UUID.randomUUID().toString();
 
         Map<String, Object> data = new HashMap<>();
-        data.put("jobTitle", job.getTitle());
+        data.put("jobTitle", job.getJobTitle());
         data.put("industry", job.getIndustry());
         data.put("description", job.getDescription());
         data.put("technicalSkills", job.getTechnicalSkills());

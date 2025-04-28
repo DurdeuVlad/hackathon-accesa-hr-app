@@ -1,14 +1,24 @@
 package eu.cvmatch.backend.model;
 
+import com.google.cloud.firestore.DocumentReference;
 import java.util.Comparator;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.Date;
 
 public class JobPosting {
-    private String title;
+    private String id;
+    private String jobTitle;
     private String industry;
     private String description;
+    private String company;
+    private String location;
     private List<TechnicalSkill> technicalSkills;
+    private DocumentReference userIdRef; // For Firestore DocumentReference format
+    private String userId; // For String format
+    private Date createdAt;
+    private Date updatedAt;
+    private int applicants; // Count of CVs matched with this job
 
     public static class TechnicalSkill {
         private String skill;
@@ -28,8 +38,11 @@ public class JobPosting {
     }
 
     // Getters and setters
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+
+    public String getJobTitle() { return jobTitle; }
+    public void setJobTitle(String jobTitle) { this.jobTitle = jobTitle; }
 
     public String getIndustry() { return industry; }
     public void setIndustry(String industry) { this.industry = industry; }
@@ -37,10 +50,53 @@ public class JobPosting {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
+    public String getCompany() { return company; }
+    public void setCompany(String company) { this.company = company; }
+
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+
     public List<TechnicalSkill> getTechnicalSkills() { return technicalSkills; }
     public void setTechnicalSkills(List<TechnicalSkill> technicalSkills) { this.technicalSkills = technicalSkills; }
+
+    public String getUserId() {
+        // If we have a DocumentReference, extract the ID
+        if (userIdRef != null) {
+            return userIdRef.getId();
+        }
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    // Getters and setters for DocumentReference userId
+    public DocumentReference getUserIdRef() {
+        return userIdRef;
+    }
+
+    public void setUserIdRef(DocumentReference userIdRef) {
+        this.userIdRef = userIdRef;
+    }
+
+    public Date getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
+
+    public Date getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
+
+    public int getApplicants() { return applicants; }
+    public void setApplicants(int applicants) { this.applicants = applicants; }
+
+    // Field to capture any field that might be in Firestore but not in this model
+    private Object skillWeights; // This is to avoid the warning
+
+    public Object getSkillWeights() { return skillWeights; }
+    public void setSkillWeights(Object skillWeights) { this.skillWeights = skillWeights; }
+
     /**
-     * Normalizes the technical skills’ weights so they sum exactly to 100.
+     * Normalizes the technical skills' weights so they sum exactly to 100.
      * Negative weights are clamped to zero. After proportional rounding,
      * any leftover delta is applied to the largest-weight skill.
      */
@@ -80,12 +136,13 @@ public class JobPosting {
         }
     }
 
-
     @Override
     public String toString() {
         StringJoiner sj = new StringJoiner(", ", "JobPosting[", "]");
-        sj.add("jobTitle=" + title);
+        sj.add("id=" + id);
+        sj.add("jobTitle=" + jobTitle);
         sj.add("industry=" + industry);
+        sj.add("company=" + company);
         sj.add("description=" + (description != null && description.length() > 50
                 ? description.substring(0, 47) + "..."
                 : description));
