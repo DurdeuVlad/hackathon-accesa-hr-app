@@ -37,7 +37,6 @@ public class JobPostingDTO {
     @JsonProperty("createdAt")
     private Date createdAt;
 
-
     @JsonProperty("updatedAt")
     private Date updatedAt;
 

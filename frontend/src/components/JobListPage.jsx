@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import {useState, useEffect} from 'react';
 import {
     Box,
     Button,
@@ -22,7 +22,7 @@ import {
     Divider,
     Alert
 } from '@mui/material';
-import { ThemeProvider } from '@mui/material/styles';
+import {ThemeProvider} from '@mui/material/styles';
 import {
     Search,
     Add,
@@ -40,10 +40,10 @@ import {
 import NavBar from './TopNavBar';
 import theme from './CommonTheme';
 import {useNavigate} from 'react-router-dom';
-import { useAppContext} from "../context/AppContext.jsx";
+import {useAppContext} from "../context/AppContext.jsx";
 import jobApiService from './services/jobApiService';
 
-const JobListPage = ({ onNavigate }) => {
+const JobListPage = ({onNavigate}) => {
     const navigate = useNavigate();
     const [jobs, setJobs] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -52,7 +52,7 @@ const JobListPage = ({ onNavigate }) => {
     const [jobToDelete, setJobToDelete] = useState(null);
     const [savedJobs, setSavedJobs] = useState([]);
 
-    const { state, dispatch} = useAppContext();
+    const {state, dispatch} = useAppContext();
     const searchTerm = state.jobFilters.searchTerm;
     const filterIndustry = state.jobFilters.filterIndustry;
     const sortOrder = state.jobFilters.sortOrder;
@@ -113,7 +113,7 @@ const JobListPage = ({ onNavigate }) => {
     };
 
     const clearFilters = () => {
-        dispatch({ type: 'SET_FILTERS', payload: { searchTerm: '', filterIndustry: '', sortOrder: 'newest' } });
+        dispatch({type: 'SET_FILTERS', payload: {searchTerm: '', filterIndustry: '', sortOrder: 'newest'}});
     };
 
     const processedJobs = Array.isArray(jobs) ? jobs
@@ -164,7 +164,7 @@ const JobListPage = ({ onNavigate }) => {
 
     return (
         <ThemeProvider theme={theme}>
-            <CssBaseline />
+            <CssBaseline/>
             <Box sx={{
                 minHeight: '100vh',
                 width: '100vw',
@@ -202,11 +202,11 @@ const JobListPage = ({ onNavigate }) => {
                         width: '100%',
                         mb: 3,
                     }}>
-                        <Box sx={{ width: '100%', maxWidth: '1600px', margin: '0 auto', px: 3 }}>
-                            <Typography variant="h4" component="h1" fontWeight="bold" textAlign="center" sx={{ mb: 1 }}>
+                        <Box sx={{width: '100%', maxWidth: '1600px', margin: '0 auto', px: 3}}>
+                            <Typography variant="h4" component="h1" fontWeight="bold" textAlign="center" sx={{mb: 1}}>
                                 Job Listings
                             </Typography>
-                            <Typography variant="h6" textAlign="center" sx={{ opacity: 0.9 }}>
+                            <Typography variant="h6" textAlign="center" sx={{opacity: 0.9}}>
                                 Manage your job postings and find the perfect candidate match
                             </Typography>
                         </Box>
@@ -214,7 +214,7 @@ const JobListPage = ({ onNavigate }) => {
 
                     <Box sx={{
                         flex: 1,
-                        px: { xs: 2, sm: 3 },
+                        px: {xs: 2, sm: 3},
                         width: '100%',
                         maxWidth: '1400px',
                         margin: '0 auto'
@@ -222,14 +222,14 @@ const JobListPage = ({ onNavigate }) => {
                         {error && (
                             <Alert
                                 severity="error"
-                                sx={{ mb: 2 }}
+                                sx={{mb: 2}}
                                 action={
                                     <IconButton
                                         color="inherit"
                                         size="small"
                                         onClick={() => setError(null)}
                                     >
-                                        <CloseIcon fontSize="inherit" />
+                                        <CloseIcon fontSize="inherit"/>
                                     </IconButton>
                                 }
                             >
@@ -239,8 +239,8 @@ const JobListPage = ({ onNavigate }) => {
 
                         <Box sx={{
                             display: 'flex',
-                            flexDirection: { xs: 'column', sm: 'row' },
-                            alignItems: { xs: 'flex-start', sm: 'center' },
+                            flexDirection: {xs: 'column', sm: 'row'},
+                            alignItems: {xs: 'flex-start', sm: 'center'},
                             justifyContent: 'space-between',
                             gap: 2,
                             mb: 2
@@ -248,11 +248,11 @@ const JobListPage = ({ onNavigate }) => {
                             <TextField
                                 placeholder="Search jobs..."
                                 value={searchTerm}
-                                onChange={(e) => dispatch({ type: 'SET_FILTERS', payload: { searchTerm: e.target.value } })}
+                                onChange={(e) => dispatch({type: 'SET_FILTERS', payload: {searchTerm: e.target.value}})}
                                 size="small"
                                 sx={{
                                     flex: 1,
-                                    maxWidth: { xs: '100%', sm: '300px' },
+                                    maxWidth: {xs: '100%', sm: '300px'},
                                     '& .MuiOutlinedInput-root': {
                                         borderRadius: 1,
                                     }
@@ -260,18 +260,21 @@ const JobListPage = ({ onNavigate }) => {
                                 InputProps={{
                                     startAdornment: (
                                         <InputAdornment position="start">
-                                            <Search fontSize="small" />
+                                            <Search fontSize="small"/>
                                         </InputAdornment>
                                     ),
                                     endAdornment: searchTerm && (
                                         <InputAdornment position="end">
                                             <IconButton
-                                                onClick={() => dispatch({ type: 'SET_FILTERS', payload: { searchTerm: '' } })}
+                                                onClick={() => dispatch({
+                                                    type: 'SET_FILTERS',
+                                                    payload: {searchTerm: ''}
+                                                })}
                                                 edge="end"
                                                 size="small"
                                                 aria-label="clear search"
                                             >
-                                                <CloseIcon fontSize="small" />
+                                                <CloseIcon fontSize="small"/>
                                             </IconButton>
                                         </InputAdornment>
                                     )
@@ -282,18 +285,25 @@ const JobListPage = ({ onNavigate }) => {
                                 display: 'flex',
                                 gap: 2,
                                 alignItems: 'center',
-                                width: { xs: '100%', sm: 'auto' }
+                                width: {xs: '100%', sm: 'auto'}
                             }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
-                                    <Typography variant="body2" sx={{ mr: 1, color: 'text.secondary', display: { xs: 'none', md: 'block' } }}>
+                                <Box sx={{display: 'flex', alignItems: 'center', minWidth: 0}}>
+                                    <Typography variant="body2" sx={{
+                                        mr: 1,
+                                        color: 'text.secondary',
+                                        display: {xs: 'none', md: 'block'}
+                                    }}>
                                         Filter By
                                     </Typography>
-                                    <FormControl size="small" sx={{ minWidth: 100, width: { xs: '100%', sm: 'auto' } }}>
+                                    <FormControl size="small" sx={{minWidth: 100, width: {xs: '100%', sm: 'auto'}}}>
                                         <InputLabel id="industry-filter-label">Industry</InputLabel>
                                         <Select
                                             labelId="industry-filter-label"
                                             value={filterIndustry}
-                                            onChange={(e) => dispatch({ type: 'SET_FILTERS', payload: { filterIndustry: e.target.value } })}
+                                            onChange={(e) => dispatch({
+                                                type: 'SET_FILTERS',
+                                                payload: {filterIndustry: e.target.value}
+                                            })}
                                             label="Industry"
                                             MenuProps={{
                                                 PaperProps: {
@@ -311,16 +321,23 @@ const JobListPage = ({ onNavigate }) => {
                                     </FormControl>
                                 </Box>
 
-                                <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
-                                    <Typography variant="body2" sx={{ mr: 1, color: 'text.secondary', display: { xs: 'none', md: 'block' } }}>
+                                <Box sx={{display: 'flex', alignItems: 'center', minWidth: 0}}>
+                                    <Typography variant="body2" sx={{
+                                        mr: 1,
+                                        color: 'text.secondary',
+                                        display: {xs: 'none', md: 'block'}
+                                    }}>
                                         Sort By
                                     </Typography>
-                                    <FormControl size="small" sx={{ minWidth: 120, width: { xs: '100%', sm: 'auto' } }}>
+                                    <FormControl size="small" sx={{minWidth: 120, width: {xs: '100%', sm: 'auto'}}}>
                                         <InputLabel id="sort-order-label">Newest First</InputLabel>
                                         <Select
                                             labelId="sort-order-label"
                                             value={sortOrder}
-                                            onChange={(e) => dispatch({ type: 'SET_FILTERS', payload: { sortOrder: e.target.value } })}
+                                            onChange={(e) => dispatch({
+                                                type: 'SET_FILTERS',
+                                                payload: {sortOrder: e.target.value}
+                                            })}
                                             label="Newest First"
                                             MenuProps={{
                                                 PaperProps: {
@@ -340,14 +357,14 @@ const JobListPage = ({ onNavigate }) => {
                                 {/* Add Job Button */}
                                 <Button
                                     variant="contained"
-                                    startIcon={<Add />}
+                                    startIcon={<Add/>}
                                     color="success"
                                     size="small"
                                     onClick={() => navigate('/jobdetail')}
                                     sx={{
                                         whiteSpace: 'nowrap',
-                                        ml: { xs: 0, sm: 1 },
-                                        mt: { xs: 0, sm: 0 }
+                                        ml: {xs: 0, sm: 1},
+                                        mt: {xs: 0, sm: 0}
                                     }}
                                 >
                                     Add New Job
@@ -355,7 +372,7 @@ const JobListPage = ({ onNavigate }) => {
                             </Box>
                         </Box>
 
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
+                        <Box sx={{display: 'flex', justifyContent: 'space-between', mb: 1.5}}>
                             <Typography variant="body2" color="text.secondary">
                                 {processedJobs.length} jobs found
                             </Typography>
@@ -377,8 +394,8 @@ const JobListPage = ({ onNavigate }) => {
                         </Box>
 
                         {isLoading ? (
-                            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-                                <CircularProgress size={40} />
+                            <Box sx={{display: 'flex', justifyContent: 'center', p: 4}}>
+                                <CircularProgress size={40}/>
                             </Box>
                         ) : processedJobs.length > 0 ? (
                             <Box>
@@ -398,46 +415,72 @@ const JobListPage = ({ onNavigate }) => {
                                         }}
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            navigate('/jobdetail', { state: { jobId: job.id, edit: true } });
+                                            navigate('/jobdetail', {state: {jobId: job.id, edit: true}});
                                         }}
-
                                     >
-                                        <Box sx={{ p: 2 }}>
-                                            {/* Job Title and Company */}
+                                        <Box sx={{p: 2}}>
+                                            {/* Job Header Section */}
                                             <Box sx={{
                                                 display: 'flex',
-                                                alignItems: 'flex-start',
-                                                justifyContent: 'space-between'
+                                                justifyContent: 'space-between',
+                                                width: '100%',
+                                                mb: 2
                                             }}>
-                                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                {/* Left side: Avatar and job title section */}
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    flexDirection: 'row',
+                                                    alignItems: 'flex-start',
+                                                    width: '100%'
+                                                }}>
                                                     <Avatar
                                                         sx={{
                                                             bgcolor: getRandomColor(job.industry),
                                                             width: 40,
                                                             height: 40,
-                                                            mr: 1.5
+                                                            mr: 2
                                                         }}
                                                     >
                                                         {job.company?.charAt(0) || 'J'}
                                                     </Avatar>
-                                                    <Box>
-                                                        <Typography variant="h6" color="primary.main" fontWeight={600}>
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        alignItems: 'flex-start',
+                                                        width: '100%'
+                                                    }}>
+                                                        <Typography
+                                                            variant="h6"
+                                                            color="primary.main"
+                                                            fontWeight={600}
+                                                            align="left"
+                                                            sx={{
+                                                                width: '100%',
+                                                                mb: 0.5
+                                                            }}
+                                                        >
                                                             {job.jobTitle}
                                                         </Typography>
-                                                        <Typography variant="body2" color="text.secondary">
-                                                            {job.company}
+                                                        <Typography
+                                                            variant="body2"
+                                                            color="text.secondary"
+                                                            align="left"
+                                                            sx={{width: '100%'}}
+                                                        >
+                                                            {"Company: " + job.company}
                                                         </Typography>
                                                     </Box>
                                                 </Box>
 
+                                                {/* Right side: Bookmark button */}
                                                 <IconButton
                                                     onClick={(e) => toggleSaveJob(job.id, e)}
                                                     size="small"
-                                                    sx={{ mt: 0.5 }}
+                                                    sx={{ml: 2, flexShrink: 0}}
                                                 >
                                                     {savedJobs.includes(job.id) ?
-                                                        <Bookmark color="primary" /> :
-                                                        <BookmarkBorder />
+                                                        <Bookmark color="primary"/> :
+                                                        <BookmarkBorder/>
                                                     }
                                                 </IconButton>
                                             </Box>
@@ -445,8 +488,9 @@ const JobListPage = ({ onNavigate }) => {
                                             <Typography
                                                 variant="body2"
                                                 color="text.primary"
+                                                align="left"
                                                 sx={{
-                                                    mt: 2,
+                                                    mt: 1,
                                                     lineHeight: 1.5,
                                                     display: '-webkit-box',
                                                     WebkitLineClamp: 2,
@@ -457,7 +501,7 @@ const JobListPage = ({ onNavigate }) => {
                                                 {job.description}
                                             </Typography>
 
-                                            <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                            <Box sx={{mt: 2, display: 'flex', flexWrap: 'wrap', gap: 0.5}}>
                                                 {job.technicalSkills?.map((skill, idx) => (
                                                     <Chip
                                                         key={idx}
@@ -474,7 +518,7 @@ const JobListPage = ({ onNavigate }) => {
                                             </Box>
                                         </Box>
 
-                                        <Divider />
+                                        <Divider/>
 
                                         <Box sx={{
                                             p: 1.5,
@@ -485,23 +529,29 @@ const JobListPage = ({ onNavigate }) => {
                                         }}>
                                             <Box sx={{
                                                 display: 'flex',
-                                                gap: { xs: 1.5, md: 3 },
+                                                gap: {xs: 1.5, md: 3},
                                                 flexWrap: 'wrap'
                                             }}>
-                                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                    <Business fontSize="small" sx={{ mr: 0.5, color: 'text.secondary', fontSize: 16 }} />
+                                                <Box sx={{display: 'flex', alignItems: 'center'}}>
+                                                    <Business fontSize="small"
+                                                              sx={{mr: 0.5, color: 'text.secondary', fontSize: 16}}/>
                                                     <Typography variant="body2" color="text.secondary">
                                                         {job.industry}
                                                     </Typography>
                                                 </Box>
-                                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                    <CalendarToday fontSize="small" sx={{ mr: 0.5, color: 'text.secondary', fontSize: 16 }} />
+                                                <Box sx={{display: 'flex', alignItems: 'center'}}>
+                                                    <CalendarToday fontSize="small" sx={{
+                                                        mr: 0.5,
+                                                        color: 'text.secondary',
+                                                        fontSize: 16
+                                                    }}/>
                                                     <Typography variant="body2" color="text.secondary">
                                                         Posted: {formatDate(job.createdAt)}
                                                     </Typography>
                                                 </Box>
-                                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                    <Person fontSize="small" sx={{ mr: 0.5, color: 'text.secondary', fontSize: 16 }} />
+                                                <Box sx={{display: 'flex', alignItems: 'center'}}>
+                                                    <Person fontSize="small"
+                                                            sx={{mr: 0.5, color: 'text.secondary', fontSize: 16}}/>
                                                     <Typography variant="body2" color="text.secondary">
                                                         {job.applicants || 0} applicants
                                                     </Typography>
@@ -511,17 +561,17 @@ const JobListPage = ({ onNavigate }) => {
                                             <Box sx={{
                                                 display: 'flex',
                                                 gap: 1,
-                                                mt: { xs: 1, sm: 0 }
+                                                mt: {xs: 1, sm: 0}
                                             }}>
                                                 <Button
                                                     variant="outlined"
                                                     size="small"
-                                                    startIcon={<Edit fontSize="small" />}
+                                                    startIcon={<Edit fontSize="small"/>}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        navigate('/jobdetail', { state: { jobId: job.id, edit: true } });
+                                                        navigate('/jobdetail', {state: {jobId: job.id, edit: true}});
                                                     }}
-                                                    sx={{ fontSize: '0.75rem', py: 0.5 }}
+                                                    sx={{fontSize: '0.75rem', py: 0.5}}
                                                 >
                                                     Edit
                                                 </Button>
@@ -529,12 +579,12 @@ const JobListPage = ({ onNavigate }) => {
                                                     variant="outlined"
                                                     color="error"
                                                     size="small"
-                                                    startIcon={<Delete fontSize="small" />}
+                                                    startIcon={<Delete fontSize="small"/>}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         confirmDelete(job.id, e);
                                                     }}
-                                                    sx={{ fontSize: '0.75rem', py: 0.5 }}
+                                                    sx={{fontSize: '0.75rem', py: 0.5}}
                                                 >
                                                     Delete
                                                 </Button>
@@ -544,18 +594,24 @@ const JobListPage = ({ onNavigate }) => {
                                 ))}
 
                                 {processedJobs.length > jobsPerPage && (
-                                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2 }}>
+                                    <Box sx={{display: 'flex', justifyContent: 'center', gap: 2, mt: 2}}>
                                         <Button
                                             variant="outlined"
                                             disabled={state.paginationIndex === 0}
-                                            onClick={() => dispatch({ type: 'SET_PAGINATION', payload: state.paginationIndex - 1 })}
+                                            onClick={() => dispatch({
+                                                type: 'SET_PAGINATION',
+                                                payload: state.paginationIndex - 1
+                                            })}
                                         >
                                             Previous
                                         </Button>
                                         <Button
                                             variant="outlined"
                                             disabled={endIndex >= processedJobs.length}
-                                            onClick={() => dispatch({ type: 'SET_PAGINATION', payload: state.paginationIndex + 1 })}
+                                            onClick={() => dispatch({
+                                                type: 'SET_PAGINATION',
+                                                payload: state.paginationIndex + 1
+                                            })}
                                         >
                                             Next
                                         </Button>
@@ -573,7 +629,7 @@ const JobListPage = ({ onNavigate }) => {
                                     boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
                                 }}
                             >
-                                <WarningAmber sx={{ fontSize: 40, color: '#9ca3af' }} />
+                                <WarningAmber sx={{fontSize: 40, color: '#9ca3af'}}/>
                                 <Typography variant="h6" fontWeight={600} color="#4b5563" mt={1}>
                                     No jobs found
                                 </Typography>
@@ -582,7 +638,7 @@ const JobListPage = ({ onNavigate }) => {
                                 </Typography>
                                 <Button
                                     variant="contained"
-                                    startIcon={<Add />}
+                                    startIcon={<Add/>}
                                     onClick={() => navigate('/jobdetail')}
                                     size="small"
                                 >
@@ -596,9 +652,9 @@ const JobListPage = ({ onNavigate }) => {
                 <Dialog
                     open={showDeleteConfirm}
                     onClose={() => setShowDeleteConfirm(false)}
-                    PaperProps={{ sx: { borderRadius: 2, p: 1 } }}
+                    PaperProps={{sx: {borderRadius: 2, p: 1}}}
                 >
-                    <DialogTitle sx={{ fontWeight: 600 }}>Confirm Deletion</DialogTitle>
+                    <DialogTitle sx={{fontWeight: 600}}>Confirm Deletion</DialogTitle>
                     <DialogContent>
                         <Typography>Are you sure you want to delete this job? This action cannot be undone.</Typography>
                     </DialogContent>
