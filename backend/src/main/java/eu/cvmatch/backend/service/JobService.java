@@ -30,7 +30,7 @@ public class JobService {
                     CVMatchResult cvMatchResult = scoringService.scoreCVAgainstJob(cvText, job);
 
                     JobMatchResult result = new JobMatchResult(
-                            job.getTitle(),
+                            job.getJobTitle(),
                             job.getIndustry(),
                             cvMatchResult.getScore(),
                             cvMatchResult.getExplanation()

@@ -12,7 +12,7 @@ public class JobPostingTest {
     @Test
     public void testGettersAndSetters() {
         JobPosting job = new JobPosting();
-        job.setTitle("Developer");
+        job.setJobTitle("Developer");
         job.setIndustry("Tech");
         job.setDescription("Job description here");
 
@@ -23,7 +23,7 @@ public class JobPostingTest {
         skills.add(skill);
         job.setTechnicalSkills(skills);
 
-        assertEquals("Developer", job.getTitle());
+        assertEquals("Developer", job.getJobTitle());
         assertEquals("Tech", job.getIndustry());
         assertEquals("Job description here", job.getDescription());
         assertEquals(1, job.getTechnicalSkills().size());
@@ -35,7 +35,7 @@ public class JobPostingTest {
     public void testTechnicalSkillNormalization() {
         // create a dummy job posting
         JobPosting job = new JobPosting();
-        job.setTitle("Developer");
+        job.setJobTitle("Developer");
         job.setIndustry("Tech");
         job.setDescription("Job description here");
         List<JobPosting.TechnicalSkill> skills = new ArrayList<>();

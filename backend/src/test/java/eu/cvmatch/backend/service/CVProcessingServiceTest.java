@@ -34,7 +34,7 @@ public class CVProcessingServiceTest {
 
     private JobPosting createDummyJobPosting() {
         JobPosting jobPosting = new JobPosting();
-        jobPosting.setTitle("Software Developer");
+        jobPosting.setJobTitle("Software Developer");
         jobPosting.setIndustry("Technology");
         jobPosting.setDescription("Job description for a software developer position");
 
