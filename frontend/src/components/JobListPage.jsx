@@ -39,10 +39,12 @@ import {
 } from '@mui/icons-material';
 import NavBar from './TopNavBar';
 import theme from './CommonTheme';
+import {useNavigate} from 'react-router-dom';
 import { useAppContext} from "../context/AppContext.jsx";
 import jobApiService from './services/jobApiService';
 
-const JobListPage = ({ onBack, onNavigate }) => {
+const JobListPage = ({ onNavigate }) => {
+    const navigate = useNavigate();
     const [jobs, setJobs] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -185,8 +187,7 @@ const JobListPage = ({ onBack, onNavigate }) => {
             }}>
                 <NavBar
                     showBackButton={true}
-                    onBack={onBack}
-                    onNavigate={onNavigate}
+                    onBack={() => navigate(-1)}
                     title="Job Listings"
                     currentPage="joblist"
                 />
@@ -347,7 +348,7 @@ const JobListPage = ({ onBack, onNavigate }) => {
                                     startIcon={<Add />}
                                     color="success"
                                     size="small"
-                                    onClick={() => onNavigate('jobdetail')}
+                                    onClick={() => navigate('/jobdetail')}
                                     sx={{
                                         whiteSpace: 'nowrap',
                                         ml: { xs: 0, sm: 1 },

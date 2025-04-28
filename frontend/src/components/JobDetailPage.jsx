@@ -53,9 +53,11 @@ import {
 import theme from './CommonTheme';
 import NavBar from './TopNavBar';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import {useNavigate} from "react-router-dom";
 import {useAppContext} from "../context/AppContext.jsx";
 
 const JobDetailPage = ({ onBack, onNavigate }) => {
+    const navigate = useNavigate();
     const userId = "user123";
     const [activeStep, setActiveStep] = useState(0);
     const { state, dispatch } = useAppContext();
@@ -66,6 +68,7 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
     const [cvFiles, setCvFiles] = useState([]);
     const [isDragging, setIsDragging] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
+    const [uploadCompleted, setUploadCompleted] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const fileInputRef = useRef(null);
     const [industries, setIndustries] = useState([
@@ -203,7 +206,11 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
 
             setLoading(false);
             setSuccessMessage("Job description and CVs uploaded successfully!");
-            setTimeout(() => setSuccessMessage(""), 3000);
+            setUploadCompleted(true);
+
+            setTimeout(() => {
+                navigate('/joblist');
+            }, 3000);
         } catch (error) {
             setLoading(false);
             console.error("Error saving data:", error);
@@ -240,8 +247,7 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
             }}>
                 <NavBar
                     showBackButton={true}
-                    onBack={onBack}
-                    onNavigate={onNavigate}
+                    onBack={() => navigate(-1)}
                     title=" Job Detail Page"
                     currentPage="jobdetail"
                 />
@@ -252,6 +258,34 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                     flexDirection: 'column',
                     overflow: 'auto'
                 }}>
+                    {uploadCompleted && (
+                        <Box
+                            sx={{
+                                width: '100%',
+                                height: '100%',
+                                flex: 1,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                bgcolor: '#f0fdf4',
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                zIndex: 1000,
+                                p: 4
+                            }}
+                        >
+                            <CheckCircle sx={{ fontSize: 80, color: '#10b981', mb: 2 }} />
+                            <Typography variant="h4" fontWeight="bold" color="#10b981">
+                                Job Uploaded Successfully!
+                            </Typography>
+                            <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
+                                Redirecting to Job List...
+                            </Typography>
+                        </Box>
+                    )}
+
                     {/* Header */}
                     <Box sx={{
                         background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
@@ -695,7 +729,12 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                             </Card>
                         )}
 
+<<<<<<< HEAD
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4, position:'relative' }}>
+=======
+                        <Box sx={{ position: 'relative', mt: 4 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+>>>>>>> 19f1cf1e7a79e888edbfc6dc674a0781516717af
                             <Button
                                 variant="outlined"
                                 onClick={onBack}
@@ -758,6 +797,7 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                         {loading ? 'Saving...' : 'Save and Process'}
                                     </Button>
                                 )}
+                            </Box>
                             </Box>
                         </Box>
                     </Container>

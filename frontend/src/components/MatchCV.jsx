@@ -33,6 +33,11 @@ import {
 } from '@mui/icons-material';
 import NavBar from './TopNavBar';
 import theme from './CommonTheme';
+import {useNavigate} from 'react-router-dom'
+
+function MatchCV({ onNavigate }) {
+    const navigate = useNavigate();
+    const [files, setFiles] = useState([]);
 import {useAppContext} from "../context/AppContext.jsx";
 
 function MatchCV({ onBack, onNavigate }) {
@@ -328,8 +333,7 @@ function MatchCV({ onBack, onNavigate }) {
             }}>
                 <NavBar
                     showBackButton={true}
-                    onBack={onBack}
-                    onNavigate={onNavigate}
+                    onBack={() => navigate(-1)}
                     title="Match & Find"
                     currentPage="matchcv"
                 />
@@ -666,7 +670,13 @@ function MatchCV({ onBack, onNavigate }) {
                                             variant="contained"
                                             size="large"
                                             endIcon={<ArrowForwardIcon />}
-                                            onClick={handleSearch}
+                                            onClick={() => {
+                                                if (searchMode === 'cv-to-jobs') {
+                                                    navigate('/jobmatching');
+                                                } else {
+                                                    navigate('/jobmatchesresults');
+                                                }
+                                            }}
                                             disabled={files.length === 0 || uploading || uploadComplete}
                                             sx={{
                                                 py: 1.5,

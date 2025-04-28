@@ -18,8 +18,10 @@ import {
 } from '@mui/icons-material';
 import theme from './CommonTheme';
 import NavBar from './TopNavBar';
+import {useNavigate} from 'react-router-dom'
 
-function Login({ onNext, onBack }) {
+function Login({ onNext }) {
+    const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         username: '',
@@ -66,7 +68,7 @@ function Login({ onNext, onBack }) {
             >
                 <NavBar
                     showBackButton={true}
-                    onBack={onBack}
+                    onBack={() => navigate(-1)}
                     title="Sign In"
                     currentPage="login"
                 />

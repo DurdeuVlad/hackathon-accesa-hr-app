@@ -29,8 +29,10 @@ import {
 import { getJobScores } from './jobService';
 import NavBar from './TopNavBar';
 import theme from './CommonTheme';
+import {useNavigate} from 'react-router-dom';
 
-const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
+const JobMatching = ({jobId = 'demo-job-123' }) => {
+    const navigate = useNavigate();
     const [scores, setScores] = useState([]);
     const [loading, setLoading] = useState(true);
     const [displayLimit, setDisplayLimit] = useState(5);
@@ -100,8 +102,7 @@ const JobMatching = ({ onBack, onNavigate, jobId = 'demo-job-123' }) => {
             }}>
                 <NavBar
                     showBackButton={true}
-                    onBack={onBack}
-                    onNavigate={onNavigate}
+                    onBack={() => navigate(-1)}
                     title="Job Matching Results"
                     currentPage="jobmatching"
                 />
