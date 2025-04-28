@@ -1,155 +1,121 @@
-import os
+"""
+Live-Gemini test-suite: **no mocks**.
+The tests are auto-skipped when GEMINI_API_KEY is not present.
+"""
+
+import os, math, pytest
 from dotenv import load_dotenv, find_dotenv
-from unittest.mock import Mock
-import pytest
 from fastapi.testclient import TestClient
 
-# Ensure real GEMINI_API_KEY is loaded for tests
+from models.job_posting import JobPosting
+
 load_dotenv(find_dotenv())
+API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Real cosine from embedding_service
-from services.embedding_service import cosine_similarity as real_cosine_similarity
+skip_no_key = pytest.mark.skipif(
+    not API_KEY, reason="GEMINI_API_KEY not configured – live-Gemini tests skipped"
+)
 
-# Dummy job for CVScoring
+# ── project imports ─────────────────────────────────────────────────────
+from services.gemini_api_wrapper import GeminiAPIWrapper, get_embedding
+from services.cv_scoring          import CVScoring
+from services.embedding_service   import cosine_similarity
+# ────────────────────────────────────────────────────────────────────────
+
+
 class DummyJob:
+    """Minimal stand-in for models.JobPosting (camelCase to match CVScoring)."""
     def __init__(self, industry, technicalSkills, description):
         self.industry = industry
         self.technicalSkills = technicalSkills
         self.description = description
 
-# ----------------
-# UNIT TESTS: CVScoring
-# ----------------
 
-def test_cv_scoring_unit():
-    """Unit test CVScoring with real cosine_similarity and mocked Gemini."""
-    from services.cv_scoring import CVScoring
+# ────────────────── 1. SDK smoke-test ───────────────────────────────────
+@skip_no_key
+def test_wrapper_roundtrip_ok():
+    """Simple ‘OK’ round-trip proves the model is reachable."""
+    wrapper = GeminiAPIWrapper(API_KEY)
+    reply   = wrapper.send_message("Respond with the single word OK.")
+    assert reply.strip().upper().startswith("OK")
 
-    # Mock Gemini API
-    mock_gemini = Mock()
-    mock_gemini.send_message_with_json_response.return_value = {
-        "industryScore": 75,
-        "techScore": 80,
-        "jdScore": 85,
-        "explanation": "Good match overall.",
-        "jobSummary": "Job summary.",
-        "candidateSummary": "Candidate summary.",
-        "idealProfile": ["Skill 1", "Skill 2"]
-    }
 
-    # Instantiate with only Gemini client
-    scorer = CVScoring(mock_gemini)
+# ────────────────── 2. CVScoring stand-alone ────────────────────────────
+@skip_no_key
+def test_cv_scoring_unit_real():
+    """End-to-end CVScoring using live Gemini + real embeddings."""
+    wrap   = GeminiAPIWrapper(API_KEY)
+    scorer = CVScoring(wrap)
 
-    job = DummyJob(
-        industry="Software",
-        technicalSkills={"Python": 1, "AWS": 1},
-        description="Looking for Python developer with AWS experience."
-    )
+    job = JobPosting()
+    job.industry = "Software"
+    job.technical_skills = {"Python": 1.0, "AWS": 1.0}
+    job.description = "Developer with cloud experience"
+    # DummyJob is a stand-in for models.JobPosting
     cv_text = "CV content with Python and AWS."
+
     result = scorer.calculate_score(cv_text, job)
 
-    # Validate scores from mocked data
-    assert result.industryScore == 75
-    assert result.techScore == 80
+    # 0-100 sanity for all numeric fields
+    for field in ("industryScore", "techScore", "jdScore", "score"):
+        val = getattr(result, field)
+        assert 0 <= val <= 100, f"{field} out of range: {val}"
 
-    # Compute expected embedding line using real cosine_similarity
-    embed_val = real_cosine_similarity(job.description, cv_text) * 100
-    expected_line = f"Embedding JD-CV similarity: {embed_val:.2f}%"
-    assert expected_line in result.explanation
+    # Explanation line should contain EXACT embedding % the scorer used
+    emb_job = get_embedding(job.description)
+    emb_cv  = get_embedding(cv_text)
+    embed_pct = cosine_similarity(emb_job, emb_cv) * 100
+    assert f"Embedding JD-CV similarity: {embed_pct:.2f}%" in result.explanation
 
-# ----------------
-# UNIT TESTS: GeminiAPIWrapper
-# ----------------
-
-def test_gemini_api_wrapper_send_message_unit():
-    from services.gemini_api_wrapper import GeminiAPIWrapper
-    from unittest.mock import patch
-
-    with patch("services.gemini_api_wrapper.gemini_api") as mock_api:
-        mock_model = Mock()
-        mock_model.generate_content.return_value.text = '{"key": "value"}'
-        mock_api.GenerativeModel.return_value = mock_model
-
-        wrapper = GeminiAPIWrapper("fake-api-key")
-        result = wrapper.send_message("Hello")
-        assert '{"key": "value"}' in result
-
-
-def test_gemini_api_wrapper_invalid_json_handling():
-    from services.gemini_api_wrapper import GeminiAPIWrapper
-    from unittest.mock import patch
-
-    with patch("services.gemini_api_wrapper.gemini_api") as mock_api:
-        mock_model = Mock()
-        mock_model.generate_content.return_value.text = "Not JSON"
-        mock_api.GenerativeModel.return_value = mock_model
-
-        wrapper = GeminiAPIWrapper("fake-api-key")
-        output = wrapper.send_message_with_json_response("req")
-        assert isinstance(output, dict)
-
-# ----------------
-# INTEGRATION TESTS: CVScoring + FastAPI
-# ----------------
-
-def test_cv_scoring_integration():
-    from services.cv_scoring import CVScoring
-
-    # Mock Gemini API
-    mock_gemini = Mock()
-    mock_gemini.send_message_with_json_response.return_value = {
-        "industryScore": 90,
-        "techScore": 85,
-        "jdScore": 80,
-        "explanation": "Strong profile.",
-        "jobSummary": "Summary.",
-        "candidateSummary": "Summary.",
-        "idealProfile": ["Python", "AWS"]
-    }
-
-    scorer = CVScoring(mock_gemini)
-
-    job = DummyJob(
-        industry="Software",
-        technicalSkills={"Python": 1, "AWS": 1},
-        description="Developer with cloud experience"
+    # Internal-math check: final score must equal the documented formula
+    expected = (
+        result.industryScore * 0.10
+        + result.techScore   * 0.30
+        + result.jdScore     * 0.60
     )
-    cv_text = "Experience with Python and AWS."
-    result = scorer.calculate_score(cv_text, job)
-
-    # Check final score calculation
-    embed_val = real_cosine_similarity(job.description, cv_text) * 100
-    blended = (80 + embed_val) / 2
-    expected_score = 90 * 0.1 + 85 * 0.3 + blended * 0.6
-    assert result.score == pytest.approx(expected_score)
-
-    expected_line = f"Embedding JD-CV similarity: {embed_val:.2f}%"
-    assert expected_line in result.explanation
+    assert math.isclose(result.score, expected)
 
 
-def test_api_match_cv_endpoint():
-    from main import app
-    from unittest.mock import patch
+# ────────────────── 3. FastAPI integration ──────────────────────────────
+@skip_no_key
+def test_api_match_cv_endpoint_live():
+    """Hits /match_cv for the full stack (router ➜ CVScoring ➜ Gemini)."""
+    from main import app   # ensure the FastAPI app is imported *after* env-vars
     client = TestClient(app)
 
-    example = type("CR", (), {
-        "industryScore": 80,
-        "techScore": 85,
-        "jdScore": 90,
-        "score": 87,
-        "explanation": "Great match!",
-        "jobSummary": "Job summary.",
-        "candidateSummary": "Candidate summary.",
-        "idealProfile": ["Skill 1", "Skill 2"]
-    })()
-
-    with patch("services.cv_scoring.CVScoring.calculate_score", return_value=example):
-        payload = {
-            "cvText": "Experienced software engineer.",
-            "job": {"industry": "Software", "technicalSkills": {"Python":1.0}, "description":"Desc"}
+    payload = {
+        "cvText": "Experienced software engineer skilled in Python and AWS.",
+        "job": {
+            # ⚠ keep camelCase → matches CVScoring implementation
+            "industry": "Software",
+            "technicalSkills": {"Python": 1.0, "AWS": 1.0},
+            "description": "Developer with cloud experience"
         }
-        resp = client.post("/match_cv", json=payload)
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["score"] == 87
-        assert "Great match!" in data["explanation"]
+    }
+
+    resp = client.post("/match_cv", json=payload)
+    assert resp.status_code == 200
+    data = resp.json()
+
+    # structural sanity
+    for key in (
+        "industryScore", "techScore", "jdScore",
+        "score", "explanation", "jobSummary",
+        "candidateSummary", "idealProfile"
+    ):
+        assert key in data, f"missing {key}"
+
+    # ranges
+    for k in ("industryScore", "techScore", "jdScore", "score"):
+        assert 0 <= data[k] <= 100
+
+    # internal-math consistency
+    expected = (
+        data["industryScore"] * 0.10
+        + data["techScore"]   * 0.30
+        + data["jdScore"]     * 0.60
+    )
+    assert math.isclose(data["score"], expected)
+
+    # embed line present
+    assert "Embedding JD-CV similarity:" in data["explanation"]

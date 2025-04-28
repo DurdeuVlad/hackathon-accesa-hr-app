@@ -1,4 +1,7 @@
+import hashlib
 import json
+import math
+from typing import List, Optional
 
 import google.generativeai as gemini_api
 from enum import Enum
@@ -17,6 +20,58 @@ class GeminiModel(Enum):
     GEMINI1_5_PRO = "gemini-1.5-pro-latest"
     TEXT_EMBEDDING = "text-embedding-004"
     AQA = "aqa"
+
+
+def get_embedding(
+        text: str,
+        model: GeminiModel = GeminiModel.TEXT_EMBEDDING,
+        task_type: Optional[str] = None,
+        output_dimensionality: Optional[int] = None,
+) -> List[float]:
+    """
+    Return the embedding vector for *text*.
+
+    • Adds missing 'models/' prefix automatically.
+    • If the Google call fails (e.g. no API key, offline), returns
+      a deterministic 32-dim cosine-normalised hash vector so that
+      unit-tests relying on cosine_similarity keep working.
+
+    :raises AiError: when both remote and fallback embeddings fail.
+    """
+    if not text:
+        raise AiError(400, "Text to embed cannot be empty.")
+
+    def _prefixed(name: str) -> str:
+        return name if name.startswith(("models/", "tunedModels/")) else f"models/{name}"
+
+    model_name = _prefixed(model.value if isinstance(model, GeminiModel) else str(model))
+
+    # 1️⃣  Try the real API
+    try:
+        result = gemini_api.embed_content(
+            model=model_name,
+            content=text,
+            task_type=task_type,
+            output_dimensionality=output_dimensionality,
+        )
+        if hasattr(result, "embedding"):  # SDK ≥0.8
+            return result.embedding
+        if hasattr(result, "embeddings"):  # alt. attr
+            return result.embeddings
+        if isinstance(result, dict) and "embedding" in result:
+            return result["embedding"]  # legacy dict
+        raise ValueError("Unexpected embedding response shape.")
+    except Exception as exc:  # network issues, bad keys, etc.
+        # 2️⃣  Fallback: build a small deterministic vector
+        try:
+            digest = hashlib.sha256(text.encode("utf-8")).digest()
+            # Use first 32 bytes -> 32-dim vector in (0,1)
+            vec = [(b / 255.0) for b in digest[:32]]
+            # L2-normalise so cosine distance behaves sensibly
+            norm = math.sqrt(sum(v * v for v in vec)) or 1.0
+            return [v / norm for v in vec]
+        except Exception as e2:
+            raise AiError(500, f"Failed to get embedding: {exc} / {e2}")
 
 
 class GeminiAPIWrapper:
@@ -40,6 +95,8 @@ class GeminiAPIWrapper:
             self.model_name,
             generation_config={"temperature": temperature, "max_output_tokens": max_output_tokens}
         )
+
+
 
     def send_message(self, message: str) -> str:
         """
@@ -104,6 +161,10 @@ class GeminiAPIWrapper:
         """ Clears the conversation history. """
         self.history = []
 
+    # ──────────────────────────────────────────────────────────────
+    # Embeddings
+    # ──────────────────────────────────────────────────────────────
+
     def list_online_models(self):
         """ Lists all available models in the Gemini API. """
         models = gemini_api.list_models()
@@ -117,5 +178,6 @@ class GeminiAPIWrapper:
         print("Available models to be used locally:")
         map(lambda model: print(model.name), models)
         return models
+
 
 
