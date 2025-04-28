@@ -35,3 +35,4 @@ Thumbs.db
 # Optional: ignore local database/data files
 /backend/data/
 /backend/src/main/resources/firebase/serviceAccountKey.json
+/backend/src/test/resources/.env

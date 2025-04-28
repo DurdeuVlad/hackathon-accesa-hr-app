@@ -1,0 +1,25 @@
+{
+  "industry": "Technology Solutions",
+  "technicalSkills": [
+    {
+      "skill": "Java, Python, or C#",
+      "weight": 30
+    },
+    {
+      "skill": "Agile Development",
+      "weight": 20
+    },
+    {
+      "skill": "Cloud Platforms (AWS, Azure, or Google Cloud)",
+      "weight": 15
+    },
+    {
+      "skill": "DevOps (Docker, Jenkins, or Kubernetes)",
+      "weight": 15
+    },
+    {
+      "skill": "Database Management (SQL and NoSQL)",
+      "weight": 20
+    }
+  ]
+}
