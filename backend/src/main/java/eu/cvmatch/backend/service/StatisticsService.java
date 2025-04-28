@@ -45,15 +45,24 @@ public class StatisticsService {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a,b)->b, LinkedHashMap::new));
 
         for (var doc : allMatches) {
-            double score = doc.getDouble("score");
-            sumScore += score;
-            sumInd   += doc.getDouble("industryScore");
-            sumTech  += doc.getDouble("techScore");
-            sumJd    += doc.getDouble("jdScore");
+            Double scoreObj = doc.getDouble("score");
+            Double industryScoreObj = doc.getDouble("industryScore");
+            Double techScoreObj = doc.getDouble("techScore");
+            Double jdScoreObj = doc.getDouble("jdScore");
 
-            String bucket = score <= 50  ? "0-50"
-                    : score <= 75  ? "51-75"
-                    :                "76-100";
+            double score = (scoreObj != null) ? scoreObj : 0.0;
+            double industryScore = (industryScoreObj != null) ? industryScoreObj : 0.0;
+            double techScore = (techScoreObj != null) ? techScoreObj : 0.0;
+            double jdScore = (jdScoreObj != null) ? jdScoreObj : 0.0;
+
+            sumScore += score;
+            sumInd += industryScore;
+            sumTech += techScore;
+            sumJd += jdScore;
+
+            String bucket = score <= 50 ? "0-50"
+                    : score <= 75 ? "51-75"
+                    : "76-100";
             distribution.merge(bucket, 1L, Long::sum);
         }
 
