@@ -203,18 +203,6 @@ function Home() {
                             </Grid>
                         </Container>
                     </Box>
-
-                    {/* Boxul asta e doar pentru testarea butoanelor */}
-                    {/*<Box sx={{ mt: 6, mb: 6, display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
-                        <Button variant="contained" onClick={() => navigate('/login')}>Go to Login Page</Button>
-                        <Button variant="contained" onClick={() => navigate('/matchcv')}>Go to Match CV Page</Button>
-                        <Button variant="contained" onClick={() => navigate('/jobmatching')}>Go to Job Matching Page</Button>
-                        <Button variant="contained" onClick={() => navigate('/jobmatchesresults')}>Go to Job Matches Results Page</Button>
-                        <Button variant="contained" onClick={() => navigate('/jobdetail')}>Go to Job Detail Page</Button>
-                        <Button variant="contained" onClick={() => navigate('/joblist')}>Go to Job List Page</Button>
-                        <Button variant="contained" onClick={() => navigate('/statisticspage')}>Go to Statistics Page</Button>
-                    </Box>*/}
-
                 </Box>
             </Box>
         </ThemeProvider>

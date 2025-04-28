@@ -1,72 +1,62 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
-    Box,
-    Button,
-    Card,
-    CardContent,
-    Typography,
-    TextField,
-    Avatar,
-    Slider,
-    LinearProgress,
-    Alert,
-    Stack,
-    Stepper,
-    Step,
-    StepLabel,
-    IconButton,
-    Grid,
-    Container,
-    Paper,
-    Divider,
-    Chip,
-    Tooltip,
-    MenuItem,
-    Select,
-    CircularProgress,
-    FormControl,
-    InputLabel,
-    CssBaseline
+    Box, Button, Card, CardContent, Typography, TextField, Avatar, Slider, LinearProgress,
+    Alert, Stepper, Step, StepLabel, IconButton, Grid, Container, Paper, Divider, Chip,
+    CircularProgress, CssBaseline
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import {
-    Add,
-    Delete,
-    CheckCircle,
-    ErrorOutline,
-    Business,
-    Description,
-    Code,
-    KeyboardArrowRight,
-    ArrowBack,
-    SaveAlt,
-    ArrowForward,
-    Build,
-    Tune,
-    BarChart
+    Add, Delete, CheckCircle, ErrorOutline, Business, Description, Code,
+    ArrowBack, SaveAlt, ArrowForward
 } from '@mui/icons-material';
 import theme from './CommonTheme';
 import NavBar from './TopNavBar';
-import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
-import {useNavigate} from "react-router-dom";
-import {useAppContext} from "../context/AppContext.jsx";
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAppContext } from '../context/AppContext.jsx';
+import jobApiService from './services/jobApiService';
 
-const JobDetailPage = ({ onBack, onNavigate }) => {
+const JobDetailPage = () => {
     const navigate = useNavigate();
-    const userId = "user123";
-    const [activeStep, setActiveStep] = useState(0);
+    const location = useLocation();
+    const { jobId, edit } = location.state || {};
     const { state, dispatch } = useAppContext();
     const jobDescription = state.jobDescription;
     const [loading, setLoading] = useState(false);
+    const [activeStep, setActiveStep] = useState(0);
     const [newSkill, setNewSkill] = useState("");
     const [newWeight, setNewWeight] = useState(30);
     const [successMessage, setSuccessMessage] = useState("");
-    const [uploadCompleted, setUploadCompleted] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
-    const [industries, setIndustries] = useState([
-        'Technology', 'Healthcare', 'Finance', 'Education',
-        'E-commerce', 'Manufacturing', 'Telecommunications', 'Banking'
-    ]);
+    const [uploadCompleted, setUploadCompleted] = useState(false);
+    const [localSkills, setLocalSkills] = useState([]);
+
+    useEffect(() => {
+        const fetchJobDetails = async () => {
+            if (edit && jobId) {
+                try {
+                    setLoading(true);
+                    const jobData = await jobApiService.getJobById(jobId);
+                    dispatch({
+                        type: 'SET_JOB_DESCRIPTION',
+                        payload: {
+                            jobTitle: jobData.title || '',
+                            company: jobData.company || '',
+                            industry: jobData.industry || '',
+                            location: jobData.location || '',
+                            description: jobData.description || '',
+                            technicalSkills: jobData.technicalSkills || []
+                        }
+                    });
+                    setLocalSkills(jobData.technicalSkills || []);
+                } catch (error) {
+                    console.error('Error loading job details:', error);
+                } finally {
+                    setLoading(false);
+                }
+            }
+        };
+        fetchJobDetails();
+    }, [edit, jobId, dispatch]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -75,98 +65,94 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
 
     const handleAddSkill = () => {
         if (!newSkill.trim()) return;
-
-        const currentTotal = jobDescription.technicalSkills.reduce((sum, skill) => sum + skill.weight, 0);
+        const currentTotal = localSkills.reduce((sum, skill) => sum + skill.weight, 0);
         if (currentTotal + newWeight > 100) {
-            setErrorMessage(`Cannot add skill. Total weight exceeds 100%. Adjust existing skills first.`);
+            setErrorMessage("Total weight exceeds 100%.");
             setTimeout(() => setErrorMessage(""), 3000);
             return;
         }
 
+        const updatedSkills = [...localSkills, { skill: newSkill, weight: newWeight }];
+        setLocalSkills(updatedSkills);
         dispatch({
             type: 'SET_JOB_DESCRIPTION',
-            payload: { technicalSkills: [...jobDescription.technicalSkills, { skill: newSkill, weight: newWeight }] }
+            payload: { technicalSkills: updatedSkills }
         });
+
         setNewSkill("");
         setNewWeight(30);
     };
 
     const handleRemoveSkill = (index) => {
+        const updatedSkills = localSkills.filter((_, i) => i !== index);
+        setLocalSkills(updatedSkills);
         dispatch({
             type: 'SET_JOB_DESCRIPTION',
-            payload: { technicalSkills: jobDescription.technicalSkills.filter((_, i) => i !== index) }
+            payload: { technicalSkills: updatedSkills }
         });
     };
 
-    const handleWeightChange = (index, value) => {
-        const updated = [...jobDescription.technicalSkills];
-        updated[index].weight = value;
-        dispatch({
-            type: 'SET_JOB_DESCRIPTION',
-            payload: { technicalSkills: updated }
-        });
-    };
 
     const handleNextStep = () => {
-        if (activeStep === 0) {
-            if (!jobDescription.jobTitle || !jobDescription.industry || !jobDescription.description || !jobDescription.company) {
-                setErrorMessage("Please fill all required fields");
-                setTimeout(() => setErrorMessage(""), 3000);
-                return;
-            }
+        if (activeStep === 0 && (!jobDescription.jobTitle || !jobDescription.company || !jobDescription.industry || !jobDescription.description)) {
+            setErrorMessage("Please complete all required fields.");
+            setTimeout(() => setErrorMessage(""), 3000);
+            return;
         }
-
-        setActiveStep((prevStep) => prevStep + 1);
+        setActiveStep((prev) => prev + 1);
     };
 
     const handlePreviousStep = () => {
-        setActiveStep((prevStep) => prevStep - 1);
+        setActiveStep((prev) => prev - 1);
     };
 
     const handleSave = async () => {
         try {
-            const totalWeight = jobDescription.technicalSkills.reduce((sum, skill) => sum + skill.weight, 0);
+            //const totalWeight = jobDescription.technicalSkills.reduce((sum, skill) => sum + skill.weight, 0);
+            const totalWeight = localSkills.reduce((sum, skill) => sum + skill.weight, 0);
             if (totalWeight !== 100) {
-                setErrorMessage(`Total skill weight should be 100%. Current total: ${totalWeight}%`);
+                setErrorMessage(`Total skill weight must be 100%. Current: ${totalWeight}%`);
                 setTimeout(() => setErrorMessage(""), 5000);
                 return;
             }
 
             setLoading(true);
-
-            const jobWithUser = {
+            const jobData = {
                 ...jobDescription,
-                userId: userId,
-                createdAt: new Date()
+                technicalSkills: localSkills,
+                userId: "user123",
+                createdAt: jobDescription.createdAt || new Date()
             };
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            // Log information (simulation)
-            console.log("Job data to be sent:", jobWithUser);
-
-            setLoading(false);
-            setSuccessMessage("Job description saved successfully!");
-            setUploadCompleted(true);
-
-            setTimeout(() => {
-                navigate('/joblist');
-            }, 3000);
+            if (edit && jobId) {
+                await jobApiService.updateJob(jobId, jobData);
+            } else {
+                await jobApiService.createJob(jobData);
+            }
+            setSuccessMessage("Job saved successfully!");
+            setTimeout(() => navigate('/joblist'), 1500);
         } catch (error) {
+            console.error("Error saving job:", error);
+            setErrorMessage("Error saving job. Try again.");
+        } finally {
             setLoading(false);
-            console.error("Error saving data:", error);
-            setErrorMessage("Error saving data. Please try again.");
-            setTimeout(() => setErrorMessage(""), 3000);
         }
     };
 
-    const remainingWeight = 100 - jobDescription.technicalSkills.reduce((sum, skill) => sum + skill.weight, 0);
+    //const remainingWeight = 100 - jobDescription.technicalSkills.reduce((sum, skill) => sum + skill.weight, 0);
+    const remainingWeight = 100 - localSkills.reduce((sum, skill) => sum + skill.weight, 0);
+    const steps = [{ label: 'Job Information', icon: <Business /> }, { label: 'Technical Skills', icon: <Code /> }];
 
-    const steps = [
-        { label: 'Job Information', icon: <Business /> },
-        { label: 'Technical Skills', icon: <Code /> }
-    ];
+    if (loading) {
+        return (
+            <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <Box sx={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <CircularProgress size={60} />
+                </Box>
+            </ThemeProvider>
+        );
+    }
 
     return (
         <ThemeProvider theme={theme}>
@@ -237,10 +223,12 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                     }}>
                         <Container maxWidth="lg" sx={{ textAlign: 'center' }}>
                             <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
-                                Job Matching
+                                {edit ? "Edit Job" : "Add New Job"}
                             </Typography>
                             <Typography variant="h6" sx={{ opacity: 0.9, mx: 'auto', maxWidth: 700 }}>
-                                Find the perfect candidate by creating a detailed job description
+                                {edit
+                                    ? "Update the job details below to edit the existing posting."
+                                    : "Fill in the job details below to create a new job posting."}
                             </Typography>
                         </Container>
                     </Box>
@@ -503,13 +491,13 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                             />
                                         </Box>
 
-                                        {jobDescription.technicalSkills.length === 0 ? (
+                                        {localSkills.length === 0 ? (
                                             <Paper sx={{ p: 3, textAlign: 'center', bgcolor: '#f9fafb', borderRadius: 2 }}>
                                                 <Typography color="text.secondary">No skills added yet.</Typography>
                                             </Paper>
                                         ) : (
                                             <Box>
-                                                {jobDescription.technicalSkills.map((skill, index) => (
+                                                {localSkills.map((skill, index) => (
                                                     <Paper key={index} sx={{
                                                         p: 2,
                                                         mb: 2,
@@ -564,19 +552,6 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
 
                         <Box sx={{ position: 'relative', mt: 4 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <Button
-                                    variant="outlined"
-                                    onClick={onBack}
-                                    startIcon={<ArrowBack />}
-                                    sx={{
-                                        visibility: activeStep === 0 ? 'hidden' : 'visible',
-                                        width: '100px',
-                                        position: 'absolute',
-                                        left: 0
-                                    }}
-                                >
-                                    Cancel
-                                </Button>
 
                                 <Box sx={{
                                     display: 'flex',
@@ -623,7 +598,7 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                                 transition: 'background-color 0.3s ease'
                                             }}
                                         >
-                                            {loading ? 'Saving...' : 'Save Job'}
+                                            {loading ? (edit ? 'Updating...' : 'Saving...') : (edit ? 'Update Job' : 'Save Job')}
                                         </Button>
                                     )}
                                 </Box>
