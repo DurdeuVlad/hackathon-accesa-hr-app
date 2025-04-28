@@ -4,15 +4,12 @@ import json
 from models.cv_match_result import CVMatchResult
 from models.job_posting import JobPosting
 from services.gemini_api_wrapper import GeminiAPIWrapper
-
+from .embedding_service import cosine_similarity
 
 class CVScoring:
     def __init__(self,
-                 gemini: GeminiAPIWrapper,
-                 embedding_service  # must implement cosine_similarity(text1: str, text2: str) -> float
-                 ):
+                 gemini: GeminiAPIWrapper):
         self.gemini = gemini
-        self.embedding = embedding_service
 
     def calculate_score(self, cv_text: str, job: JobPosting) -> CVMatchResult:
         # 1) Normalize technical‐skill weights
@@ -32,7 +29,7 @@ class CVScoring:
         explanation    = data["explanation"]
 
         # 3) compute an embedding-based JD match (0.0–1.0 → 0–100)
-        embed_sim   = self.embedding.cosine_similarity(job.description, cv_text)
+        embed_sim   = cosine_similarity(job.description, cv_text)
         embed_score = embed_sim * 100.0
 
         # 4) blend the two JD scores
