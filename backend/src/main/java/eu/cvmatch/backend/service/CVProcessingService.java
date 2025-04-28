@@ -28,13 +28,15 @@ public class CVProcessingService {
         } catch (UnsupportedOperationException e) {
             throw new IllegalArgumentException("Unsupported file format. Please upload a DOCX, DOC, PDF, or TXT file.");
         } catch (Exception e) {
+            e.printStackTrace();
             throw new Exception("Failed to extract text from the file: " + e.getMessage());
         }
-
+        System.out.println("Extracted CV text: " + cvText);
         JobPosting job = firebaseService.getJobById(jobId);
         if (job == null) {
             throw new Exception("Job not found");
         }
+        System.out.println("Job details: " + job);
 
         String cvId = getOrCreateCvId(file);
 

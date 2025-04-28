@@ -21,9 +21,9 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/matchcv" element={<MatchCV />} />
-                <Route path="/jobmatching" element={<JobMatching jobId="123" />} />
+                <Route path="/jobmatching" element={<JobMatching />} />
                 <Route path="/jobmatchesresults" element={<JobMatchesResults />} />
-                <Route path="/jobdetail" element={<JobDetailPage jobId="123" />} />
+                <Route path="/jobdetail" element={<JobDetailPage />} />
                 <Route path="/joblist" element={<JobListPage />} />
                 <Route path="/statisticspage" element={<StatisticsPage />} />
             </Routes>

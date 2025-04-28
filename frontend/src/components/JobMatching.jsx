@@ -104,7 +104,7 @@ const JobMatching = ({ jobId = 'demo-job-123' }) => {
         fetchCVs();
     }, []);
 
-    // Process each CV against the selected job
+    // processAllCVs function with fixed file creation
     const processAllCVs = async () => {
         if (!jobDescription || !jobDescription.id) {
             setError("No job selected. Please select a job first.");
@@ -134,20 +134,33 @@ const JobMatching = ({ jobId = 'demo-job-123' }) => {
 
         for (const cv of allCVs) {
             try {
-                // Create form data to send CV file
-                const formData = new FormData();
-                formData.append('jobId', jobDescription.id);
-
-                // If we have file content, create a file object
-                if (cv.contentText) {
-                    const file = new Blob([cv.contentText], { type: 'text/plain' });
-                    formData.append('file', file, cv.fileName || 'cv.txt');
-                } else {
-                    // If we don't have content, we'll need to modify this to handle the case
-                    // For now, we'll skip this CV
+                // Skip if no content
+                if (!cv.contentText) {
                     console.warn(`Skipping CV ${cv.id} - no content available`);
                     continue;
                 }
+
+                // Create form data to send CV file
+                const formData = new FormData();
+                formData.append('jobId', jobDescription.id);
+                console.log(jobDescription.id)
+
+                // Create a text file with the CV content instead of trying to make a DOCX
+                // The server just needs to extract text, so a .txt file works best
+                let filename = cv.fileName || `cv_${cv.id}`;
+
+                // Make sure the filename has a .txt extension
+                if (filename.toLowerCase().endsWith('.docx')) {
+                    filename = filename.substring(0, filename.length - 5) + '.txt';
+                } else if (filename.toLowerCase().endsWith('.doc')) {
+                    filename = filename.substring(0, filename.length - 4) + '.txt';
+                } else if (!filename.toLowerCase().endsWith('.txt')) {
+                    filename = filename + '.txt';
+                }
+
+                // Create a proper text file - TextExtractor can handle .txt files properly
+                const file = new File([cv.contentText], filename, { type: 'text/plain' });
+                formData.append('file', file);
 
                 // Call the process CV endpoint
                 const response = await axios.post(`${API_BASE_URL}/processcv`, formData, {

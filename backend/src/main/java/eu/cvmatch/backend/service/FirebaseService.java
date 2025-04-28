@@ -20,14 +20,90 @@ public class FirebaseService {
     }
 
     public JobPosting getJobById(String jobId) throws Exception {
-        var docRef = db.collection("jobs").document(jobId);
-        var snapshot = docRef.get().get();
+        try {
+            DocumentSnapshot document = db.collection("jobs").document(jobId).get().get();
 
-        if (!snapshot.exists()) {
-            throw new IllegalArgumentException("Job ID not found: " + jobId);
+            if (!document.exists()) {
+                throw new IllegalArgumentException("Job ID not found: " + jobId);
+            }
+
+            // Manually construct the JobPosting object to avoid serialization issues
+            JobPosting job = new JobPosting();
+            job.setId(document.getId());
+            job.setJobTitle(document.getString("jobTitle"));
+            job.setIndustry(document.getString("industry"));
+            job.setCompany(document.getString("company"));
+            job.setLocation(document.getString("location"));
+            job.setDescription(document.getString("description"));
+
+            // Handle userId (could be DocumentReference or String)
+            Object docUserId = document.get("userId");
+            if (docUserId instanceof DocumentReference) {
+                DocumentReference userDocRef = (DocumentReference) docUserId;
+                job.setUserIdRef(userDocRef);
+                job.setUserId(userDocRef.getId());
+            } else if (docUserId instanceof String) {
+                job.setUserId((String) docUserId);
+            }
+
+            // Handle date fields
+            if (document.getDate("createdAt") != null) {
+                job.setCreatedAt(document.getDate("createdAt"));
+            }
+            if (document.getDate("updatedAt") != null) {
+                job.setUpdatedAt(document.getDate("updatedAt"));
+            }
+
+            // Handle applicants count
+            Object applicantsObj = document.get("applicants");
+            if (applicantsObj instanceof Number) {
+                job.setApplicants(((Number) applicantsObj).intValue());
+            } else if (applicantsObj instanceof String) {
+                try {
+                    job.setApplicants(Integer.parseInt((String) applicantsObj));
+                } catch (NumberFormatException e) {
+                    // Default to 0 if cannot parse
+                    job.setApplicants(0);
+                }
+            }
+
+            // Handle technical skills which could be a List or a Map
+            Object skillsObject = document.get("technicalSkills");
+            List<JobPosting.TechnicalSkill> skills = new ArrayList<>();
+
+            if (skillsObject instanceof Map) {
+                // Handle as map of skill -> weight
+                Map<String, Object> skillsMap = (Map<String, Object>) skillsObject;
+                for (Map.Entry<String, Object> entry : skillsMap.entrySet()) {
+                    JobPosting.TechnicalSkill skill = new JobPosting.TechnicalSkill();
+                    skill.setSkill(entry.getKey());
+
+                    // Handle weight which could be Long, Integer, etc.
+                    Object weightObj = entry.getValue();
+                    if (weightObj instanceof Number) {
+                        skill.setWeight(((Number) weightObj).intValue());
+                    } else if (weightObj instanceof String) {
+                        try {
+                            skill.setWeight(Integer.parseInt((String) weightObj));
+                        } catch (NumberFormatException e) {
+                            skill.setWeight(0);
+                        }
+                    }
+
+                    skills.add(skill);
+                }
+            }
+
+            job.setTechnicalSkills(skills);
+
+            return job;
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception e) {
+            System.err.println("Error in getJobById: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
-
-        return snapshot.toObject(JobPosting.class);
     }
 
     public List<JobPosting> getAllJobs() {

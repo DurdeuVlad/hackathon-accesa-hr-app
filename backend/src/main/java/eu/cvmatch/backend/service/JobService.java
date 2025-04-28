@@ -33,6 +33,9 @@ public class JobService {
                             job.getJobTitle(),
                             job.getIndustry(),
                             cvMatchResult.getScore(),
+                            cvMatchResult.getIndustryScore(),
+                            cvMatchResult.getTechScore(),
+                            cvMatchResult.getJdScore(),
                             cvMatchResult.getExplanation()
                     );
 

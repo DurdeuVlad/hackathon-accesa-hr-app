@@ -4,12 +4,18 @@ public class JobMatchResult {
     private String jobTitle;
     private String industry;
     private double matchScore;
+    private double industryScore;
+    private double techScore;
+    private double jdScore;
     private String explanation;
 
-    public JobMatchResult(String jobTitle, String industry, double matchScore, String explanation) {
+    public JobMatchResult(String jobTitle, String industry, double matchScore, double industryScore, double techScore, double jdScore, String explanation) {
         this.jobTitle = jobTitle;
         this.industry = industry;
         this.matchScore = matchScore;
+        this.industryScore = industryScore;
+        this.techScore = techScore;
+        this.jdScore = jdScore;
         this.explanation = explanation;
     }
 
@@ -37,6 +43,30 @@ public class JobMatchResult {
         this.matchScore = matchScore;
     }
 
+    public double getIndustryScore() {
+        return industryScore;
+    }
+
+    public void setIndustryScore(double industryScore) {
+        this.industryScore = industryScore;
+    }
+
+    public double getTechScore() {
+        return techScore;
+    }
+
+    public void setTechScore(double techScore) {
+        this.techScore = techScore;
+    }
+
+    public double getJdScore() {
+        return jdScore;
+    }
+
+    public void setJdScore(double jdScore) {
+        this.jdScore = jdScore;
+    }
+
     public String getExplanation() {
         return explanation;
     }
@@ -51,6 +81,9 @@ public class JobMatchResult {
                 "jobTitle='" + jobTitle + '\'' +
                 ", industry='" + industry + '\'' +
                 ", matchScore=" + matchScore +
+                ", industryScore=" + industryScore +
+                ", techScore=" + techScore +
+                ", jdScore=" + jdScore +
                 ", explanation='" + explanation + '\'' +
                 '}';
     }
