@@ -116,6 +116,8 @@ public class JobPostingService {
 
     /**
      * Helper method to convert a JobPosting object to a Map for Firestore
+     * The technicalSkills are converted from a List<TechnicalSkill> to a Map<String, Integer>
+     * where the key is the skill name and the value is the weight.
      */
     private Map<String, Object> convertToMap(JobPosting job) {
         Map<String, Object> data = new HashMap<>();
@@ -125,7 +127,21 @@ public class JobPostingService {
         if (job.getDescription() != null) data.put("description", job.getDescription());
         if (job.getCompany() != null) data.put("company", job.getCompany());
         if (job.getLocation() != null) data.put("location", job.getLocation());
-        if (job.getTechnicalSkills() != null) data.put("technicalSkills", job.getTechnicalSkills());
+
+        // Convert technicalSkills from List<TechnicalSkill> to Map<String, Integer>
+        if (job.getTechnicalSkills() != null && !job.getTechnicalSkills().isEmpty()) {
+            Map<String, Integer> skillsMap = new HashMap<>();
+            for (JobPosting.TechnicalSkill skill : job.getTechnicalSkills()) {
+                if (skill.getSkill() != null && !skill.getSkill().isEmpty()) {
+                    skillsMap.put(skill.getSkill(), skill.getWeight());
+                }
+            }
+
+            // Only add if we have skills
+            if (!skillsMap.isEmpty()) {
+                data.put("technicalSkills", skillsMap);
+            }
+        }
 
         // Don't include userId or userIdRef directly - this is handled in the calling method
 
