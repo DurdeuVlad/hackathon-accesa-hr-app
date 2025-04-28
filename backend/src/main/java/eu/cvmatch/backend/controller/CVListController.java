@@ -66,7 +66,7 @@ public class CVListController {
 
             CV cv = new CV();
             cv.setUserId(effectiveUserId);
-            cv.setFileName(file.getOriginalFilename());
+            cv.setFileName(file.getOriginalFilename() != null ? file.getOriginalFilename() : UUID.randomUUID().toString());
             cv.setContentText(cvText);
             cv.setUploadedAt(Instant.now().toString());
 
@@ -75,7 +75,11 @@ public class CVListController {
             return ResponseEntity.ok(Map.of(
                     "message", "CV uploaded successfully",
                     "cvId", cvId,
-                    "userId", effectiveUserId
+                    "userId", effectiveUserId,
+                    "fileName", cv.getFileName(),
+                    "cvText", cvText,
+                    "uploadedAt", cv.getUploadedAt()
+
             ));
 
         } catch (UnsupportedOperationException e) {
