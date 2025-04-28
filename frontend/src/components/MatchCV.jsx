@@ -33,14 +33,11 @@ import {
 } from '@mui/icons-material';
 import NavBar from './TopNavBar';
 import theme from './CommonTheme';
-import {useNavigate} from 'react-router-dom'
-
-function MatchCV({ onNavigate }) {
-    const navigate = useNavigate();
-    const [files, setFiles] = useState([]);
-import {useAppContext} from "../context/AppContext.jsx";
+import { useNavigate } from 'react-router-dom';
+import { useAppContext } from "../context/AppContext.jsx";
 
 function MatchCV({ onBack, onNavigate }) {
+    const navigate = useNavigate();
     const [isDragActive, setIsDragActive] = useState(false);
     const [uploading, setUploading] = useState(false);
     const { state, dispatch } = useAppContext();
@@ -50,6 +47,7 @@ function MatchCV({ onBack, onNavigate }) {
     const fileInputRef = useRef(null);
     const [searchMode, setSearchMode] = useState('cv-to-jobs'); // 'cv-to-jobs' sau 'jobs-to-cv'
     const API_URL = "http://localhost:8080";
+
     const handleDragOver = (e) => {
         e.preventDefault();
         setIsDragActive(true);
@@ -113,6 +111,7 @@ function MatchCV({ onBack, onNavigate }) {
     const handleRemoveFile = (index) => {
         dispatch({ type: 'SET_MATCH_CV_FILES', payload: files.filter((_, i) => i !== index) });
     };
+
     //permite duplicate momentan
     const uploadCVToBackend = async (file, userId) => {
         try {
@@ -207,7 +206,7 @@ function MatchCV({ onBack, onNavigate }) {
                         const uploadResult = await uploadCVToBackend(file, userId);
                         console.log('CV uploaded:', uploadResult);
 
-                         const effectiveUserId = uploadResult.userId || userId;
+                        const effectiveUserId = uploadResult.userId || userId;
 
                         const matchingJobs = await findMatchingJobs(file);
                         console.log('Matching jobs:', matchingJobs);
@@ -276,30 +275,6 @@ function MatchCV({ onBack, onNavigate }) {
             setUploading(false);
         }
     };
-
-    // const handleSearch = () => {
-    //     if (files.length === 0) {
-    //         setError('Please upload at least one file first.');
-    //         return;
-    //     }
-    //
-    //     setError('');
-    //     setUploading(true);
-    //
-    //     setTimeout(() => {
-    //         setUploading(false);
-    //         setUploadComplete(true);
-    //
-    //         setTimeout(() => {
-    //             // Navigate to the appropriate page based on search mode
-    //             if (searchMode === 'cv-to-jobs') {
-    //                 onNavigate('jobmatchesresults');
-    //             } else {
-    //                 onNavigate('jobmatching');
-    //             }
-    //         }, 1000);
-    //     }, 1500);
-    // };
 
     const handleSearchModeChange = (event, newMode) => {
         if (newMode !== null) {
@@ -670,13 +645,7 @@ function MatchCV({ onBack, onNavigate }) {
                                             variant="contained"
                                             size="large"
                                             endIcon={<ArrowForwardIcon />}
-                                            onClick={() => {
-                                                if (searchMode === 'cv-to-jobs') {
-                                                    navigate('/jobmatching');
-                                                } else {
-                                                    navigate('/jobmatchesresults');
-                                                }
-                                            }}
+                                            onClick={handleSearch}
                                             disabled={files.length === 0 || uploading || uploadComplete}
                                             sx={{
                                                 py: 1.5,
