@@ -596,7 +596,7 @@ const JobListPage = ({ onNavigate }) => {
                                 <Button
                                     variant="contained"
                                     startIcon={<Add />}
-                                    onClick={() => onNavigate('jobdetail')}
+                                    onClick={() => navigate('/jobdetail')}
                                     size="small"
                                 >
                                     Add New Job

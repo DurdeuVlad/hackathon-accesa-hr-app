@@ -32,17 +32,12 @@ import { ThemeProvider } from '@mui/material/styles';
 import {
     Add,
     Delete,
-    UploadFile,
     CheckCircle,
     ErrorOutline,
-    FileUpload,
-    InsertDriveFile,
-    RemoveCircle,
     Business,
     Description,
     Code,
     KeyboardArrowRight,
-    FileCopy,
     ArrowBack,
     SaveAlt,
     ArrowForward,
@@ -65,12 +60,9 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
     const [loading, setLoading] = useState(false);
     const [newSkill, setNewSkill] = useState("");
     const [newWeight, setNewWeight] = useState(30);
-    const [cvFiles, setCvFiles] = useState([]);
-    const [isDragging, setIsDragging] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
     const [uploadCompleted, setUploadCompleted] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
-    const fileInputRef = useRef(null);
     const [industries, setIndustries] = useState([
         'Technology', 'Healthcare', 'Finance', 'Education',
         'E-commerce', 'Manufacturing', 'Telecommunications', 'Banking'
@@ -115,57 +107,11 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
         });
     };
 
-    const handleDragOver = (e) => {
-        e.preventDefault();
-        setIsDragging(true);
-    };
-
-    const handleDragLeave = () => {
-        setIsDragging(false);
-    };
-
-    const handleDrop = (e) => {
-        e.preventDefault();
-        setIsDragging(false);
-        const files = Array.from(e.dataTransfer.files);
-        const validFiles = files.filter(file => file.type === 'application/pdf' ||
-            file.type === 'application/msword' ||
-            file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-        if (validFiles.length > 0) {
-            setCvFiles(prev => [...prev, ...validFiles]);
-        } else {
-            setErrorMessage("Please upload only PDF or Word documents");
-            setTimeout(() => setErrorMessage(""), 3000);
-        }
-    };
-
-    const handleFileInputChange = (e) => {
-        const files = Array.from(e.target.files);
-        setCvFiles(prev => [...prev, ...files]);
-    };
-
-    const handleRemoveFile = (index) => {
-        setCvFiles(prev => prev.filter((_, i) => i !== index));
-    };
-
     const handleNextStep = () => {
         if (activeStep === 0) {
             if (!jobDescription.jobTitle || !jobDescription.industry || !jobDescription.description || !jobDescription.company) {
                 setErrorMessage("Please fill all required fields");
                 setTimeout(() => setErrorMessage(""), 3000);
-                return;
-            }
-        } else if (activeStep === 1) {
-            if (jobDescription.technicalSkills.length === 0) {
-                setErrorMessage("Please add at least one technical skill");
-                setTimeout(() => setErrorMessage(""), 3000);
-                return;
-            }
-
-            const totalWeight = jobDescription.technicalSkills.reduce((sum, skill) => sum + skill.weight, 0);
-            if (totalWeight !== 100) {
-                setErrorMessage(`Total skill weight should be 100%. Current total: ${totalWeight}%`);
-                setTimeout(() => setErrorMessage(""), 5000);
                 return;
             }
         }
@@ -179,9 +125,10 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
 
     const handleSave = async () => {
         try {
-            if (cvFiles.length === 0) {
-                setErrorMessage("Please upload at least one CV");
-                setTimeout(() => setErrorMessage(""), 3000);
+            const totalWeight = jobDescription.technicalSkills.reduce((sum, skill) => sum + skill.weight, 0);
+            if (totalWeight !== 100) {
+                setErrorMessage(`Total skill weight should be 100%. Current total: ${totalWeight}%`);
+                setTimeout(() => setErrorMessage(""), 5000);
                 return;
             }
 
@@ -193,19 +140,14 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                 createdAt: new Date()
             };
 
-            const data = new FormData();
-            data.append('job', JSON.stringify(jobWithUser));
-            cvFiles.forEach((file) => data.append('cvs', file));
-
-            // Simulare
+            // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 1500));
 
-            // Simulari
+            // Log information (simulation)
             console.log("Job data to be sent:", jobWithUser);
-            console.log("CV files to be sent:", cvFiles);
 
             setLoading(false);
-            setSuccessMessage("Job description and CVs uploaded successfully!");
+            setSuccessMessage("Job description saved successfully!");
             setUploadCompleted(true);
 
             setTimeout(() => {
@@ -223,8 +165,7 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
 
     const steps = [
         { label: 'Job Information', icon: <Business /> },
-        { label: 'Technical Skills', icon: <Code /> },
-        { label: 'Upload CVs', icon: <FileUpload /> }
+        { label: 'Technical Skills', icon: <Code /> }
     ];
 
     return (
@@ -299,7 +240,7 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                                 Job Matching
                             </Typography>
                             <Typography variant="h6" sx={{ opacity: 0.9, mx: 'auto', maxWidth: 700 }}>
-                                Find the perfect candidate by creating a job description and uploading CVs to match
+                                Find the perfect candidate by creating a detailed job description
                             </Typography>
                         </Container>
                     </Box>
@@ -621,183 +562,71 @@ const JobDetailPage = ({ onBack, onNavigate }) => {
                             </Card>
                         )}
 
-                        {/* Step 3: CV Upload */}
-                        {activeStep === 2 && (
-                            <Card sx={{
-                                borderRadius: 2,
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                                mb: 4,
-                                borderTop: '4px solid #3b82f6',
-                                minHeight: '600px',
-                                transition: 'all 0.3s ease'
-                            }}>
-                                <CardContent sx={{ p: 4 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                                        <Avatar sx={{ bgcolor: '#dbeafe', mr: 2 }}><FileUpload sx={{ color: '#2563eb' }} /></Avatar>
-                                        <Typography variant="h5" color="#1e3a8a" fontWeight="bold">Upload CVs</Typography>
-                                    </Box>
-
-                                    <Typography variant="body1" color="text.secondary" paragraph>
-                                        Upload the CV files you want to match against this job description.
-                                        The system will analyze each CV and rank candidates based on their match to the job requirements.
-                                    </Typography>
-
-                                    <Box
-                                        onDragOver={handleDragOver}
-                                        onDragLeave={handleDragLeave}
-                                        onDrop={handleDrop}
-                                        onClick={() => fileInputRef.current?.click()}
-                                        sx={{
-                                            border: '2px dashed #bfdbfe',
-                                            borderRadius: 2,
-                                            p: 5,
-                                            textAlign: 'center',
-                                            cursor: 'pointer',
-                                            backgroundColor: isDragging ? '#eff6ff' : 'inherit',
-                                            transition: 'all 0.3s ease',
-                                            '&:hover': { borderColor: '#93c5fd', backgroundColor: '#f8fafc' },
-                                            minHeight: '180px',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            justifyContent: 'center',
-                                            alignItems: 'center'
-                                        }}
-                                    >
-                                        <input
-                                            type="file"
-                                            multiple
-                                            ref={fileInputRef}
-                                            onChange={handleFileInputChange}
-                                            accept=".pdf,.doc,.docx"
-                                            hidden
-                                        />
-                                        <UploadFile sx={{ fontSize: 64, color: '#60a5fa', mb: 2 }} />
-                                        <Typography variant="h6" color="#1e3a8a" fontWeight={500}>Drag and drop CV files here</Typography>
-                                        <Typography variant="body1" color="#4b5563">or <span style={{ color: '#3b82f6', fontWeight: 600 }}>browse files</span></Typography>
-                                        <Typography variant="caption" color="#6b7280" mt={1} display="block">Accepted formats: PDF, DOC, DOCX</Typography>
-                                    </Box>
-
-                                    {cvFiles.length > 0 && (
-                                        <Box mt={4}>
-                                            <Typography variant="subtitle1" color="#1e3a8a" display="flex" alignItems="center" gap={1} fontWeight={500} mb={2}>
-                                                <CheckCircle sx={{ color: '#10b981' }} /> Uploaded Files ({cvFiles.length})
-                                            </Typography>
-                                            <Grid container spacing={2}>
-                                                {cvFiles.map((file, index) => (
-                                                    <Grid item xs={12} sm={6} key={index}>
-                                                        <Paper sx={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            p: 2,
-                                                            borderRadius: 2,
-                                                            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                                                            border: '1px solid #e5e7eb',
-                                                            '&:hover': { boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }
-                                                        }}>
-                                                            <Avatar
-                                                                variant="rounded"
-                                                                sx={{
-                                                                    bgcolor: '#eff6ff',
-                                                                    color: '#3b82f6',
-                                                                    mr: 2
-                                                                }}
-                                                            >
-                                                                <InsertDriveFile />
-                                                            </Avatar>
-                                                            <Box flex={1}>
-                                                                <Typography fontWeight={500} color="#111827" noWrap>
-                                                                    {file.name}
-                                                                </Typography>
-                                                                <Typography fontSize={12} color="#6b7280">
-                                                                    {(file.size / 1024).toFixed(2)} KB
-                                                                </Typography>
-                                                            </Box>
-                                                            <IconButton
-                                                                onClick={() => handleRemoveFile(index)}
-                                                                sx={{ '&:hover': { backgroundColor: '#fee2e2' } }}
-                                                                size="small"
-                                                            >
-                                                                <RemoveCircle sx={{ color: '#ef4444' }} />
-                                                            </IconButton>
-                                                        </Paper>
-                                                    </Grid>
-                                                ))}
-                                            </Grid>
-                                        </Box>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        )}
-
-<<<<<<< HEAD
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4, position:'relative' }}>
-=======
                         <Box sx={{ position: 'relative', mt: 4 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
->>>>>>> 19f1cf1e7a79e888edbfc6dc674a0781516717af
-                            <Button
-                                variant="outlined"
-                                onClick={onBack}
-                                startIcon={<ArrowBack />}
-                                sx={{
-                                    visibility: activeStep === 0 ? 'hidden' : 'visible',
-                                    width: '100px',
+                                <Button
+                                    variant="outlined"
+                                    onClick={onBack}
+                                    startIcon={<ArrowBack />}
+                                    sx={{
+                                        visibility: activeStep === 0 ? 'hidden' : 'visible',
+                                        width: '100px',
+                                        position: 'absolute',
+                                        left: 0
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+
+                                <Box sx={{
+                                    display: 'flex',
+                                    gap: 2,
                                     position: 'absolute',
-                                    left: 0
-                                }}
-                            >
-                                Cancel
-                            </Button>
+                                    right: 0
+                                }}>
+                                    {activeStep > 0 && (
+                                        <Button
+                                            variant="outlined"
+                                            onClick={handlePreviousStep}
+                                            startIcon={<ArrowBack />}
+                                            sx={{
+                                                width: '120px',
+                                            }}
+                                        >
+                                            Previous
+                                        </Button>
+                                    )}
 
-                            <Box sx={{
-                                display: 'flex',
-                                gap: 2,
-                                position: 'absolute',
-                                right: 0
-                            }}>
-                                {activeStep > 0 && (
-                                    <Button
-                                        variant="outlined"
-                                        onClick={handlePreviousStep}
-                                        startIcon={<ArrowBack />}
-                                        sx={{
-                                            width: '120px',
-                                        }}
-                                    >
-                                        Previous
-                                    </Button>
-                                )}
-
-                                {activeStep < steps.length - 1 ? (
-                                    <Button
-                                        variant="contained"
-                                        onClick={handleNextStep}
-                                        endIcon={<ArrowForward />}
-                                        sx={{
-                                            bgcolor: '#3b82f6',
-                                            '&:hover': { bgcolor: '#2563eb' },
-                                            width: '100px',
-                                        }}
-                                    >
-                                        Next
-                                    </Button>
-                                ) : (
-                                    <Button
-                                        variant="contained"
-                                        onClick={handleSave}
-                                        startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SaveAlt />}
-                                        disabled={loading}
-                                        sx={{
-                                            bgcolor: '#10b981',
-                                            '&:hover': { bgcolor: '#059669' },
-                                            width: '180px',
-                                            transition: 'background-color 0.3s ease'
-                                        }}
-                                    >
-                                        {loading ? 'Saving...' : 'Save and Process'}
-                                    </Button>
-                                )}
-                            </Box>
+                                    {activeStep < steps.length - 1 ? (
+                                        <Button
+                                            variant="contained"
+                                            onClick={handleNextStep}
+                                            endIcon={<ArrowForward />}
+                                            sx={{
+                                                bgcolor: '#3b82f6',
+                                                '&:hover': { bgcolor: '#2563eb' },
+                                                width: '100px',
+                                            }}
+                                        >
+                                            Next
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            variant="contained"
+                                            onClick={handleSave}
+                                            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SaveAlt />}
+                                            disabled={loading}
+                                            sx={{
+                                                bgcolor: '#10b981',
+                                                '&:hover': { bgcolor: '#059669' },
+                                                width: '180px',
+                                                transition: 'background-color 0.3s ease'
+                                            }}
+                                        >
+                                            {loading ? 'Saving...' : 'Save Job'}
+                                        </Button>
+                                    )}
+                                </Box>
                             </Box>
                         </Box>
                     </Container>

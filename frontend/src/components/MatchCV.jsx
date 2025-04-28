@@ -35,8 +35,6 @@ import NavBar from './TopNavBar';
 import theme from './CommonTheme';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from "../context/AppContext.jsx";
-import {useNavigate} from 'react-router-dom'
-import {useAppContext} from "../context/AppContext.jsx";
 
 function MatchCV({ onBack, onNavigate }) {
     const navigate = useNavigate();
@@ -58,8 +56,6 @@ function MatchCV({ onBack, onNavigate }) {
     const handleDragLeave = () => {
         setIsDragActive(false);
     };
-
-    const navigate = useNavigate();
 
     const handleDrop = (e) => {
         e.preventDefault();
@@ -263,12 +259,21 @@ function MatchCV({ onBack, onNavigate }) {
 
             setUploadComplete(true);
 
-            // Navigate after successful upload
+            // FIXED: Use the navigate function from useNavigate instead of calling useNavigate directly
             setTimeout(() => {
                 if (searchMode === 'cv-to-jobs') {
-                    onNavigate('jobmatchesresults');
+                    // Try to use onNavigate prop if available, otherwise use navigate
+                    if (typeof onNavigate === 'function') {
+                        onNavigate('jobmatchesresults');
+                    } else {
+                        navigate('/jobmatchesresults');
+                    }
                 } else {
-                    onNavigate('jobmatching');
+                    if (typeof onNavigate === 'function') {
+                        onNavigate('jobmatching');
+                    } else {
+                        navigate('/jobmatching');
+                    }
                 }
             }, 1000);
 
