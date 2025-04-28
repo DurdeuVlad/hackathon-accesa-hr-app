@@ -609,4 +609,19 @@ public class FirebaseService {
         }
     }
 
+    public Object getCVText(String cvId) {
+        try {
+            DocumentSnapshot document = db.collection("cvs").document(cvId).get().get();
+            if (document.exists()) {
+                return document.getString("contentText");
+            } else {
+                throw new IllegalArgumentException("CV ID not found: " + cvId);
+            }
+        } catch (Exception e) {
+            System.err.println("Error in getCVText: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+
+    }
 }

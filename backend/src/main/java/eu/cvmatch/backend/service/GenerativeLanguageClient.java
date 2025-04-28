@@ -101,20 +101,51 @@ public class GenerativeLanguageClient {
 
         String url = String.format("%s/models/%s:generateContent?key=%s",
                 v1Base, model, apiKey);
+
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("Content-Type", "application/json; charset=utf-8")
-                .POST(HttpRequest.BodyPublishers.ofString(
-                        gson.toJson(body), StandardCharsets.UTF_8))
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(body), StandardCharsets.UTF_8))
                 .build();
-        HttpResponse<String> resp = httpClient.send(req,
-                HttpResponse.BodyHandlers.ofString());
+
+        // ----------- RETRY BLOCK START ------------
+        int maxRetries = 1;
+        int retryDelayMs = 30000; // 30 seconds
+        int attempt = 0;
+
+        HttpResponse<String> resp = null;
+        boolean success = false;
+
+        while (attempt <= maxRetries && !success) {
+            resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
+
+            if (resp.statusCode() == 429) {
+                if (attempt < maxRetries) {
+                    System.out.printf("Quota limit reached (attempt %d/%d). Waiting 30 seconds before retry...%n", attempt + 1, maxRetries + 1);
+                    try {
+                        Thread.sleep(retryDelayMs);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new RuntimeException("Interrupted during retry delay", e);
+                    }
+                    attempt++;
+                } else {
+                    break; // Give up after maxRetries
+                }
+            } else {
+                success = true;
+            }
+        }
+
         if (resp.statusCode() != 200) {
             throw new IllegalStateException("generateContent failed: " + resp.body());
         }
+        // ----------- RETRY BLOCK END ------------
+
         JsonObject json = gson.fromJson(resp.body(), JsonObject.class);
         return json.getAsJsonArray("candidates");
     }
+
 
     public JsonArray generateMessage(
             List<String> messages,

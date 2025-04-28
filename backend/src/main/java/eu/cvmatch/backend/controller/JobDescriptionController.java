@@ -21,6 +21,11 @@ public class JobDescriptionController {
         this.jobService = jobService;
     }
 
+    /**
+     * This endpoint is used to find matching jobs based on a CV file.
+     * @param cvFile The CV file to match against job postings.
+     * @return A list of matching job postings.
+     */
     @PostMapping
     public ResponseEntity<List<JobMatchResult>> findMatchingJobs(@RequestParam("file") MultipartFile cvFile) {
         try {
@@ -33,4 +38,21 @@ public class JobDescriptionController {
             return ResponseEntity.internalServerError().build();
         }
     }
+    /**
+     * This endpoint is used to find matching jobs based on CV text.
+     * @param cvText The CV text to match against job postings.
+     * @return A list of matching job postings.
+     */
+    @PostMapping("/bytext")
+    public ResponseEntity<List<JobMatchResult>> findMatchingJobsByText(@RequestParam("cvText") String cvText) {
+        try {
+            List<JobMatchResult> matchingJobs = jobService.matchCVToJobs(cvText);
+
+            return ResponseEntity.ok(matchingJobs);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+
 }
